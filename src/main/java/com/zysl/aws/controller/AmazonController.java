@@ -3,6 +3,7 @@ package com.zysl.aws.controller;
 import com.amazonaws.services.s3.model.Bucket;
 import com.zysl.aws.common.result.CodeMsg;
 import com.zysl.aws.common.result.Result;
+import com.zysl.aws.model.UploadFileRequest;
 import com.zysl.aws.service.AmasonService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,8 +80,8 @@ public class AmazonController {
      * @return
      */
     @PostMapping("/uploadFile")
-    public Result uploadFile(HttpServletRequest request){
-        log.info("--开始调用uploadFile上传文件接口--request:{}", request);
+    public Result uploadFile(@RequestBody UploadFileRequest request){
+        log.info("--开始调用uploadFile上传文件接口--");
         return  amasonService.uploadFile(request);
     }
 

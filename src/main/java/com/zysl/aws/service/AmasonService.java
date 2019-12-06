@@ -2,6 +2,7 @@ package com.zysl.aws.service;
 
 import com.amazonaws.services.s3.model.Bucket;
 import com.zysl.aws.common.result.Result;
+import com.zysl.aws.model.UploadFileRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,7 +34,7 @@ public interface AmasonService {
      * 上传文件到对应路径
      * @param request
      */
-    Result uploadFile(HttpServletRequest request);
+    Result uploadFile(UploadFileRequest request);
 
     /**
      * 下载文件

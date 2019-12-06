@@ -7,11 +7,14 @@ import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
 import com.zysl.aws.common.result.CodeMsg;
 import com.zysl.aws.common.result.Result;
+import com.zysl.aws.enums.InplaceEnum;
+import com.zysl.aws.model.UploadFileRequest;
 import com.zysl.aws.service.AmasonService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -89,37 +92,57 @@ public class AmasonServiceImpl implements AmasonService {
     }
 
     @Override
-    public Result uploadFile(HttpServletRequest request) {
+    public Result uploadFile(UploadFileRequest request) {
+        Map<String, Object> map = new HashMap<>();
 
-        if(checkBucketExists(s3, request.getParameter("bucketName"))){
+        String bucketName = request.getBucketName();
+        String fileId = request.getFileId();
+        byte[] data = request.getData();
+        //是否覆盖 0不覆盖 1覆盖
+        String inplace = request.getInplace();
+
+        if(checkBucketExists(s3, bucketName)){
             log.info("--文件夹存在--");
-           //上传文件
-            PutObjectResult result = upload(request);
-            return Result.success(result);
-        }else{
-            log.info("--文件夹不存在--");
-            //自动创建文件夹
-            if(Boolean.valueOf(request.getParameter("isAutoCreate"))){
-                //创建文件夹
-                Bucket bucket = s3.createBucket(request.getParameter("bucketName"));
-                //上传文件
-                PutObjectResult result = upload(request);
-                return Result.success(result);
+            //文件id是否为空
+            if(!StringUtils.isEmpty(fileId)){
+                //判断文件是否存在服务器
+                Boolean falg = s3.doesObjectExist(bucketName, fileId);
+                //如果文件存在且 文件需要覆盖
+                if(!falg || (falg && InplaceEnum.COVER.getCode().equals(inplace))){
+                    //上传文件
+                    log.info("--文件夹存在且文件需要覆盖--");
+                    //上传文件
+                    PutObjectResult result = upload(bucketName, fileId, data);
+                    map.put("fileId", fileId);
+                    map.put("result", result);
+                    return Result.success(map);
+                }else{
+                    log.info("--文件已存在--");
+                    return Result.error("文件已存在");
+                }
             }else{
-                return Result.error(request.getParameter("bucketName")+"不存在,请先创建");
+                fileId = UUID.randomUUID().toString().replaceAll("-","");
+                //上传文件
+                PutObjectResult result = upload(bucketName, fileId, data);
+                map.put("fileId", fileId);
+                map.put("result", result);
+                return Result.success(map);
             }
+        }else {
+            log.info("--文件夹不存在--");
+            return Result.error(bucketName + "文件夹不存在,请先创建");
         }
     }
 
-    public PutObjectResult upload(HttpServletRequest request){
+    public PutObjectResult upload(String bucketName, String fileId, byte[] data){
+        log.info("--upload开始上传文件，入参bucketName：{}-,fileId:{}-,data:{}", bucketName, fileId, data.length);
         ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentType(request.getParameter("fileName"));
-        metadata.setContentLength(request.getParameter("data").length());
+        metadata.setContentType(fileId);
+        metadata.setContentLength(data.length);
 
-        InputStream input = new ByteArrayInputStream(request.getParameter("data").getBytes());;
+        InputStream input = new ByteArrayInputStream(data);;
 
-        PutObjectResult result = s3.putObject(new PutObjectRequest(request.getParameter("bucketName"),
-                request.getParameter("fileName"), input, metadata)
+        PutObjectResult result = s3.putObject(new PutObjectRequest(bucketName, fileId, input, metadata)
                 .withCannedAcl(CannedAccessControlList.PublicRead));
 
         return result;
