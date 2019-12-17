@@ -1,12 +1,11 @@
 package com.zysl.aws.service;
 
-import com.amazonaws.services.s3.model.Bucket;
 import com.zysl.aws.common.result.Result;
 import com.zysl.aws.model.UploadFileRequest;
-import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.services.s3.model.Bucket;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Optional;
 
 public interface AmasonService {
 
@@ -51,8 +50,7 @@ public interface AmasonService {
      * @param bucket_name
      * @return
      */
-    Bucket getBucket(String bucket_name);
+    Optional<Bucket> getBucket(String bucket_name);
 
-    void upload(MultipartFile file, String uid);
 
 }

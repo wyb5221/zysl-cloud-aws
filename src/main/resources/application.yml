@@ -1,10 +1,19 @@
 server:
-  port: 8080
+  port: 8081
   servlet:
     context-path:
 
 cloud:
   aws:
-    accessKey: ****
-    secretKey: ****
-    region: us-west-2
+    accessKey: ***
+    secretKey: ***
+    endpoint: ***
+
+#    minio地址
+#    accessKey: WJ8KSU22Z57W9NZ5BYZG
+#    secretKey: +kSjNYuuNxLwB+JCF2oW+OSJJEnGrNivpsKZfjtb
+#    endpoint: http://127.0.0.1:9000/
+
+#    accessKey: *****
+#    secretKey: *****
+#    endpoint: http://s3.amazonaws.com
