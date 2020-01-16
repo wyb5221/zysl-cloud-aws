@@ -22,7 +22,7 @@ public class UploadFileRequest implements Serializable {
     //是否覆盖 0不覆盖 1覆盖
     private String inplace;
     //文件流
-    private byte[] data;
+    private String data;
 
     @Override
     public String toString() {
@@ -30,7 +30,7 @@ public class UploadFileRequest implements Serializable {
                 "bucketName='" + bucketName + '\'' +
                 ", fileId='" + fileId + '\'' +
                 ", inplace='" + inplace + '\'' +
-                ", data=" + Arrays.toString(data) +
+                ", data='" + data + '\'' +
                 '}';
     }
 }

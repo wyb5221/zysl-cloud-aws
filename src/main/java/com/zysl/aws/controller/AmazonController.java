@@ -2,16 +2,24 @@ package com.zysl.aws.controller;
 
 import com.zysl.aws.common.result.CodeMsg;
 import com.zysl.aws.common.result.Result;
+import com.zysl.aws.enums.DownTypeEnum;
 import com.zysl.aws.model.BucketResponse;
 import com.zysl.aws.model.UploadFileRequest;
 import com.zysl.aws.service.AmasonService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.services.s3.model.Bucket;
+import sun.misc.BASE64Decoder;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 @RestController
@@ -100,9 +108,39 @@ public class AmazonController {
      * @return
      */
     @GetMapping("/downloadFile")
-    public Result downloadFile(String bucketName, String fileId){
-        log.info("--开始调用uploadFile上传文件接口--bucketName:{},fileId:{}", bucketName, fileId);
-        return amasonService.downloadFile(bucketName, fileId);
+    public Result downloadFile(HttpServletResponse response, String bucketName, String fileId, String type){
+        log.info("--开始调用downloadFile下载文件接口--bucketName:{},fileId:{}，type：{}", bucketName, fileId, type);
+        Long startTime = System.currentTimeMillis();
+        String str = amasonService.downloadFile(response, bucketName, fileId);
+        log.info("--下载接口返回的文件数据大小--", str.length());
+        if(!StringUtils.isEmpty(str)){
+            if(DownTypeEnum.COVER.getCode().equals(type)){
+                Long usedTime = System.currentTimeMillis() - startTime;
+                Map<String, Object> result = new HashMap<>();
+                result.put("data", str);
+                result.put("reason", "");
+                result.put("usedTime", usedTime);
+                return Result.success(result);
+            }else {
+                try {
+                    //1下载文件流
+                    OutputStream outputStream = response.getOutputStream();
+                    response.setContentType("application/octet-stream");//告诉浏览器输出内容为流
+                    response.setHeader("Content-Disposition", "attachment;fileName="+fileId);
+
+                    BASE64Decoder decoder = new BASE64Decoder();
+                    byte[] bytes = decoder.decodeBuffer(str);
+                    outputStream.write(bytes);
+                    outputStream.flush();
+                    outputStream.close();
+                } catch (IOException e) {
+                    log.info("--文件下载异常：--", e);
+                }
+                return null;
+            }
+        }else {
+            return Result.error("文件下载无数据返回");
+        }
     }
 
     /**
