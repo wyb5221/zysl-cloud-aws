@@ -4,6 +4,7 @@ import com.zysl.aws.common.result.Result;
 import com.zysl.aws.model.UploadFileRequest;
 import software.amazon.awssdk.services.s3.model.Bucket;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,7 +39,7 @@ public interface AmasonService {
     /**
      * 下载文件
      */
-    Result downloadFile(String bucketName, String key);
+    String downloadFile(HttpServletResponse response, String bucketName, String key);
 
     /**
      * 删除文件

@@ -14,11 +14,10 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
-//import software.amazon.awssdk.services.s3.model.*;
 
-import java.io.ByteArrayInputStream;
-import java.nio.file.Paths;
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
+
 
 @Service
 @Slf4j
@@ -87,9 +86,16 @@ public class AmasonServiceImpl implements AmasonService {
     public Result uploadFile(UploadFileRequest request) {
         Map<String, Object> map = new HashMap<>();
 
+        if(StringUtils.isEmpty(request.getBucketName())){
+            return Result.error("入参bucketName不能为空");
+        }
+        if(StringUtils.isEmpty(request.getData())){
+            return Result.error("入参data不能为空");
+        }
+
         String bucketName = request.getBucketName();
         String fileId = request.getFileId();
-        byte[] data = request.getData();
+        byte[] data = request.getData().getBytes();
         //是否覆盖 0不覆盖 1覆盖
         String inplace = request.getInplace();
 
@@ -99,7 +105,7 @@ public class AmasonServiceImpl implements AmasonService {
             if(!StringUtils.isEmpty(fileId)){
                 //判断文件是否存在服务器
                 Boolean falg = doesObjectExist(bucketName, fileId);
-                log.info("--判断文件是否存在服务器--falg:{}", falg);
+                log.info("--判断文件是否存在服务器--falg:{},inplace:{}", falg, inplace);
                 //如果文件存在且 文件需要覆盖
                 if(!falg || (falg && InplaceEnum.COVER.getCode().equals(inplace))){
                     //上传文件
@@ -166,30 +172,28 @@ public class AmasonServiceImpl implements AmasonService {
     public void upload(String bucketName, String fileId, byte[] data){
         log.info("--upload开始上传文件，入参bucketName：{}-,fileId:{}-,data:{}", bucketName, fileId, data.length);
 
-        PutObjectResponse putObjectResponse = s3.putObject(PutObjectRequest.builder().bucket(bucketName).key(fileId)
-                        .build(),
-                RequestBody.fromBytes(data));
-        log.info("--上传文件--putObjectResponse:{}", putObjectResponse);
+        try {
+            PutObjectResponse putObjectResponse = s3.putObject(PutObjectRequest.builder().bucket(bucketName).key(fileId)
+                            .build(),
+                    RequestBody.fromBytes(data));
+            log.info("--上传文件--putObjectResponse:{}", putObjectResponse);
+        }catch (Exception e){
+            log.info("--上传文件异常--：", e);
+        }
     }
 
     @Override
-    public Result downloadFile(String bucketName, String key) {
+    public String downloadFile(HttpServletResponse response, String bucketName, String key) {
+
         if(doesBucketExist(bucketName)){
             log.info("--文件夹存在--");
-            Long startTime = System.currentTimeMillis();
-
             ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(b -> b.bucket(bucketName).key(key),
                     ResponseTransformer.toBytes());
-            byte[] bytes = objectAsBytes.asByteArray();
-
-            Long usedTime = System.currentTimeMillis() - startTime;
-            Map<String, Object> result = new HashMap<>();
-            result.put("data", bytes);
-            result.put("reason", "");
-            result.put("usedTime", usedTime);
-            return Result.success(result);
+            String str = objectAsBytes.asUtf8String();
+            return str;
         }else {
-            return Result.error(bucketName + "不存在");
+            log.info("--文件夹不存在--");
+            return null;
         }
     }
 
