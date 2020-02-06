@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.services.s3.model.Bucket;
 import sun.misc.BASE64Decoder;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -127,6 +128,7 @@ public class AmazonController {
                     OutputStream outputStream = response.getOutputStream();
                     response.setContentType("application/octet-stream");//告诉浏览器输出内容为流
                     response.setHeader("Content-Disposition", "attachment;fileName="+fileId);
+                    response.setCharacterEncoding("UTF-8");
 
                     BASE64Decoder decoder = new BASE64Decoder();
                     byte[] bytes = decoder.decodeBuffer(str);
@@ -154,6 +156,38 @@ public class AmazonController {
         log.info("--开始调用uploadFile删除文件接口--bucketName:{},fileName:{}", bucketName, fileName);
         amasonService.deleteFile(bucketName, fileName);
         return Result.success();
+    }
+
+    @GetMapping("/getVideo")
+    public void getVideo(HttpServletResponse response, String bucketName, String fileId){
+        String str = amasonService.downloadFile(response, bucketName, fileId);
+        try {
+            BASE64Decoder decoder = new BASE64Decoder();
+            byte[] bytes = decoder.decodeBuffer(str);
+
+            response.reset();
+            //设置头部类型
+            response.setContentType("video/mp4;charset=UTF-8");
+
+            ServletOutputStream out = null;
+            try {
+                out = response.getOutputStream();
+                out.write(bytes);
+                out.flush();
+            }catch (Exception e){
+                log.info("--文件流转换异常：--", e);
+            }finally {
+                try {
+                    out.close();
+                } catch (IOException e) {
+
+                }
+                out = null;
+            }
+        } catch (IOException e) {
+            log.info("--文件下载异常：--", e);
+        }
+
     }
 
 }
