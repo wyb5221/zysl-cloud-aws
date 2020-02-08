@@ -5,9 +5,15 @@ server:
 
 cloud:
   aws:
-    accessKey: ***
-    secretKey: ***
-    endpoint: ***
+    accessKey: idDyk1eqeu4jbbL1AW5V
+    secretKey: ISRq73JiZPVA5DFGFnFBsfBSS1in2du4vwuVgLxv
+    endpoint: https://172.21.235.124:443
+
+
+#accessKey: idDyk1eqeu4jbbL1AW5V
+#    secretKey: ISRq73JiZPVA5DFGFnFBsfBSS1in2du4vwuVgLxv
+#    endpoint: https://172.21.235.124:443
+
 
 #    minio地址
 #    accessKey: WJ8KSU22Z57W9NZ5BYZG

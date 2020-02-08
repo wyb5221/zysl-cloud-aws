@@ -1,6 +1,7 @@
 package com.zysl.aws.service.impl;
 
 import com.zysl.aws.common.result.Result;
+import com.zysl.aws.enums.InplaceEnum;
 import com.zysl.aws.model.UploadFileRequest;
 import com.zysl.aws.service.AmasonService;
 import lombok.extern.slf4j.Slf4j;
@@ -100,7 +101,7 @@ public class AmasonServiceImpl implements AmasonService {
         String inplace = request.getInplace();
 
         if(doesBucketExist(bucketName)){
-            log.info("--文件夹存在--");
+//            log.info("--文件夹存在--");
             //文件id是否为空
             if(!StringUtils.isEmpty(fileId)){
                 //20200118,贾总要求出去文件判断-->业务层处理，这里直接替换
@@ -109,12 +110,12 @@ public class AmasonServiceImpl implements AmasonService {
 //                log.info("--判断文件是否存在服务器--falg:{},inplace:{}", falg, inplace);
 //                //如果文件存在且 文件需要覆盖
 //                if(!falg || (falg && InplaceEnum.COVER.getCode().equals(inplace))){
-                //上传文件
+                    //上传文件
 //                    log.info("--文件夹存在，执行文件上传--");
-                //上传文件
-                upload(bucketName, fileId, data);
-                map.put("fileId", fileId);
-                return Result.success(map);
+                    //上传文件
+                    upload(bucketName, fileId, data);
+                    map.put("fileId", fileId);
+                    return Result.success(map);
 //                }else{
 //                    log.info("--文件已存在--");
 //                    return Result.error("文件已存在");

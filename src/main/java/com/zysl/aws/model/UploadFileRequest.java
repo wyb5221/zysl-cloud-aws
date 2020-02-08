@@ -30,7 +30,7 @@ public class UploadFileRequest implements Serializable {
                 "bucketName='" + bucketName + '\'' +
                 ", fileId='" + fileId + '\'' +
                 ", inplace='" + inplace + '\'' +
-                ", data='" + data + '\'' +
+                ", data.length='" + (data == null ? 0 : data.length()) + '\'' +
                 '}';
     }
 }
