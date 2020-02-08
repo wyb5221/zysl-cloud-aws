@@ -40,6 +40,7 @@ public class AmasonServiceImpl implements AmasonService {
 
         List<Map<String, Object>> listProps = myConfig.getListProps();
 
+        //根据文件夹名称获取服务器信息
         for (int i = 0; i < listProps.size(); i++) {
             Map<String, Object> map = listProps.get(i);
             String h_name = map.get("hostName").toString();
@@ -51,6 +52,7 @@ public class AmasonServiceImpl implements AmasonService {
                 }
             }
         }
+        //默认返回第一个连接串
         return (S3Client)awsMap.get("aws1");
     }
 

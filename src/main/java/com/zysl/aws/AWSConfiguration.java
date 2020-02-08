@@ -42,16 +42,18 @@ public class AWSConfiguration {
 				.put(SdkHttpConfigurationOption.CONNECTION_MAX_IDLE_TIMEOUT, Duration.ofSeconds(300))
 				.build();
 
-		MyConfig myConfig1 = new MyConfig();
-		List<Map<String, Object>> listProps1 = myConfig1.getListProps();
+		//获取配置信息
 		List<Map<String, Object>> listProps = myConfig.getListProps();
 		for (int i = 0; i < listProps.size(); i++) {
 			Map<String, Object> map = listProps.get(i);
+			//服务器别名
 			String h_name = map.get("hostName").toString();
+			//s3服务器连接登陆用户、密码、地址
 			String accessKey = map.get("accessKey").toString();
 			String secretKey = map.get("secretKey").toString();
 			String endpoint = map.get("endpoint").toString();
 
+			//初始化s3连接
 			AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, secretKey);
 			S3Client s3Client = S3Client.builder().
 					httpClient(defaultSdkHttpClientBuilder.buildWithDefaults(attributeMap)).
