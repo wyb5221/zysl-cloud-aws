@@ -187,7 +187,7 @@ public class AmazonController {
         } catch (IOException e) {
             log.error("--文件下载异常：--", e);
         } catch (Exception ex) {
-            log.info("--视频文件获取异常：--", ex);
+            log.error("--视频文件获取异常：--", ex);
         }
 
     }

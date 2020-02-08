@@ -12,6 +12,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.utils.AttributeMap;
 
 import java.net.URI;
+import java.time.Duration;
 
 @Configuration
 public class AWSConfiguration {
@@ -25,46 +26,24 @@ public class AWSConfiguration {
 	@Value("${cloud.aws.endpoint}")
 	private String endpoint;
 
-//	@Bean
-//	public MinioClient minioClient() throws InvalidPortException, InvalidEndpointException {
-//        MinioClient minioClient = new MinioClient(endpoint, accessKey, secretKey);
-//		return minioClient;
-//	}
-
-//	@Bean
-//	public BasicAWSCredentials basicAWSCredentials() {
-//		return new BasicAWSCredentials(accessKey, secretKey);
-//	}
-
 	@Bean
 	public S3Client amazonS3Client() throws Exception {
 
-        //先调用下忽略https证书的再请求才可以
-//        URL realUrl = new URL(endpoint);
-//        if("https".equalsIgnoreCase(realUrl.getProtocol())){
-//            SslUtils.ignoreSsl();
-//        }
-
-//		ClientConfiguration clientConfig = new ClientConfiguration();
-//		clientConfig.setProtocol(Protocol.HTTPS);
-//
-//		AttributeMap attributeMap =
-//
-//		AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
-//		AmazonS3 conn= new AmazonS3Client(credentials, clientConfig);
-//		conn.setEndpoint(endpoint);
-
 		AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, secretKey);
 		DefaultSdkHttpClientBuilder defaultSdkHttpClientBuilder = new DefaultSdkHttpClientBuilder();
-		AttributeMap attributeMap = AttributeMap.builder().put(
-				SdkHttpConfigurationOption.TRUST_ALL_CERTIFICATES, true).build();
+		AttributeMap attributeMap = AttributeMap.builder()
+				.put(SdkHttpConfigurationOption.TRUST_ALL_CERTIFICATES, true)
+				.put(SdkHttpConfigurationOption.WRITE_TIMEOUT, Duration.ofSeconds(300))
+				.put(SdkHttpConfigurationOption.READ_TIMEOUT, Duration.ofSeconds(300))
+				.put(SdkHttpConfigurationOption.CONNECTION_TIMEOUT, Duration.ofSeconds(10))
+				.put(SdkHttpConfigurationOption.CONNECTION_MAX_IDLE_TIMEOUT, Duration.ofSeconds(300))
+				.build();
 
 		S3Client s3Client = S3Client.builder().
 				httpClient(defaultSdkHttpClientBuilder.buildWithDefaults(attributeMap)).
 				credentialsProvider(StaticCredentialsProvider.create(awsCreds)).
 				endpointOverride(URI.create(endpoint)).
 				region(Region.US_EAST_1).
-//				region(Region.US_WEST_2).
 				build();
 
 		return s3Client;

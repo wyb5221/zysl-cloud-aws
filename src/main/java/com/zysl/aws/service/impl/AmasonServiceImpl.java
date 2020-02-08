@@ -1,7 +1,6 @@
 package com.zysl.aws.service.impl;
 
 import com.zysl.aws.common.result.Result;
-import com.zysl.aws.enums.InplaceEnum;
 import com.zysl.aws.model.UploadFileRequest;
 import com.zysl.aws.service.AmasonService;
 import lombok.extern.slf4j.Slf4j;
@@ -84,6 +83,7 @@ public class AmasonServiceImpl implements AmasonService {
 
     @Override
     public Result uploadFile(UploadFileRequest request) {
+        log.info("===uploadFile.param:{}=====",request);
         Map<String, Object> map = new HashMap<>();
 
         if(StringUtils.isEmpty(request.getBucketName())){
@@ -103,21 +103,22 @@ public class AmasonServiceImpl implements AmasonService {
             log.info("--文件夹存在--");
             //文件id是否为空
             if(!StringUtils.isEmpty(fileId)){
-                //判断文件是否存在服务器
-                Boolean falg = doesObjectExist(bucketName, fileId);
-                log.info("--判断文件是否存在服务器--falg:{},inplace:{}", falg, inplace);
-                //如果文件存在且 文件需要覆盖
-                if(!falg || (falg && InplaceEnum.COVER.getCode().equals(inplace))){
-                    //上传文件
-                    log.info("--文件夹存在且文件需要覆盖--");
-                    //上传文件
-                    upload(bucketName, fileId, data);
-                    map.put("fileId", fileId);
-                    return Result.success(map);
-                }else{
-                    log.info("--文件已存在--");
-                    return Result.error("文件已存在");
-                }
+                //20200118,贾总要求出去文件判断-->业务层处理，这里直接替换
+//                //判断文件是否存在服务器
+//                Boolean falg = doesObjectExist(bucketName, fileId);
+//                log.info("--判断文件是否存在服务器--falg:{},inplace:{}", falg, inplace);
+//                //如果文件存在且 文件需要覆盖
+//                if(!falg || (falg && InplaceEnum.COVER.getCode().equals(inplace))){
+                //上传文件
+//                    log.info("--文件夹存在，执行文件上传--");
+                //上传文件
+                upload(bucketName, fileId, data);
+                map.put("fileId", fileId);
+                return Result.success(map);
+//                }else{
+//                    log.info("--文件已存在--");
+//                    return Result.error("文件已存在");
+//                }
             }else{
                 fileId = UUID.randomUUID().toString().replaceAll("-","");
                 //上传文件
@@ -126,7 +127,7 @@ public class AmasonServiceImpl implements AmasonService {
                 return Result.success(map);
             }
         }else {
-            log.info("--文件夹不存在--");
+            log.info("--文件夹不存在:{}--",request.getBucketName());
             return Result.error(bucketName + "文件夹不存在,请先创建");
         }
     }
@@ -150,6 +151,7 @@ public class AmasonServiceImpl implements AmasonService {
      * @return
      */
     public boolean doesObjectExist(String bucketName, String fileId){
+        log.info("==doesObjectExist==bucketName:{},fileId:{}",bucketName,fileId);
         try {
             ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(b -> b.bucket(bucketName).key(fileId),
                     ResponseTransformer.toBytes());
@@ -157,8 +159,10 @@ public class AmasonServiceImpl implements AmasonService {
             if(null != bytes && bytes.length > 0){
                 return true;
             }
+        }catch (NoSuchKeyException e){
+            log.warn("--doesObjectExist异常--NoSuchKeyException:{}", fileId);
         }catch (Exception e){
-            log.info("--doesObjectExist异常--:{}", e);
+            log.error("--doesObjectExist异常--:{}", e);
         }
         return false;
     }
