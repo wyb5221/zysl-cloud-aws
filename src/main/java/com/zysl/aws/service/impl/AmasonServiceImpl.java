@@ -24,21 +24,12 @@ import java.util.*;
 @Slf4j
 public class AmasonServiceImpl implements AmasonService {
 
-//    @Autowired
-//    private S3Client s3;
-
-//    @Autowired
-//    private MyConfig myConfig;
-//
     @Autowired
     private S3ClientFactory s3ClientFactory;
 
 
-    public S3Client getS3Client(String bucketName) {
-        Map<String, Object> awsMap = s3ClientFactory.amazonS3Client();
-        Map<String, Object> folderMap = s3ClientFactory.getS3Floder();
-        S3Client s3 = (S3Client)awsMap.get(folderMap.get(bucketName).toString());
-        return s3;
+    public S3Client getS3Client(String bucketName){
+        return s3ClientFactory.getS3Client(bucketName);
     }
 
     @Override
@@ -158,8 +149,9 @@ public class AmasonServiceImpl implements AmasonService {
         List<Bucket> bucketList = response.buckets();
         log.info("---bucketList:{}", bucketList);
         for (Bucket bucket: bucketList ) {
-            if(bucketName.equals(bucket.name()))
-               return true;
+            if(bucketName.equals(bucket.name())){
+                return true;
+            }
         }
         return false;
     }
