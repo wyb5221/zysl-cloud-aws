@@ -31,7 +31,6 @@ public class AmazonController {
     @Autowired
     private AmasonService amasonService;
 
-
     /**
      * 获取所有文件夹（bucket）的信息
      * @return
