@@ -31,7 +31,6 @@ public class AmazonController {
     @Autowired
     private AmasonService amasonService;
 
-
     /**
      * 获取所有文件夹（bucket）的信息
      * @return
@@ -158,6 +157,24 @@ public class AmazonController {
         return Result.success();
     }
 
+    /**
+     * 获取文件大小
+     * @param bucketName
+     * @param fileName
+     */
+    @GetMapping("/getFileSize")
+    public Long getFileSize(String bucketName, String fileName){
+        log.info("--开始getFileSize调用获取文件大小--bucketName:{},fileName:{}", bucketName, fileName);
+        return amasonService.getFileSize(bucketName, fileName);
+
+    }
+
+    /**
+     * 获取视频文件信息
+     * @param response
+     * @param bucketName
+     * @param fileId
+     */
     @GetMapping("/getVideo")
     public void getVideo(HttpServletResponse response, String bucketName, String fileId){
         String str = amasonService.downloadFile(response, bucketName, fileId);

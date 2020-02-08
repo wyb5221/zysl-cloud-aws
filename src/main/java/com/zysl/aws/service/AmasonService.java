@@ -53,5 +53,7 @@ public interface AmasonService {
      */
     Optional<Bucket> getBucket(String bucket_name);
 
+    Long getFileSize(String bucketName, String key);
+
 
 }
