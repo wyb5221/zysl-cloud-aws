@@ -1,5 +1,22 @@
+myprops:
+  listProps:
+    - hostName: aws1
+      folderName: t-01,t-02,t-03
+      accessKey: AKIASLXIN4C6BQKZMPH6
+      secretKey: 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
+      endpoint: http://s3.amazonaws.com
+    - hostName: aws2
+      folderName: tt-01,tt-02,tt-03
+      accessKey: idDyk1eqeu4jbbL1AW5V
+      secretKey: ISRq73JiZPVA5DFGFnFBsfBSS1in2du4vwuVgLxv
+      endpoint: https://172.21.235.124:443
+    - hostName: aws3
+      folderName: ttt-01,ttt-02,ttt-03
+      accessKey: idDyk1eqeu4jbbL1AW5V
+      secretKey: ISRq73JiZPVA5DFGFnFBsfBSS1in2du4vwuVgLxv
+      endpoint: https://172.21.235.124:443
 server:
-  port: 8081
+  port: 38081
   servlet:
     context-path:
 
@@ -10,16 +27,4 @@ cloud:
     endpoint: https://172.21.235.124:443
 
 
-#accessKey: idDyk1eqeu4jbbL1AW5V
-#    secretKey: ISRq73JiZPVA5DFGFnFBsfBSS1in2du4vwuVgLxv
-#    endpoint: https://172.21.235.124:443
 
-
-#    minio地址
-#    accessKey: WJ8KSU22Z57W9NZ5BYZG
-#    secretKey: +kSjNYuuNxLwB+JCF2oW+OSJJEnGrNivpsKZfjtb
-#    endpoint: http://127.0.0.1:9000/
-
-#    accessKey: *****
-#    secretKey: *****
-#    endpoint: http://s3.amazonaws.com
