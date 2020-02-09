@@ -1,6 +1,7 @@
 package com.zysl.aws.service.impl;
 
 import com.zysl.aws.common.result.Result;
+import com.zysl.aws.enums.InplaceEnum;
 import com.zysl.aws.model.UploadFileRequest;
 import com.zysl.aws.service.AmasonService;
 import com.zysl.aws.utils.S3ClientFactory;
@@ -23,21 +24,12 @@ import java.util.*;
 @Slf4j
 public class AmasonServiceImpl implements AmasonService {
 
-//    @Autowired
-//    private S3Client s3;
-
-//    @Autowired
-//    private MyConfig myConfig;
-//
     @Autowired
     private S3ClientFactory s3ClientFactory;
 
 
-    public S3Client getS3Client(String bucketName) {
-        Map<String, Object> awsMap = s3ClientFactory.amazonS3Client();
-        Map<String, Object> folderMap = s3ClientFactory.getS3Floder();
-        S3Client s3 = (S3Client)awsMap.get(folderMap.get(bucketName).toString());
-        return s3;
+    public S3Client getS3Client(String bucketName){
+        return s3ClientFactory.getS3Client(bucketName);
     }
 
     @Override
@@ -118,7 +110,7 @@ public class AmasonServiceImpl implements AmasonService {
         String inplace = request.getInplace();
 
         if(doesBucketExist(bucketName)){
-            log.info("--文件夹存在--");
+//            log.info("--文件夹存在--");
             //文件id是否为空
             if(!StringUtils.isEmpty(fileId)){
                 //20200118,贾总要求出去文件判断-->业务层处理，这里直接替换
@@ -127,12 +119,12 @@ public class AmasonServiceImpl implements AmasonService {
 //                log.info("--判断文件是否存在服务器--falg:{},inplace:{}", falg, inplace);
 //                //如果文件存在且 文件需要覆盖
 //                if(!falg || (falg && InplaceEnum.COVER.getCode().equals(inplace))){
-                //上传文件
+                    //上传文件
 //                    log.info("--文件夹存在，执行文件上传--");
-                //上传文件
-                upload(bucketName, fileId, data);
-                map.put("fileId", fileId);
-                return Result.success(map);
+                    //上传文件
+                    upload(bucketName, fileId, data);
+                    map.put("fileId", fileId);
+                    return Result.success(map);
 //                }else{
 //                    log.info("--文件已存在--");
 //                    return Result.error("文件已存在");
@@ -157,8 +149,9 @@ public class AmasonServiceImpl implements AmasonService {
         List<Bucket> bucketList = response.buckets();
         log.info("---bucketList:{}", bucketList);
         for (Bucket bucket: bucketList ) {
-            if(bucketName.equals(bucket.name()))
-               return true;
+            if(bucketName.equals(bucket.name())){
+                return true;
+            }
         }
         return false;
     }
