@@ -85,7 +85,7 @@ public class S3ClientFactory {
             throw new HostNotFoundException("找不到对应的s3_server:" + folderName);
         }
 
-        return  awsMap.get(folderName);
+        return  awsMap.get(hostName);
 
     }
 

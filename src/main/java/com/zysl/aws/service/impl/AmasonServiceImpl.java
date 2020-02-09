@@ -35,7 +35,7 @@ public class AmasonServiceImpl implements AmasonService {
     @Override
     public List<Bucket> getBuckets() {
         log.info("--getBuckets获取存储桶信息--");
-        S3Client s3 = getS3Client("t-01");
+        S3Client s3 = getS3Client("temp--01");
         ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
         ListBucketsResponse response = s3.listBuckets(listBucketsRequest);
         List<Bucket> bucketList = response.buckets();
