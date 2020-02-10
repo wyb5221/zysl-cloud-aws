@@ -2,9 +2,9 @@ myprops:
   listProps:
     - hostName: aws1
       folderName: t-01,t-02,t-03
-      accessKey: AKIASLXIN4C6BQKZMPH6
-      secretKey: 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
-      endpoint: http://s3.amazonaws.com
+      accessKey: ####
+      secretKey: ###
+      endpoint: ###
     - hostName: aws2
       folderName: tt-01,tt-02,tt-03
       accessKey: idDyk1eqeu4jbbL1AW5V
