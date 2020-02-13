@@ -23,6 +23,10 @@ public class UploadFileRequest implements Serializable {
     private String inplace;
     //文件流
     private String data;
+    //最大可下载次数
+    private Integer maxAmount;
+    //有效期，单位小时
+    private Integer validity;
 
     @Override
     public String toString() {
@@ -30,7 +34,9 @@ public class UploadFileRequest implements Serializable {
                 "bucketName='" + bucketName + '\'' +
                 ", fileId='" + fileId + '\'' +
                 ", inplace='" + inplace + '\'' +
-                ", data.length='" + (data == null ? 0 : data.length()) + '\'' +
+                ", data='" + data + '\'' +
+                ", maxAmount=" + maxAmount +
+                ", validity=" + validity +
                 '}';
     }
 }

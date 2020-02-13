@@ -56,13 +56,13 @@ public class AmazonController {
      * @return
      */
     @GetMapping("/createBucket")
-    public Result createBucket(String bucketName){
-        log.info("--开始调用createBucket创建文件夹接口--bucketName:{}", bucketName);
+    public Result createBucket(String bucketName, String serviceNo){
+        log.info("--开始调用createBucket创建文件夹接口--bucketName:{},serviceName:{}",
+                bucketName, serviceNo);
         String pattern = "^[a-zA-Z0-9.\\-_]{3,60}$";
         //判断存储桶是否满足命名规则
         if(Pattern.compile(pattern).matcher(bucketName).matches()){
-            Bucket bucket = amasonService.createBucket(bucketName);
-            return Result.success(bucket);
+            return amasonService.createBucket(bucketName, serviceNo);
         }else{
             return Result.error(CodeMsg.BIND_ERROR);
         }

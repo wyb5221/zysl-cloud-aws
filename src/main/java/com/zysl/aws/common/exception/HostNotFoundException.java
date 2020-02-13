@@ -1,4 +1,4 @@
-package com.zysl.aws.exception;
+package com.zysl.aws.common.exception;
 
 public class HostNotFoundException extends RuntimeException {
 
