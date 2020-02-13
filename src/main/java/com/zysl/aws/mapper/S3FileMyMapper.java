@@ -1,5 +1,6 @@
 package com.zysl.aws.mapper;
 
+import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.model.db.S3Folder;
 
 public interface S3FileMyMapper {
@@ -24,5 +25,12 @@ public interface S3FileMyMapper {
      * @return
      */
     int queryFileByMd5(String content);
+
+    /**
+     * 根据md5值查询文件信息
+     * @param content
+     * @return
+     */
+    S3File queryFileInfoByMd5(String content);
 
 }

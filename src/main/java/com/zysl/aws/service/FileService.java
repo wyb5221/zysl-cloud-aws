@@ -1,6 +1,7 @@
 package com.zysl.aws.service;
 
 import com.zysl.aws.model.UploadFileRequest;
+import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.model.db.S3Folder;
 import com.zysl.aws.model.db.S3Service;
 
@@ -13,6 +14,12 @@ public interface FileService {
      * @return
      */
     List<S3Service> queryS3Service();
+
+    /**
+     * 查询所有文件夹
+     * @return
+     */
+    List<S3Folder> queryS3FolderInfo();
 
     /**
      * 查询文件夹信息
@@ -41,6 +48,13 @@ public interface FileService {
      * @return
      */
     boolean queryFileByMd5(String content);
+
+    /**
+     * 根据md5值查询文件信息
+     * @param content
+     * @return
+     */
+    S3File queryFileInfoByMd5(String content);
 
     /**
      * 新增文件信息

@@ -3,6 +3,8 @@ package com.zysl.aws.service.impl;
 import com.zysl.aws.common.result.Result;
 import com.zysl.aws.model.FileInfo;
 import com.zysl.aws.model.UploadFileRequest;
+import com.zysl.aws.model.db.S3File;
+import com.zysl.aws.model.db.S3Folder;
 import com.zysl.aws.service.AmasonService;
 import com.zysl.aws.service.FileService;
 import com.zysl.aws.utils.Md5Util;
@@ -34,7 +36,7 @@ public class AmasonServiceImpl implements AmasonService {
 
 
     public S3Client getS3Client(String bucketName){
-//        bucketName = "test-yy01";
+        bucketName = "test-yy01";
         return s3ClientFactory.getS3Client(s3ClientFactory.getServerNo(bucketName));
     }
 
@@ -54,9 +56,9 @@ public class AmasonServiceImpl implements AmasonService {
     public Result createBucket(String bucketName, String serviceNo) {
         log.info("---创建文件夹createBucket:---bucketName:{},serviceName:{}",bucketName, serviceNo);
         S3Client s3 = s3ClientFactory.getS3Client(serviceNo);
-        Bucket bucket = doesBucketExist(bucketName, s3);
-        log.info("--存储桶是否存在--bucket：{}", bucket);
-        if(null != bucket){
+        S3Folder s3Folder = doesBucketExist(bucketName);
+        log.info("--存储桶是否存在--s3Folder：{}", s3Folder);
+        if(null != s3Folder){
             log.info("--文件夹已经存在--");
             return Result.success("文件夹已经存在");
         }else{
@@ -72,7 +74,7 @@ public class AmasonServiceImpl implements AmasonService {
     @Override
     public Result deleteBucket(String bucketName) {
         S3Client s3 = getS3Client(bucketName);
-        if(null == doesBucketExist(bucketName, s3)){
+        if(null == doesBucketExist(bucketName)){
             log.info("--文件夹不存在--");
             return Result.error("NoSuchBucket");
         }else{
@@ -143,7 +145,7 @@ public class AmasonServiceImpl implements AmasonService {
 
         S3Client s3 = getS3Client(bucketName);
         boolean upFlag = false;
-        if(null != doesBucketExist(bucketName, s3)){
+        if(null != doesBucketExist(bucketName)){
             log.info("--文件夹存在--");
             if(StringUtils.isEmpty(fileId)){
                 fileId = UUID.randomUUID().toString().replaceAll("-","");
@@ -153,9 +155,12 @@ public class AmasonServiceImpl implements AmasonService {
              */
             //文件内容md5
             String md5Content = Md5Util.getMd5Content(request.getData());
-            if(fileService.queryFileByMd5(md5Content)){
+            S3File s3File = fileService.queryFileInfoByMd5(md5Content);
+            //文件信息存在
+            if(null != s3File){
                 //文件存在则直接返回
-                map.put("fileId", fileId);
+                map.put("bucketName", s3File.getFolderName());
+                map.put("fileId", s3File.getFileName());
                 return Result.success(map);
             }else{
                 //文件不存在，则上传
@@ -165,7 +170,7 @@ public class AmasonServiceImpl implements AmasonService {
                 if(upFlag){
                     //向数据库保存文件信息
                     fileService.addFileInfo(request);
-
+                    map.put("bucketName", request.getBucketName());
                     map.put("fileId", fileId);
                     return Result.success(map);
                 }else {
@@ -200,14 +205,16 @@ public class AmasonServiceImpl implements AmasonService {
         }
     }
 
-    public Bucket doesBucketExist(String bucketName, S3Client s3 ){
-        ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
-        ListBucketsResponse response = s3.listBuckets(listBucketsRequest);
-        List<Bucket> bucketList = response.buckets();
-        log.info("---bucketList:{}", bucketList);
-        for (Bucket bucket: bucketList ) {
-            if(bucketName.equals(bucket.name())){
-                return bucket;
+    /**
+     * 判断文件夹是否存在
+     * @param bucketName
+     * @return
+     */
+    public S3Folder doesBucketExist(String bucketName ){
+        List<S3Folder> folderList = fileService.queryS3FolderInfo();
+        for (S3Folder obj : folderList) {
+            if(bucketName.equals(obj.getFolderName())){
+                return obj;
             }
         }
         return null;
@@ -264,7 +271,7 @@ public class AmasonServiceImpl implements AmasonService {
     public String downloadFile(HttpServletResponse response, String bucketName, String key) {
         S3Client s3 = getS3Client(bucketName);
 
-        if(null != doesBucketExist(bucketName, s3)){
+        if(null != doesBucketExist(bucketName)){
             log.info("--文件夹存在--");
             ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(b -> b.bucket(bucketName).key(key),
                     ResponseTransformer.toBytes());

@@ -14,11 +14,10 @@ import com.zysl.aws.utils.Md5Util;
 import com.zysl.aws.utils.S3ClientFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import sun.misc.BASE64Encoder;
 
-import java.security.MessageDigest;
 import java.util.Date;
 import java.util.List;
 
@@ -47,6 +46,11 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    public List<S3Folder> queryS3FolderInfo() {
+        return s3FolderMapper.selectAll();
+    }
+
+    @Override
     public S3Folder queryS3Folder(String folderName) {
         return s3FileMyMapper.queryByName(folderName);
     }
@@ -60,7 +64,13 @@ public class FileServiceImpl implements FileService {
         record.setCreateTime(new Date());//创建时间
         record.setServiceNo(serviceNo);//服务器编号
 
-        return s3FolderMapper.insert(record);
+        int insetNum = 0;
+        try {
+            insetNum = s3FolderMapper.insert(record);
+        } catch (DuplicateKeyException e) {
+            log.error("--文件夹名称唯一索引异常：--{}", e);
+        }
+        return insetNum;
     }
 
     @Override
@@ -78,6 +88,14 @@ public class FileServiceImpl implements FileService {
         int count = s3FileMyMapper.queryFileByMd5(content);
         log.info("--queryFileByMd5--根据Md5查询文件数返回count:{}", count);
         return count > 0;
+    }
+
+    @Override
+    public S3File queryFileInfoByMd5(String content) {
+        log.info("--queryFileByMd5--content:{}", content);
+        S3File s3File = s3FileMyMapper.queryFileInfoByMd5(content);
+        log.info("--queryFileByMd5--根据Md5查询文件信息返回s3File:{}", s3File);
+        return null;
     }
 
     @Override
