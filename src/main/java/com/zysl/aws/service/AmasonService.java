@@ -18,7 +18,7 @@ public interface AmasonService {
     /**
      * 创建文件夹
      */
-    Bucket createBucket(String bucketName);
+    Result createBucket(String bucketName, String serviceNo);
 
     /**
      * 删除文件夹
@@ -53,6 +53,12 @@ public interface AmasonService {
      */
     Optional<Bucket> getBucket(String bucket_name);
 
+    /**
+     * 查询文件大小
+     * @param bucketName
+     * @param key
+     * @return
+     */
     Long getFileSize(String bucketName, String key);
 
 

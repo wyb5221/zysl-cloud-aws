@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zysl.aws.mapper.S3FileMyMapper">
+  <resultMap id="FolderBaseResultMap" type="com.zysl.aws.model.db.S3Folder">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="service_no" jdbcType="VARCHAR" property="serviceNo" />
+    <result column="folder_name" jdbcType="VARCHAR" property="folderName" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+
+  <resultMap id="FileBaseResultMap" type="com.zysl.aws.model.db.S3File">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="service_no" jdbcType="VARCHAR" property="serviceNo" />
+    <result column="file_name" jdbcType="VARCHAR" property="fileName" />
+    <result column="content_md5" jdbcType="VARCHAR" property="contentMd5" />
+    <result column="folder_name" jdbcType="VARCHAR" property="folderName" />
+    <result column="down_url" jdbcType="VARCHAR" property="downUrl" />
+    <result column="file_size" jdbcType="BIGINT" property="fileSize" />
+    <result column="max_amount" jdbcType="INTEGER" property="maxAmount" />
+    <result column="down_amount" jdbcType="INTEGER" property="downAmount" />
+    <result column="validity_time" jdbcType="TIMESTAMP" property="validityTime" />
+    <result column="upload_time" jdbcType="TIMESTAMP" property="uploadTime" />
+    <result column="source_file_id" jdbcType="BIGINT" property="sourceFileId" />
+  </resultMap>
+
+
+  <select id="queryByName" parameterType="java.lang.String" resultMap="FolderBaseResultMap">
+    select id, service_no, folder_name, create_time
+    from s3_folder where folder_name = #{folderName}
+  </select>
+
+  <delete id="deleteFolderByName" parameterType="java.lang.String">
+    delete from s3_folder
+    where folder_name = #{folderName}
+  </delete>
+
+  <select id="queryFileByMd5" parameterType="java.lang.String" resultType="java.lang.Integer">
+    select count(*)
+    from s3_file where content_md5 = #{content}
+  </select>
+
+</mapper>

@@ -1,6 +1,9 @@
 package com.zysl.aws.utils;
 
-import com.zysl.aws.exception.HostNotFoundException;
+import com.zysl.aws.common.exception.HostNotFoundException;
+import com.zysl.aws.model.db.S3Folder;
+import com.zysl.aws.model.db.S3Service;
+import com.zysl.aws.service.FileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,10 +30,11 @@ public class S3ClientFactory {
     @Autowired
     private MyConfig myConfig;
 
+    @Autowired
+    private FileService fileService;
+
     //s3服务器连接信息
     private static Map<String, S3Client> awsMap = new HashMap<>();
-    //s3服务器文件夹信息
-    private static Map<String, String> folderMap = new HashMap<>();
 
     /**
      * 初始化s3连接
@@ -49,22 +53,14 @@ public class S3ClientFactory {
                 .put(SdkHttpConfigurationOption.CONNECTION_MAX_IDLE_TIMEOUT, Duration.ofSeconds(300))
                 .build();
 
-        //获取配置信息
-        List<Map<String, Object>> listProps = myConfig.getListProps();
-        for (int i = 0; i < listProps.size(); i++) {
-            Map<String, Object> map = listProps.get(i);
-            //服务器别名
-            String h_name = map.get("hostName").toString();
-            //s3服务器连接登陆用户、密码、地址
-            String accessKey = map.get("accessKey").toString();
-            String secretKey = map.get("secretKey").toString();
-            String endpoint = map.get("endpoint").toString();
-            //s3服务器文件夹名称
-            String[] p_value = map.get("folderName").toString().split(",");
-
-            for (int j = 0; j < p_value.length; j++) {
-                folderMap.put(p_value[j], h_name);
-            }
+        List<S3Service> serviceList = fileService.queryS3Service();
+        for (int i = 0; i < serviceList.size(); i++) {
+            S3Service s3Service = serviceList.get(i);
+            //s3服务器连接登陆用户、密码
+            String accessKey = s3Service.getAccesskey();
+            String secretKey = s3Service.getSecretkey();
+            //s3服务器连接登陆地址
+            String endpoint = s3Service.getEndpoint();
 
             //初始化s3连接
             AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, secretKey);
@@ -74,19 +70,34 @@ public class S3ClientFactory {
                     endpointOverride(URI.create(endpoint)).
                     region(Region.US_EAST_1).
                     build();
-            awsMap.put(h_name, s3Client);
+            awsMap.put(s3Service.getServiceNo(), s3Client);
         }
     }
 
-    public S3Client getS3Client(String folderName) {
-        String hostName = folderMap.get(folderName);
-        if(StringUtils.isEmpty(hostName) || !awsMap.containsKey(hostName)){
+    /**
+     * 根据文件夹名称获取服务器编号
+     * @param folderName
+     * @return
+     */
+    public String getServerNo(String folderName) {
+        log.info("---getServerNo---folderName：{}", folderName);
+
+        S3Folder s3Folder = fileService.queryS3Folder(folderName);
+        if(null == s3Folder){
             log.warn("===getS3Client===找不到对应的s3_server:{}",folderName);
             throw new HostNotFoundException("找不到对应的s3_server:" + folderName);
         }
+        return s3Folder.getServiceNo();
+    }
 
-        return  awsMap.get(folderName);
-
+    /**
+     * 根据服务器编号获取服务器初始化对象
+     * @param serverNo
+     * @return
+     */
+    public S3Client getS3Client(String serverNo) {
+        log.info("---getS3Client入参---serverNo：{}", serverNo);
+        return  awsMap.get(serverNo);
     }
 
 }
