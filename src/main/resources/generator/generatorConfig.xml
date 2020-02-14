@@ -6,6 +6,8 @@
 <generatorConfiguration>
     <properties resource="application.properties"/>
 
+    <!--targetRuntime=“MyBatis3“可以生成带条件的增删改查，
+        targetRuntime=“MyBatis3Simple“可以生成基本的增删改查-->
     <context id="Mysql" targetRuntime="MyBatis3" defaultModelType="flat">
         <!--处理sql中的`符号-->
         <property name="beginningDelimiter" value="`"/>

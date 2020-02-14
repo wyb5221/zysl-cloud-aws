@@ -60,7 +60,7 @@ public interface AmasonService {
      * @param key
      * @return
      */
-    Long getFileSize(String bucketName, String key);
+    Result getFileSize(String bucketName, String key);
 
     /**
      * 分享文件

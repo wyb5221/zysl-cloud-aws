@@ -33,12 +33,17 @@ public class AmazonController {
     private AmasonService amasonService;
 
 
-  @PostMapping("/shareFile")
-  public Result shareFile(@RequestBody ShareFileRequest request){
+    /**
+     * 文件分享
+     * @param request
+     * @return
+     */
+    @PostMapping("/shareFile")
+    public Result shareFile(@RequestBody ShareFileRequest request){
     log.info("--开始调用shareFile分享文件的信息接口:{}--",request);
 
     return Result.success(amasonService.shareFile(request));
-  }
+    }
 
 
     /**
@@ -86,8 +91,7 @@ public class AmazonController {
     @GetMapping("/deleteBucket")
     public Result deleteBucket(String bucketName){
         log.info("--开始调用deleteBucket删除文件夹接口--bucketName:{}", bucketName);
-        amasonService.deleteBucket(bucketName);
-        return Result.success();
+        return amasonService.deleteBucket(bucketName);
     }
 
     /**
@@ -122,8 +126,8 @@ public class AmazonController {
         log.info("--开始调用downloadFile下载文件接口--bucketName:{},fileId:{}，type：{}", bucketName, fileId, type);
         Long startTime = System.currentTimeMillis();
         String str = amasonService.downloadFile(response, bucketName, fileId);
-        log.info("--下载接口返回的文件数据大小--", str.length());
         if(!StringUtils.isEmpty(str)){
+            log.info("--下载接口返回的文件数据大小--", str.length());
             if(DownTypeEnum.COVER.getCode().equals(type)){
                 Long usedTime = System.currentTimeMillis() - startTime;
                 Map<String, Object> result = new HashMap<>();
@@ -173,7 +177,7 @@ public class AmazonController {
      * @param fileName
      */
     @GetMapping("/getFileSize")
-    public Long getFileSize(String bucketName, String fileName){
+    public Result getFileSize(String bucketName, String fileName){
         log.info("--开始getFileSize调用获取文件大小--bucketName:{},fileName:{}", bucketName, fileName);
         return amasonService.getFileSize(bucketName, fileName);
 

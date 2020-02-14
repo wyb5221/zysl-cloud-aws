@@ -7,6 +7,7 @@ import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.model.db.S3Folder;
 import com.zysl.aws.model.db.S3Service;
 
+import javax.imageio.stream.IIOByteBuffer;
 import java.util.List;
 
 public interface FileService {
@@ -63,7 +64,7 @@ public interface FileService {
      * @param request
      * @return
      */
-    Long addFileInfo(UploadFileRequest request);
+    Integer addFileInfo(UploadFileRequest request);
 
     
     
@@ -97,4 +98,12 @@ public interface FileService {
      * @return java.lang.Long
      **/
     Long addFileInfo(S3File s3File);
+
+    /**
+     * 修改文件的最大可下载次数
+     * @param maxAmount
+     * @param fileKey
+     * @return
+     */
+    int updateFileAmount(Integer maxAmount, Long fileKey);
 }

@@ -8,6 +8,7 @@ import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.model.db.S3Folder;
 import com.zysl.aws.service.AmasonService;
 import com.zysl.aws.service.FileService;
+import com.zysl.aws.utils.DateUtil;
 import com.zysl.aws.utils.Md5Util;
 import com.zysl.aws.utils.S3ClientFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -169,8 +170,37 @@ public class AmasonServiceImpl implements AmasonService {
                 upFlag = upload(bucketName, fileId, data);
 
                 if(upFlag){
+                    //上传时间
+                    Date uploadTime = new Date();
+                    //根据文件夹名称获取服务器编号
+                    String serverNo = s3ClientFactory.getServerNo(request.getBucketName());
+                    //文件大小
+                    long fileSize = request.getData().length();
+
+                    S3File addS3File = new S3File();
+                    //服务器编号
+                    addS3File.setServiceNo(serverNo);
+                    //文件名称
+                    addS3File.setFileName(request.getFileId());
+                    //文件夹名称
+                    addS3File.setFolderName(request.getBucketName());
+                    //文件大小
+                    addS3File.setFileSize(fileSize);
+                    //最大可下载次数
+                    addS3File.setMaxAmount(request.getMaxAmount());
+                    //上传时间
+                    addS3File.setUploadTime(uploadTime);
+                    //创建时间
+                    addS3File.setCreateTime(uploadTime);
+                    //获取下载有效截至时间
+                    if(!StringUtils.isEmpty(request.getValidity())){
+                        Date validityTime = DateUtil.addDateHour(uploadTime, request.getValidity());
+                        addS3File.setValidityTime(validityTime);
+                    }
+                    //文件内容md5
+                    addS3File.setContentMd5(md5Content);
                     //向数据库保存文件信息
-                    fileService.addFileInfo(request);
+                    fileService.addFileInfo(addS3File);
                     map.put("bucketName", request.getBucketName());
                     map.put("fileId", fileId);
                     return Result.success(map);
@@ -270,24 +300,49 @@ public class AmasonServiceImpl implements AmasonService {
 
     @Override
     public String downloadFile(HttpServletResponse response, String bucketName, String key) {
-      S3File s3File = fileService.getFileInfo(bucketName,key);
-      // 判断是否源文件
-      if (s3File != null && s3File.getSourceFileId() != null && s3File.getSourceFileId() > 0) {
+        S3File s3File = fileService.getFileInfo(bucketName,key);
+        if(null == s3File){
+            log.info("--文件不存在--");
+            return null;
+        }
+        Long fileKey = s3File.getId();
+        //最大可下载次数
+        Integer maxAmount = s3File.getMaxAmount();
+        //下载有效截至时间
+        Date validityTime = s3File.getValidityTime();
+        //判断文件是否还在有效期,当前时间小于截至时间则还可以下载
+        if(!StringUtils.isEmpty(validityTime) && !DateUtil.doCompareDate(new Date(), validityTime)) {
+            log.info("--文件已超过有效期,有效期截至时间validityTime:--{}", validityTime);
+            return null;
+        }
+        if(!StringUtils.isEmpty(maxAmount) && maxAmount <= 0){
+            log.info("--文件已无可下载次数--可用次数maxAmount:{}", maxAmount);
+            return null;
+        }
+
+        String sourceBName = bucketName;
+        String sourceFName = key;
+        // 判断是否源文件
+        if (s3File != null && s3File.getSourceFileId() != null && s3File.getSourceFileId() > 0) {
           s3File = fileService.getFileInfo(s3File.getSourceFileId());
-          bucketName = s3File.getFolderName();
-          key = s3File.getFileName();
-      }
+          sourceBName = s3File.getFolderName();
+          sourceFName = s3File.getFileName();
+        }
 
-      String sourceBName = bucketName;
-      String sourceFName = key;
-
-        S3Client s3 = getS3Client(bucketName);
-
+        String folderName = sourceBName;
+        String fileName = sourceFName;
         if(null != doesBucketExist(bucketName)){
             log.info("--文件夹存在--");
-            ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(b -> b.bucket(sourceBName).key(sourceFName),
+            S3Client s3 = getS3Client(bucketName);
+            ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(b ->
+                            b.bucket(folderName).key(fileName),
                     ResponseTransformer.toBytes());
             String str = objectAsBytes.asUtf8String();
+
+            //下载成功后修改最大下载次数
+//            maxAmount = maxAmount-1;
+            fileService.updateFileAmount(--maxAmount, fileKey);
+
             return str;
         }else {
             log.info("--文件夹不存在--");
@@ -317,37 +372,69 @@ public class AmasonServiceImpl implements AmasonService {
     }
 
     @Override
-    public Long getFileSize(String bucketName, String key) {
-        S3Client s3 = getS3Client(bucketName);
-        HeadObjectResponse headObjectResponse = s3.headObject(b -> b.bucket(bucketName).key(key));
+    public Result getFileSize(String bucketName, String key) {
+        //查询是否存在db，不存在则先记录
+        S3File s3File = fileService.getFileInfo(bucketName, key);
+        if(s3File == null){
+            return Result.error("文件不文件");
+        }
+        //判断是否源文件
+        if(s3File.getSourceFileId() != null && s3File.getSourceFileId() > 0){
+            //根据id查询文件信息
+            s3File = fileService.getFileInfo(s3File.getSourceFileId());
+            if(s3File == null){//找不到源文件
+                log.warn("--getFileSize--找不到源文件key:{}",key);
+                return Result.error("找不到源文件");
+            }
+        }
+
+        String folderName = s3File.getFolderName();
+        String FileName = s3File.getFileName();
+        S3Client s3 = getS3Client(s3File.getFolderName());
+        HeadObjectResponse headObjectResponse = s3.headObject(b ->
+                b.bucket(folderName).key(FileName));
         Long fileSize = headObjectResponse.contentLength();
 
-        return fileSize;
+        return Result.success(fileSize);
     }
-
 
     @Override
     public Result shareFile(ShareFileRequest request){
         //查询是否存在db，不存在则先记录
         S3File s3File = fileService.getFileInfo(request.getBucketName(),request.getFileName());
         if(s3File == null){
+            //查询服务器是否存在该文件
+            if(!doesObjectExist(request.getBucketName(),request.getFileName())){
+                return Result.error("文件不文件");
+            }
             //新增记录
           Long fileKey = addNewFile(request.getBucketName(),request.getFileName());
           s3File = fileService.getFileInfo(fileKey);
-        }
-        //判断是否源文件
-        if(s3File.getSourceFileId() != null && s3File.getSourceFileId() > 0){
-            s3File = fileService.getFileInfo(s3File.getSourceFileId());
-            if(s3File == null){//找不到源文件
-              log.warn("--shareFile--找不到源文件:{}",request);
-              return Result.error("找不到源文件");
+        }else {
+            //判断是否源文件
+            if(s3File.getSourceFileId() != null && s3File.getSourceFileId() > 0){
+                //根据id查询文件信息
+                s3File = fileService.getFileInfo(s3File.getSourceFileId());
+                if(s3File == null){//找不到源文件
+                    log.warn("--shareFile--找不到源文件:{}",request);
+                    return Result.error("找不到源文件");
+                }
             }
         }
         //设置分享-插入记录
         s3File.setSourceFileId(s3File.getId());
         s3File.setId(null);
         s3File.setFileName(getFileNameAddTimeStamp(request.getFileName()));
-        fileService.addFileInfo(s3File);
+        s3File.setMaxAmount(request.getMaxDownloadAmout());
+        Date createDate = new Date();
+        s3File.setCreateTime(createDate);
+        //获取下载有效截至时间
+        if(!StringUtils.isEmpty(request.getMaxHours())){
+            Date validityTime = DateUtil.addDateHour(createDate, request.getMaxHours());
+            s3File.setValidityTime(validityTime);
+        }
+        Long fileKey = fileService.addFileInfo(s3File);
+        log.info("--分享插入记录返回--fileKey：{}", fileKey);
 
         return Result.success();
     }
@@ -361,22 +448,27 @@ public class AmasonServiceImpl implements AmasonService {
      * @return java.lang.String
      **/
     private String getFileNameAddTimeStamp(String fileName){
-      if(fileName == null || fileName.indexOf(".") == -1){
-        return System.currentTimeMillis() + "";
-      }
-      return  fileName.substring(0,fileName.lastIndexOf("."))
-              + "_" + System.currentTimeMillis()
-              + fileName.substring(fileName.lastIndexOf("."));
+        if(fileName == null){
+            return System.currentTimeMillis() + "";
+        }else if(fileName.indexOf(".") == -1){
+            return fileName + "_" + System.currentTimeMillis();
+        }else{
+            return fileName.substring(0,fileName.lastIndexOf("."))
+                    + "_" + System.currentTimeMillis()
+                    + fileName.substring(fileName.lastIndexOf("."));
+        }
     }
 
     private Long addNewFile(String bucketName,String fileName){
-      //获取文件大小
-      Long fileSize = getFileSize(bucketName,fileName);
-      S3File s3FileDB = new S3File();
-      s3FileDB.setServiceNo(s3ClientFactory.getServerNo(bucketName));
-      s3FileDB.setFolderName(bucketName);
-      s3FileDB.setFileName(fileName);
-      s3FileDB.setFileSize(fileSize);
+        //获取文件大小
+        Result result = getFileSize(bucketName,fileName);
+        Long fileSize = (Long) result.getData();
+        S3File s3FileDB = new S3File();
+        s3FileDB.setServiceNo(s3ClientFactory.getServerNo(bucketName));
+        s3FileDB.setFolderName(bucketName);
+        s3FileDB.setFileName(fileName);
+        s3FileDB.setFileSize(fileSize);
+        s3FileDB.setCreateTime(new Date());
 
       //文件内容md5码
       S3Client s3Client = s3ClientFactory.getS3Client(s3FileDB.getServiceNo());
