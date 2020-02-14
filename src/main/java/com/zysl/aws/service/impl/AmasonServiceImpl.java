@@ -38,7 +38,7 @@ public class AmasonServiceImpl implements AmasonService {
 
 
     public S3Client getS3Client(String bucketName){
-        bucketName = "test-yy01";
+//        bucketName = "test-yy01";
         return s3ClientFactory.getS3Client(s3ClientFactory.getServerNo(bucketName));
     }
 
@@ -320,27 +320,24 @@ public class AmasonServiceImpl implements AmasonService {
             return null;
         }
 
-        String sourceBName = bucketName;
-        String sourceFName = key;
         // 判断是否源文件
         if (s3File != null && s3File.getSourceFileId() != null && s3File.getSourceFileId() > 0) {
           s3File = fileService.getFileInfo(s3File.getSourceFileId());
-          sourceBName = s3File.getFolderName();
-          sourceFName = s3File.getFileName();
+            bucketName = s3File.getFolderName();
+            key = s3File.getFileName();
         }
 
-        String folderName = sourceBName;
-        String fileName = sourceFName;
-        if(null != doesBucketExist(bucketName)){
+        String folderName = bucketName;
+        String fileName = key;
+        if(null != doesBucketExist(folderName)){
             log.info("--文件夹存在--");
-            S3Client s3 = getS3Client(bucketName);
+            S3Client s3 = getS3Client(folderName);
             ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(b ->
                             b.bucket(folderName).key(fileName),
                     ResponseTransformer.toBytes());
             String str = objectAsBytes.asUtf8String();
 
             //下载成功后修改最大下载次数
-//            maxAmount = maxAmount-1;
             fileService.updateFileAmount(--maxAmount, fileKey);
 
             return str;
