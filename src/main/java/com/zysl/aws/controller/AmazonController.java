@@ -4,6 +4,7 @@ import com.zysl.aws.common.result.CodeMsg;
 import com.zysl.aws.common.result.Result;
 import com.zysl.aws.enums.DownTypeEnum;
 import com.zysl.aws.model.BucketResponse;
+import com.zysl.aws.model.ShareFileRequest;
 import com.zysl.aws.model.UploadFileRequest;
 import com.zysl.aws.service.AmasonService;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,15 @@ public class AmazonController {
 
     @Autowired
     private AmasonService amasonService;
+
+
+  @PostMapping("/shareFile")
+  public Result shareFile(@RequestBody ShareFileRequest request){
+    log.info("--开始调用shareFile分享文件的信息接口:{}--",request);
+
+    return Result.success(amasonService.shareFile(request));
+  }
+
 
     /**
      * 获取所有文件夹（bucket）的信息

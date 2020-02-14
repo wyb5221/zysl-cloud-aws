@@ -39,6 +39,12 @@
     from s3_file where content_md5 = #{content}
   </select>
 
+  <select id="queryOneFile" parameterType="java.lang.String" resultMap="FileBaseResultMap">
+    select *
+    from s3_file where file_name = #{fileName} and folder_name=#{folderName}
+    limit 0,1
+  </select>
+
   <select id="queryFileInfoByMd5" parameterType="java.lang.String" resultMap="FileBaseResultMap">
     select id, service_no, file_name, content_md5, folder_name, down_url, file_size,
     max_amount, down_amount, validity_time, upload_time, source_file_id
