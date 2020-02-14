@@ -63,4 +63,16 @@ public class DateUtil {
         return strtodate;
     }
 
+    /**
+     * 日期比较,小于0，date1小于date2；大于0，date1大于date2；等于0，这两个时间相等
+     * @param date1
+     * @param date2
+     * @return
+     */
+    public static boolean doCompareDate(Date date1, Date date2) {
+        int num = date1.compareTo(date2);
+        System.out.println(num);
+        return num < 0;
+    }
+
 }

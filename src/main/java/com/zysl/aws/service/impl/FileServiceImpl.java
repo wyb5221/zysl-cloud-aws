@@ -5,9 +5,7 @@ import com.zysl.aws.mapper.S3FileMyMapper;
 import com.zysl.aws.mapper.S3FolderMapper;
 import com.zysl.aws.mapper.S3ServiceMapper;
 import com.zysl.aws.model.UploadFileRequest;
-import com.zysl.aws.model.db.S3File;
-import com.zysl.aws.model.db.S3Folder;
-import com.zysl.aws.model.db.S3Service;
+import com.zysl.aws.model.db.*;
 import com.zysl.aws.service.FileService;
 import com.zysl.aws.utils.DateUtil;
 import com.zysl.aws.utils.Md5Util;
@@ -42,12 +40,16 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public List<S3Service> queryS3Service() {
-        return s3ServiceMapper.selectAll();
+        S3ServiceCriteria example = new S3ServiceCriteria();
+        return s3ServiceMapper.selectByExample(example);
+//        return s3ServiceMapper.selectAll();
     }
 
     @Override
     public List<S3Folder> queryS3FolderInfo() {
-        return s3FolderMapper.selectAll();
+        S3FolderCriteria example = new S3FolderCriteria();
+        return s3FolderMapper.selectByExample(example);
+//        return s3FolderMapper.selectAll();
     }
 
     @Override
@@ -95,11 +97,11 @@ public class FileServiceImpl implements FileService {
         log.info("--queryFileByMd5--content:{}", content);
         S3File s3File = s3FileMyMapper.queryFileInfoByMd5(content);
         log.info("--queryFileByMd5--根据Md5查询文件信息返回s3File:{}", s3File);
-        return null;
+        return s3File;
     }
 
     @Override
-    public Long addFileInfo(UploadFileRequest request){
+    public Integer addFileInfo(UploadFileRequest request){
         //上传时间
         Date uploadTime = new Date();
         //根据文件夹名称获取服务器编号
@@ -131,7 +133,7 @@ public class FileServiceImpl implements FileService {
         String md5Content = Md5Util.getMd5Content(request.getData());
         s3File.setContentMd5(md5Content);
 
-        Long num = s3FileMapper.insert(s3File);
+        Integer num = s3FileMapper.insert(s3File);
         log.info("--保存文件信息返回--num：{}", num);
 
         return num;
@@ -150,8 +152,21 @@ public class FileServiceImpl implements FileService {
     }
 
 
-  @Override
-  public Long addFileInfo(S3File s3File){
-    return s3FileMapper.insert(s3File);
-  }
+    @Override
+    public Long addFileInfo(S3File s3File){
+        s3FileMapper.insert(s3File);
+        log.info("--添加文件信息返回id:--{}", s3File.getId());
+        return s3File.getId();
+    }
+
+    @Override
+    public int updateFileAmount(Integer maxAmount, Long fileKey) {
+        log.info("--updateFileAmount修改文件最大下载次数入参--maxAmount:{},fileKey:{}", maxAmount, fileKey);
+        S3File record = new S3File();
+        record.setMaxAmount(maxAmount);
+        record.setId(fileKey);
+        int upNum = s3FileMapper.updateByPrimaryKeySelective(record);
+        log.info("--修改文件信息upNum:--{}", upNum);
+        return upNum;
+    }
 }
