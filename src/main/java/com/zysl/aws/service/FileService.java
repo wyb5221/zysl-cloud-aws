@@ -1,5 +1,7 @@
 package com.zysl.aws.service;
 
+import com.zysl.aws.model.FileInfo;
+import com.zysl.aws.model.ShareFileRequest;
 import com.zysl.aws.model.UploadFileRequest;
 import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.model.db.S3Folder;
@@ -61,6 +63,38 @@ public interface FileService {
      * @param request
      * @return
      */
-    int addFileInfo(UploadFileRequest request);
+    Long addFileInfo(UploadFileRequest request);
 
+    
+    
+     
+    /**
+     * 根据文件夹名和文件名查询文件信息
+     * @description
+     * @author miaomingming
+     * @date 17:48 2020/2/13
+     * @param [folderName, fileName]
+     * @return com.zysl.aws.model.db.S3File
+     **/
+    S3File getFileInfo(String folderName,String fileName);
+
+    /**
+     * 查询文件
+     * @description
+     * @author miaomingming
+     * @date 18:01 2020/2/13
+     * @param [fileKey]
+     * @return com.zysl.aws.model.db.S3File
+     **/
+    S3File getFileInfo(Long fileKey);
+
+    /**
+     * 新增文件
+     * @description
+     * @author miaomingming
+     * @date 9:42 2020/2/14
+     * @param [s3File]
+     * @return java.lang.Long
+     **/
+    Long addFileInfo(S3File s3File);
 }

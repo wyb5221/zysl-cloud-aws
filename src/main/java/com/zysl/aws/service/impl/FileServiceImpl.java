@@ -99,7 +99,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public int addFileInfo(UploadFileRequest request){
+    public Long addFileInfo(UploadFileRequest request){
         //上传时间
         Date uploadTime = new Date();
         //根据文件夹名称获取服务器编号
@@ -131,9 +131,27 @@ public class FileServiceImpl implements FileService {
         String md5Content = Md5Util.getMd5Content(request.getData());
         s3File.setContentMd5(md5Content);
 
-        int num = s3FileMapper.insert(s3File);
+        Long num = s3FileMapper.insert(s3File);
         log.info("--保存文件信息返回--num：{}", num);
 
         return num;
     }
+
+    @Override
+    public S3File getFileInfo(String folderName,String fileName){
+        return s3FileMyMapper.queryOneFile(folderName,fileName);
+    }
+
+
+
+    @Override
+    public S3File getFileInfo(Long fileKey){
+        return s3FileMapper.selectByPrimaryKey(fileKey);
+    }
+
+
+  @Override
+  public Long addFileInfo(S3File s3File){
+    return s3FileMapper.insert(s3File);
+  }
 }

@@ -2,6 +2,7 @@ package com.zysl.aws.mapper;
 
 import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.model.db.S3Folder;
+import org.apache.ibatis.annotations.Param;
 
 public interface S3FileMyMapper {
 
@@ -33,4 +34,13 @@ public interface S3FileMyMapper {
      */
     S3File queryFileInfoByMd5(String content);
 
+    /**
+     * 查询文件信息
+     * @description
+     * @author miaomingming
+     * @date 17:52 2020/2/13
+     * @param [folderName, fileName]
+     * @return com.zysl.aws.model.db.S3File
+     **/
+    S3File queryOneFile(@Param("folderName") String folderName,@Param("fileName")String fileName);
 }

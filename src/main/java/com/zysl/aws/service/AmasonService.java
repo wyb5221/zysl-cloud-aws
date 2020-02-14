@@ -1,6 +1,7 @@
 package com.zysl.aws.service;
 
 import com.zysl.aws.common.result.Result;
+import com.zysl.aws.model.ShareFileRequest;
 import com.zysl.aws.model.UploadFileRequest;
 import software.amazon.awssdk.services.s3.model.Bucket;
 
@@ -61,5 +62,11 @@ public interface AmasonService {
      */
     Long getFileSize(String bucketName, String key);
 
+    /**
+     * 分享文件
+     * @param request
+     * @return
+     */
+    Result shareFile(ShareFileRequest request);
 
 }

@@ -2,6 +2,7 @@ package com.zysl.aws.service.impl;
 
 import com.zysl.aws.common.result.Result;
 import com.zysl.aws.model.FileInfo;
+import com.zysl.aws.model.ShareFileRequest;
 import com.zysl.aws.model.UploadFileRequest;
 import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.model.db.S3Folder;
@@ -269,11 +270,22 @@ public class AmasonServiceImpl implements AmasonService {
 
     @Override
     public String downloadFile(HttpServletResponse response, String bucketName, String key) {
+      S3File s3File = fileService.getFileInfo(bucketName,key);
+      // 判断是否源文件
+      if (s3File != null && s3File.getSourceFileId() != null && s3File.getSourceFileId() > 0) {
+          s3File = fileService.getFileInfo(s3File.getSourceFileId());
+          bucketName = s3File.getFolderName();
+          key = s3File.getFileName();
+      }
+
+      String sourceBName = bucketName;
+      String sourceFName = key;
+
         S3Client s3 = getS3Client(bucketName);
 
         if(null != doesBucketExist(bucketName)){
             log.info("--文件夹存在--");
-            ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(b -> b.bucket(bucketName).key(key),
+            ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(b -> b.bucket(sourceBName).key(sourceFName),
                     ResponseTransformer.toBytes());
             String str = objectAsBytes.asUtf8String();
             return str;
@@ -312,6 +324,70 @@ public class AmasonServiceImpl implements AmasonService {
 
         return fileSize;
     }
+
+
+    @Override
+    public Result shareFile(ShareFileRequest request){
+        //查询是否存在db，不存在则先记录
+        S3File s3File = fileService.getFileInfo(request.getBucketName(),request.getFileName());
+        if(s3File == null){
+            //新增记录
+          Long fileKey = addNewFile(request.getBucketName(),request.getFileName());
+          s3File = fileService.getFileInfo(fileKey);
+        }
+        //判断是否源文件
+        if(s3File.getSourceFileId() != null && s3File.getSourceFileId() > 0){
+            s3File = fileService.getFileInfo(s3File.getSourceFileId());
+            if(s3File == null){//找不到源文件
+              log.warn("--shareFile--找不到源文件:{}",request);
+              return Result.error("找不到源文件");
+            }
+        }
+        //设置分享-插入记录
+        s3File.setSourceFileId(s3File.getId());
+        s3File.setId(null);
+        s3File.setFileName(getFileNameAddTimeStamp(request.getFileName()));
+        fileService.addFileInfo(s3File);
+
+        return Result.success();
+    }
+
+    /**文件名称加时间戳
+     *
+     * @description
+     * @author miaomingming
+     * @date 9:54 2020/2/14
+     * @param fileName
+     * @return java.lang.String
+     **/
+    private String getFileNameAddTimeStamp(String fileName){
+      if(fileName == null || fileName.indexOf(".") == -1){
+        return System.currentTimeMillis() + "";
+      }
+      return  fileName.substring(0,fileName.lastIndexOf("."))
+              + "_" + System.currentTimeMillis()
+              + fileName.substring(fileName.lastIndexOf("."));
+    }
+
+    private Long addNewFile(String bucketName,String fileName){
+      //获取文件大小
+      Long fileSize = getFileSize(bucketName,fileName);
+      S3File s3FileDB = new S3File();
+      s3FileDB.setServiceNo(s3ClientFactory.getServerNo(bucketName));
+      s3FileDB.setFolderName(bucketName);
+      s3FileDB.setFileName(fileName);
+      s3FileDB.setFileSize(fileSize);
+
+      //文件内容md5码
+      S3Client s3Client = s3ClientFactory.getS3Client(s3FileDB.getServiceNo());
+      ResponseBytes<GetObjectResponse> objectAsBytes = s3Client.getObject(b -> b.bucket(bucketName).key(fileName),
+          ResponseTransformer.toBytes());
+      String md5 = Md5Util.getMd5Content(objectAsBytes.asUtf8String());
+      s3FileDB.setContentMd5(md5);
+
+      return fileService.addFileInfo(s3FileDB);
+    }
+
 
    /* @Override
     public void upload(MultipartFile file, String uid) {
