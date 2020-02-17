@@ -4,6 +4,8 @@ import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.model.db.S3Folder;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 public interface S3FileMyMapper {
 
     /**
@@ -43,4 +45,11 @@ public interface S3FileMyMapper {
      * @return com.zysl.aws.model.db.S3File
      **/
     S3File queryOneFile(@Param("folderName") String folderName,@Param("fileName")String fileName);
+
+    /**
+     * 批量插入数据
+     * @param list
+     * @return
+     */
+    int insertBatch(List<S3File> list);
 }

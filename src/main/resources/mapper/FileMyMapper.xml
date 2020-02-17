@@ -51,4 +51,18 @@
     from s3_file where content_md5 = #{content}
   </select>
 
+  <insert id="insertBatch">
+    insert into s3_file (service_no, file_name, content_md5,
+    folder_name, down_url, file_size,
+    max_amount, down_amount, validity_time,
+    upload_time, create_time, source_file_id
+    )
+    values
+    <foreach collection="list" item="item" index="index" separator=",">
+      (#{item.serviceNo},#{item.fileName},#{item.contentMd5},#{item.folderName},#{item.downUrl},
+      #{item.fileSize},#{item.maxAmount},#{item.downAmount},#{item.validityTime},
+      #{item.uploadTime},#{item.createTime},#{item.sourceFileId})
+    </foreach>
+  </insert>
+
 </mapper>

@@ -559,14 +559,16 @@ public class AmasonServiceImpl implements AmasonService {
 
             Map<Integer,List<S3Object>> itemMap = new BatchListUtil<S3Object>().batchList(list, thredaNum);
             //分批次更新
-            for (int i = 0; i < thredaNum; i++) {
-                log.info("---启动线程：{}---name:{}", i, Thread.currentThread().getId());
+            for (int i = 0; i < itemMap.size(); i++) {
+                log.info("---启动线程：{}---", i);
                 int num = i+1;
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
+                        log.info("---线程：{}启动开始：{}", Thread.currentThread().getId(), System.currentTimeMillis());
                         List<S3Object> fileList = itemMap.get(num);
                         insertFile(fileList, defaultName);
+                        log.info("---线程：{}执行结束：{}", Thread.currentThread().getId(), System.currentTimeMillis());
                     }
                 }).start();
             }
@@ -580,7 +582,11 @@ public class AmasonServiceImpl implements AmasonService {
      */
     public void insertFile(List<S3Object> fileList, String defaultName){
         String serverNo = s3ClientFactory.getServerNo(defaultName);
+        List<S3File> insertList = new ArrayList<>();
+
+        int loopNum = 0;
         for (S3Object obj : fileList) {
+            loopNum++;
             S3File addS3File = new S3File();
             //服务器编号
             addS3File.setServiceNo(serverNo);
@@ -600,7 +606,19 @@ public class AmasonServiceImpl implements AmasonService {
             String md5Content = Md5Util.getMd5Content(fileContent);
             //文件内容md5
             addS3File.setContentMd5(md5Content);
-            fileService.addFileInfo(addS3File);
+            //添加list集合
+            insertList.add(addS3File);
+            //每200条数据插入一次数据库
+            if(insertList.size() == 200){
+                int num = fileService.insertBatch(insertList);
+                log.info("--线程：{}--num:--{}", Thread.currentThread().getId(), num);
+            }
+            //不足200条的时候，list循环完也插入一次数据库
+            if(loopNum == fileList.size()){
+                int num = fileService.insertBatch(insertList);
+                log.info("--线程：{}--num:--{}", Thread.currentThread().getId(), num);
+            }
+//            fileService.addFileInfo(addS3File);
         }
     }
 

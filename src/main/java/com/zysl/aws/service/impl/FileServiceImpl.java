@@ -169,4 +169,11 @@ public class FileServiceImpl implements FileService {
         log.info("--修改文件信息upNum:--{}", upNum);
         return upNum;
     }
+
+    @Override
+    public int insertBatch(List<S3File> fileList) {
+        int insetNum = s3FileMyMapper.insertBatch(fileList);
+        log.info("--批量插入数据返回：--{}", insetNum);
+        return insetNum;
+    }
 }

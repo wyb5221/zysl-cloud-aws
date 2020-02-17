@@ -106,4 +106,11 @@ public interface FileService {
      * @return
      */
     int updateFileAmount(Integer maxAmount, Long fileKey);
+
+    /**
+     * 批量插入数据
+     * @param fileList
+     * @return
+     */
+    int insertBatch(List<S3File> fileList);
 }

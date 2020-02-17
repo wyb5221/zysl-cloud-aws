@@ -1,6 +1,7 @@
 package com.zysl.aws.utils;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 import sun.misc.BASE64Encoder;
 
 import java.security.MessageDigest;
@@ -17,6 +18,9 @@ public class Md5Util {
         String contentMd5 = "";
         //获取文件内容MD5值
         try {
+            if(StringUtils.isEmpty(str)){
+                return null;
+            }
             //java自带工具包MessageDigest
             MessageDigest md5 = MessageDigest.getInstance("md5");
             //实现Base64的编码
