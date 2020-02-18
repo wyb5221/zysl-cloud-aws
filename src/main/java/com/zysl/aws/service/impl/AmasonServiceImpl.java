@@ -533,20 +533,13 @@ public class AmasonServiceImpl implements AmasonService {
     @Value("${spring.s3.defaultName}")
     private String defaultName;
 
-    /*@PostConstruct
-    public void testInit(){
-        System.out.println("initFlag:"+initFlag);
-        System.out.println("thredaNum:"+thredaNum);
-        System.out.println("defaultName:"+defaultName);
-
-    }*/
     /**
      * 服务器文件初始化
      */
     @PostConstruct
     public void fileInfoInit(){
 
-        System.out.println("initFlag:"+initFlag);
+        log.info("initFlag:"+initFlag);
 
         if(initFlag){
             log.info("-----初始化开始------");
@@ -612,6 +605,7 @@ public class AmasonServiceImpl implements AmasonService {
             if(insertList.size() == 200){
                 int num = fileService.insertBatch(insertList);
                 log.info("--线程：{}--num:--{}", Thread.currentThread().getId(), num);
+                insertList = new ArrayList<>();
             }
             //不足200条的时候，list循环完也插入一次数据库
             if(loopNum == fileList.size()){
