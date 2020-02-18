@@ -533,20 +533,13 @@ public class AmasonServiceImpl implements AmasonService {
     @Value("${spring.s3.defaultName}")
     private String defaultName;
 
-    /*@PostConstruct
-    public void testInit(){
-        System.out.println("initFlag:"+initFlag);
-        System.out.println("thredaNum:"+thredaNum);
-        System.out.println("defaultName:"+defaultName);
-
-    }*/
     /**
      * 服务器文件初始化
      */
     @PostConstruct
     public void fileInfoInit(){
 
-        System.out.println("initFlag:"+initFlag);
+        log.info("initFlag:"+initFlag);
 
         if(initFlag){
             log.info("-----初始化开始------");
