@@ -52,7 +52,7 @@
   </select>
 
   <insert id="insertBatch">
-    insert into s3_file (service_no, file_name, content_md5,
+    insert into s3_file_temp (service_no, file_name, content_md5,
     folder_name, down_url, file_size,
     max_amount, down_amount, validity_time,
     upload_time, create_time, source_file_id

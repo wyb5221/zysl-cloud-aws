@@ -612,6 +612,7 @@ public class AmasonServiceImpl implements AmasonService {
             if(insertList.size() == 200){
                 int num = fileService.insertBatch(insertList);
                 log.info("--线程：{}--num:--{}", Thread.currentThread().getId(), num);
+                insertList = new ArrayList<>();
             }
             //不足200条的时候，list循环完也插入一次数据库
             if(loopNum == fileList.size()){
