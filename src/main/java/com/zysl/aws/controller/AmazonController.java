@@ -2,14 +2,21 @@ package com.zysl.aws.controller;
 
 import com.zysl.aws.common.result.CodeMsg;
 import com.zysl.aws.common.result.Result;
+import com.zysl.aws.config.BizConfig;
 import com.zysl.aws.enums.DownTypeEnum;
 import com.zysl.aws.model.BucketResponse;
 import com.zysl.aws.model.ShareFileRequest;
 import com.zysl.aws.model.UploadFileRequest;
+import com.zysl.aws.model.WordToPDFDTO;
+import com.zysl.aws.model.WordToPDFRequest;
 import com.zysl.aws.service.AmasonService;
+import com.zysl.aws.service.IPDFService;
+import com.zysl.aws.service.IWordService;
+import com.zysl.cloud.utils.StringUtils;
+import com.zysl.cloud.utils.common.AppLogicException;
+import com.zysl.cloud.utils.common.BaseResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.services.s3.model.Bucket;
 import sun.misc.BASE64Decoder;
@@ -31,7 +38,10 @@ public class AmazonController {
 
     @Autowired
     private AmasonService amasonService;
-
+    @Autowired
+    private IWordService wordService;
+    @Autowired
+    private IPDFService pdfService;
 
     /**
      * 文件分享
@@ -221,6 +231,63 @@ public class AmazonController {
             log.error("--视频文件获取异常：--", ex);
         }
 
+    }
+
+    /**
+     * word转pdf
+     * @description 可设置水印、密码
+     * @author miaomingming
+     * @date 16:35 2020/2/20
+     * @param [request]
+     * @return com.zysl.cloud.utils.common.BaseResponse<com.zysl.aws.model.WordToPDFDTO>
+     **/
+    @PostMapping("/word2pdf")
+    public BaseResponse<WordToPDFDTO> changeWordToPdf(@RequestBody WordToPDFRequest request){
+        log.info("===changeWordToPdf.param:{}===",request);
+        BaseResponse<WordToPDFDTO> baseResponse = new BaseResponse<>();
+        baseResponse.setSuccess(false);
+        //step 1.文件后缀校验
+        if(StringUtils.isBlank(request.getBucketName()) || StringUtils.isBlank(request.getFileName())){
+            log.info("===文件夹或文件名为空:{}===",request);
+            baseResponse.setMsg("文件夹或文件名为空.");
+            return baseResponse;
+        }
+        if(!request.getFileName().toLowerCase().endsWith("doc")
+            || !request.getFileName().toLowerCase().endsWith("docx")){
+            log.info("===不是word文件:{}===",request.getFileName());
+            baseResponse.setMsg("不是word文件.");
+            return baseResponse;
+        }
+        //step 2.读取源文件--TODO
+        byte[] inBuff = null;
+
+        //step 3.word转pdf、加水印 300,300
+        byte[] outBuff = wordService.changeWordToPDF(request.getFileName(),inBuff,false,request.getTextMark());
+        log.info("===changeToPDF===outBuff,length:{}", outBuff != null ? outBuff.length : 0);
+        if(outBuff == null || outBuff.length == 0){
+          log.info("===changeToPDF===pdfFileData is null .fileName:{}",request.getFileName());
+          baseResponse.setMsg("word转换的pdf大小为0..");
+          return baseResponse;
+        }
+
+      //step 4.实现加密
+      byte[] addPwdOutBuff = pdfService.addPwd(outBuff,request.getUserPwd(),request.getOwnerPwd());
+      if(addPwdOutBuff == null || addPwdOutBuff.length == 0){
+        log.info("===addPwd===file add pwd err.fileName:{}",request.getFileName());
+        baseResponse.setMsg("word转换的pdf加密后大小为0..");
+        return baseResponse;
+      }
+
+      //step 5.上传到temp-001
+
+        //step 6.新文件入库
+
+      //step 7.设置返回参数--TODO
+      WordToPDFDTO dto = new WordToPDFDTO();
+      dto.setBucketName(BizConfig.WORD_TO_PDF_BUCKET_NAME);
+      dto.setFileName("xxx.pdf");
+
+        return baseResponse;
     }
 
 }
