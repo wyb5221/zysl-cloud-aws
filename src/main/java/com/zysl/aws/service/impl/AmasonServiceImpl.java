@@ -577,9 +577,7 @@ public class AmasonServiceImpl implements AmasonService {
         String serverNo = s3ClientFactory.getServerNo(defaultName);
         List<S3File> insertList = new ArrayList<>();
 
-        int loopNum = 0;
         for (S3Object obj : fileList) {
-            loopNum++;
             S3File addS3File = new S3File();
             //服务器编号
             addS3File.setServiceNo(serverNo);
@@ -607,12 +605,11 @@ public class AmasonServiceImpl implements AmasonService {
                 log.info("--线程：{}--num:--{}", Thread.currentThread().getId(), num);
                 insertList = new ArrayList<>();
             }
-            //不足200条的时候，list循环完也插入一次数据库
-            if(loopNum == fileList.size()){
-                int num = fileService.insertBatch(insertList);
-                log.info("--线程：{}--num:--{}", Thread.currentThread().getId(), num);
-            }
-//            fileService.addFileInfo(addS3File);
+        }
+        //不足200条的时候，list循环完也插入一次数据库
+        if(!CollectionUtils.isEmpty(insertList)){
+            int num = fileService.insertBatch(insertList);
+            log.info("--线程：{}--num:--{}", Thread.currentThread().getId(), num);
         }
     }
 
