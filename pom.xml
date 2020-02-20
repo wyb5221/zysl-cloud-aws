@@ -2,13 +2,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
+<!--    <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.2.1.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;
     </parent>
-    <groupId>com.zysl</groupId>
+    <groupId>com.zysl</groupId>-->
+
+    <parent>
+      <groupId>com.zysl.cloud</groupId>
+      <artifactId>zysl-cloud-parent</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </parent>
+
     <artifactId>aws</artifactId>
     <version>1.0.1-SNAPSHOT</version>
     <name>zysl-aws</name>
@@ -19,6 +26,46 @@
     </properties>
 
     <dependencies>
+      <dependency>
+        <groupId>io.springfox</groupId>
+        <artifactId>springfox-swagger2</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.zysl.cloud</groupId>
+        <artifactId>zysl-cloud-utils</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.aspose</groupId>
+        <artifactId>aspose-words</artifactId>
+        <version>16.8.0</version>
+        <scope>system</scope>
+        <systemPath>D:/data/libs/aspose-words-16.8.0-jdk16.jar</systemPath>
+      </dependency>
+      <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>fastjson</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.itextpdf</groupId>
+        <artifactId>itextpdf</artifactId>
+        <version>5.5.13</version>
+      </dependency>
+      <dependency>
+        <groupId>com.itextpdf</groupId>
+        <artifactId>itext-asian</artifactId>
+        <version>5.2.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.csource</groupId>
+        <artifactId>fastdfs-client-java</artifactId>
+        <version>1.27-SNAPSHOT</version>
+        <exclusions>
+          <exclusion>
+            <artifactId>slf4j-log4j12</artifactId>
+            <groupId>org.slf4j</groupId>
+          </exclusion>
+        </exclusions>
+      </dependency>
         <!--amazonS3依赖jar-->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
