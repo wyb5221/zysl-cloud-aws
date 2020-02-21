@@ -1,13 +1,31 @@
 package com.zysl.aws.config;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+@Component
 public class BizConfig {
-  //TODO，改成到配置文件
+
   //word转pdf用到的字体
-  public static final String FONT_FILE = "simsun.ttc,1";
+  @Value("${spring.pdf.FONT_FILE}")
+  public String FONT_FILE;
 
   //临时文件存放地址
-  public static final String PDF_TMP_FILE_PATH = "d:/data/tmp/";
+  @Value("${spring.pdf.FILE_PATH}")
+  public String PDF_TMP_FILE_PATH;
 
   //s3文件存放word转pdf的文件夹
-  public static final String WORD_TO_PDF_BUCKET_NAME = "temp-001";
+  @Value("${spring.pdf.BUCKET_NAME}")
+  public String WORD_TO_PDF_BUCKET_NAME;
+
+  //是否初始化
+  @Value("${spring.s3.initFlag}")
+  public boolean initFlag;
+  //启动线程数
+  @Value("${spring.s3.thredaNum}")
+  public Integer thredaNum;
+  //默认文件夹
+  @Value("${spring.s3.defaultName}")
+  public String defaultName;
+
 }

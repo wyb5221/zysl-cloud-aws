@@ -48,13 +48,6 @@ public interface AmasonService {
     Result deleteFile(String bucketName, String key);
 
     /**
-     * 获取存储桶
-     * @param bucket_name
-     * @return
-     */
-    Optional<Bucket> getBucket(String bucket_name);
-
-    /**
      * 查询文件大小
      * @param bucketName
      * @param key
@@ -68,5 +61,30 @@ public interface AmasonService {
      * @return
      */
     Result shareFile(ShareFileRequest request);
+
+    /**
+     * 调用s3接口下载文件内容
+     * @param bucketName
+     * @param key
+     * @return
+     */
+    String getS3FileInfo(String bucketName, String key);
+
+    /**
+     * 调用s3接口查询服务器文件大小
+     * @param bucketName
+     * @param key
+     * @return
+     */
+    Long getS3FileSize(String bucketName, String key);
+
+    /**
+     * 调用s3接口上传文件
+     * @param bucketName
+     * @param fileId
+     * @param data
+     * @return
+     */
+    boolean upload(String bucketName, String fileId, byte[] data);
 
 }

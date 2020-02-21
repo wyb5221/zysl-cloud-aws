@@ -1,6 +1,7 @@
 package com.zysl.aws.service.impl;
 
 import com.zysl.aws.common.result.Result;
+import com.zysl.aws.config.BizConfig;
 import com.zysl.aws.model.FileInfo;
 import com.zysl.aws.model.ShareFileRequest;
 import com.zysl.aws.model.UploadFileRequest;
@@ -14,7 +15,6 @@ import com.zysl.aws.utils.Md5Util;
 import com.zysl.aws.utils.S3ClientFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -38,6 +38,9 @@ public class AmasonServiceImpl implements AmasonService {
 
     @Autowired
     private FileService fileService;
+
+    @Autowired
+    private BizConfig bizConfig;
 
 
     public S3Client getS3Client(String bucketName){
@@ -113,7 +116,7 @@ public class AmasonServiceImpl implements AmasonService {
             ListObjectsResponse objectList = s3.listObjects
                     (ListObjectsRequest.builder().bucket(bucketName).build());
             List<S3Object> list = objectList.contents();
-            log.info("-----objectList.contents().list：{}", list);
+            log.info("-----objectList.contents().list：{}", list.size());
 
             List<FileInfo> fileList = new ArrayList<>();
             list.stream().forEach(obj -> {
@@ -125,7 +128,7 @@ public class AmasonServiceImpl implements AmasonService {
                 fileInfo.setSize(obj.size());
                 fileList.add(fileInfo);
             });
-        log.info("-----fileList：{}", fileList);
+        log.info("-----fileList：{}", fileList.size());
 
         return Result.success(fileList);
 //        }
@@ -134,6 +137,24 @@ public class AmasonServiceImpl implements AmasonService {
     @Override
     public Result uploadFile(UploadFileRequest request) {
         Map<String, Object> map = new HashMap<>();
+
+       /* try {
+            String filePath = "D:\\tmp\\testFile\\tt01.doc";
+
+            File file = new File(filePath);
+            FileInputStream inputStream = new FileInputStream(file);
+
+            byte[] bytes = new byte[(int) file.length()];
+            inputStream.read(bytes);
+            inputStream.close();
+
+            BASE64Encoder encoder = new BASE64Encoder();
+            String str = encoder.encode(bytes);
+            request.setData(str);
+        }catch (Exception e){
+
+        }*/
+
 
         if(StringUtils.isEmpty(request.getBucketName())){
             return Result.error("入参bucketName不能为空");
@@ -284,6 +305,7 @@ public class AmasonServiceImpl implements AmasonService {
      * @param fileId
      * @param data
      */
+    @Override
     public boolean upload(String bucketName, String fileId, byte[] data){
         log.info("--upload开始上传文件，入参bucketName：{}-,fileId:{}-,data:{}", bucketName, fileId, data.length);
         S3Client s3 = getS3Client(bucketName);
@@ -357,16 +379,21 @@ public class AmasonServiceImpl implements AmasonService {
      * @param key
      * @return
      */
+    @Override
     public String getS3FileInfo(String bucketName, String key){
+        log.info("--调用s3接口下载文件内容入参-bucketName:{},-key:{}", bucketName, key);
         S3Client s3 = getS3Client(bucketName);
         try {
             ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(b ->
                             b.bucket(bucketName).key(key),
                     ResponseTransformer.toBytes());
-            String str = objectAsBytes.asUtf8String();
-            return str;
+            byte[] bytes = objectAsBytes.asByteArray();
+            String a = new String(bytes);
+            byte[] aa = a.getBytes();
+//            String str = objectAsBytes.asUtf8String();
+            return new String(bytes);
         } catch (Exception e) {
-            log.info("--s3接口下载文件信息异常：--{}", e.getMessage());
+            log.info("--s3接口下载文件信息异常：--{}", e);
             return null;
         }
     }
@@ -384,12 +411,6 @@ public class AmasonServiceImpl implements AmasonService {
         log.info("deleteObjectResponse.deleteMarker():"+deleteObjectResponse.deleteMarker());
 
        return null;
-    }
-
-    @Override
-    public Optional<Bucket> getBucket(String bucketName) {
-//        return s3.listBuckets().stream().filter(b -> b.getName().equals(bucketName)).findFirst();
-        return null;
     }
 
     @Override
@@ -431,6 +452,7 @@ public class AmasonServiceImpl implements AmasonService {
      * @param key
      * @return
      */
+    @Override
     public Long getS3FileSize(String bucketName, String key){
         S3Client s3 = getS3Client(bucketName);
         try {
@@ -467,10 +489,12 @@ public class AmasonServiceImpl implements AmasonService {
                 }
             }
         }
+
+        String shareFileName = getFileNameAddTimeStamp(request.getFileName());
         //设置分享-插入记录
         s3File.setSourceFileId(s3File.getId());
         s3File.setId(null);
-        s3File.setFileName(getFileNameAddTimeStamp(request.getFileName()));
+        s3File.setFileName(shareFileName);
         s3File.setMaxAmount(request.getMaxDownloadAmout());
         Date createDate = new Date();
         s3File.setCreateTime(createDate);
@@ -481,8 +505,12 @@ public class AmasonServiceImpl implements AmasonService {
         }
         Long fileKey = fileService.addFileInfo(s3File);
         log.info("--分享插入记录返回--fileKey：{}", fileKey);
-
-        return Result.success();
+        Map<String, String> resultMap = new HashMap<>();
+        //文件夹名称
+        resultMap.put("folderName", request.getBucketName());
+        //文件名称
+        resultMap.put("fileName", shareFileName);
+        return Result.success(resultMap);
     }
 
     /**文件名称加时间戳
@@ -505,6 +533,12 @@ public class AmasonServiceImpl implements AmasonService {
         }
     }
 
+    /**
+     * 添加文件信息
+     * @param bucketName
+     * @param fileName
+     * @return
+     */
     private Long addNewFile(String bucketName,String fileName){
         //获取文件大小
         Result result = getFileSize(bucketName,fileName);
@@ -526,31 +560,26 @@ public class AmasonServiceImpl implements AmasonService {
       return fileService.addFileInfo(s3FileDB);
     }
 
-    @Value("${spring.s3.initFlag}")
-    private boolean initFlag;
-    @Value("${spring.s3.thredaNum}")
-    private Integer thredaNum;
-    @Value("${spring.s3.defaultName}")
-    private String defaultName;
-
     /**
      * 服务器文件初始化
      */
     @PostConstruct
     public void fileInfoInit(){
 
-        log.info("initFlag:"+initFlag);
+        log.info("initFlag:"+ bizConfig.initFlag);
 
-        if(initFlag){
+        if(bizConfig.initFlag){
             log.info("-----初始化开始------");
-            log.info("---开启线程数thredaNum:{}----", thredaNum);
-            S3Client s3 = getS3Client(defaultName);
+            log.info("---开启线程数thredaNum:{}----", bizConfig.thredaNum);
+            S3Client s3 = getS3Client(bizConfig.defaultName);
             ListObjectsResponse objectList = s3.listObjects
-                    (ListObjectsRequest.builder().bucket(defaultName).build());
+                    (ListObjectsRequest.builder().bucket(bizConfig.defaultName).build());
             List<S3Object> list = objectList.contents();
             log.info("-----objectList.contents().list：{}", list.size());
 
-            Map<Integer,List<S3Object>> itemMap = new BatchListUtil<S3Object>().batchList(list, thredaNum);
+            Map<Integer,List<S3Object>> itemMap = new BatchListUtil<S3Object>().batchList(list, bizConfig.thredaNum);
+            log.info("-----objectList.contents().itemMap：{}", itemMap.size());
+
             //分批次更新
             for (int i = 0; i < itemMap.size(); i++) {
                 log.info("---启动线程：{}---", i);
@@ -560,7 +589,7 @@ public class AmasonServiceImpl implements AmasonService {
                     public void run() {
                         log.info("---线程：{}启动开始：{}", Thread.currentThread().getId(), System.currentTimeMillis());
                         List<S3Object> fileList = itemMap.get(num);
-                        insertFile(fileList, defaultName);
+                        insertFile(fileList, bizConfig.defaultName);
                         log.info("---线程：{}执行结束：{}", Thread.currentThread().getId(), System.currentTimeMillis());
                     }
                 }).start();
@@ -602,14 +631,14 @@ public class AmasonServiceImpl implements AmasonService {
             //每200条数据插入一次数据库
             if(insertList.size() == 200){
                 int num = fileService.insertBatch(insertList);
-                log.info("--线程：{}--num:--{}", Thread.currentThread().getId(), num);
+                log.info("--线程：{}--插入数据num:--{}", Thread.currentThread().getId(), num);
                 insertList = new ArrayList<>();
             }
         }
         //不足200条的时候，list循环完也插入一次数据库
         if(!CollectionUtils.isEmpty(insertList)){
             int num = fileService.insertBatch(insertList);
-            log.info("--线程：{}--num:--{}", Thread.currentThread().getId(), num);
+            log.info("--线程：{}--插入数据num:--{}", Thread.currentThread().getId(), num);
         }
     }
 

@@ -6,18 +6,14 @@ import com.aspose.words.SaveFormat;
 import com.zysl.aws.config.BizConfig;
 import com.zysl.aws.service.IPDFService;
 import com.zysl.aws.service.IWordService;
-import com.zysl.aws.utils.BizUtil;
 import com.zysl.cloud.utils.FileUtils;
 import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.common.AppLogicException;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.io.*;
 
 @Slf4j
 @Service
@@ -25,6 +21,8 @@ public class AposeWordServiceImpl implements IWordService {
 
     @Autowired
     IPDFService pdfService;
+    @Autowired
+    BizConfig bizConfig;
 
     @Override
     public byte[] changeWordToPDF(String fileName, byte[] inBuff,Boolean imgMarkSign, String textMark){
@@ -36,12 +34,11 @@ public class AposeWordServiceImpl implements IWordService {
         String outFname = null;
         try{
            // step 1.word转换pdf
-            fileName = BizUtil.getTmpFileNameWithoutSuffix(fileName);
+            outFname = bizConfig.PDF_TMP_FILE_PATH + fileName + "pdf.pdf";
+            String outImgFname = bizConfig.PDF_TMP_FILE_PATH + fileName + "img.pdf";
+            String outTextFname = bizConfig.PDF_TMP_FILE_PATH + fileName + "text.pdf";
 
-            outFname = BizConfig.PDF_TMP_FILE_PATH + fileName + "pdf.pdf";
-            String outImgFname = BizConfig.PDF_TMP_FILE_PATH + fileName + "img.pdf";
-            String outTextFname = BizConfig.PDF_TMP_FILE_PATH + fileName + "text.pdf";
-
+            //word转pdf
             changeWordToPDFByApose(inBuff,outFname);
 
             //step 2.加文字水印
@@ -94,6 +91,7 @@ public class AposeWordServiceImpl implements IWordService {
         try{
             is = new ByteArrayInputStream(inBuff);
             Document doc = new Document(is);
+            //创建文件
             fileOS = new FileOutputStream(new File(outFilePath));
             // 保存转换的pdf文件
             doc.save(fileOS, formarType);
