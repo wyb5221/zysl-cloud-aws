@@ -4,16 +4,16 @@ import com.zysl.aws.common.result.CodeMsg;
 import com.zysl.aws.common.result.Result;
 import com.zysl.aws.config.BizConfig;
 import com.zysl.aws.enums.DownTypeEnum;
-import com.zysl.aws.model.BucketResponse;
-import com.zysl.aws.model.ShareFileRequest;
-import com.zysl.aws.model.UploadFileRequest;
-import com.zysl.aws.model.WordToPDFDTO;
-import com.zysl.aws.model.WordToPDFRequest;
+import com.zysl.aws.model.*;
+import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.service.AmasonService;
+import com.zysl.aws.service.FileService;
 import com.zysl.aws.service.IPDFService;
 import com.zysl.aws.service.IWordService;
+import com.zysl.aws.utils.BizUtil;
+import com.zysl.aws.utils.Md5Util;
+import com.zysl.aws.utils.S3ClientFactory;
 import com.zysl.cloud.utils.StringUtils;
-import com.zysl.cloud.utils.common.AppLogicException;
 import com.zysl.cloud.utils.common.BaseResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +25,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @RestController
@@ -42,6 +39,12 @@ public class AmazonController {
     private IWordService wordService;
     @Autowired
     private IPDFService pdfService;
+    @Autowired
+    private S3ClientFactory s3ClientFactory;
+    @Autowired
+    private FileService fileService;
+    @Autowired
+    private BizConfig bizConfig;
 
     /**
      * 文件分享
@@ -52,7 +55,7 @@ public class AmazonController {
     public Result shareFile(@RequestBody ShareFileRequest request){
     log.info("--开始调用shareFile分享文件的信息接口:{}--",request);
 
-    return Result.success(amasonService.shareFile(request));
+    return amasonService.shareFile(request);
     }
 
 
@@ -253,16 +256,34 @@ public class AmazonController {
             return baseResponse;
         }
         if(!request.getFileName().toLowerCase().endsWith("doc")
-            || !request.getFileName().toLowerCase().endsWith("docx")){
+            && !request.getFileName().toLowerCase().endsWith("docx")){
             log.info("===不是word文件:{}===",request.getFileName());
             baseResponse.setMsg("不是word文件.");
             return baseResponse;
         }
-        //step 2.读取源文件--TODO
-        byte[] inBuff = null;
+        //step 2.读取源文件--
+        //调用s3接口下载文件内容
+        String fileStr = amasonService.getS3FileInfo(request.getBucketName(),request.getFileName());
+        byte[] inBuff = fileStr.getBytes();
+        //测试直接读取本地文件 --TODO
+        /*byte[] inBuff = null;
+        try {
+            String filePath = "D:\\tmp\\testFile\\tt01.doc";
+
+            File file = new File(filePath);
+            FileInputStream inputStream = new FileInputStream(file);
+
+            inBuff = new byte[(int) file.length()];
+            inputStream.read(inBuff);
+            inputStream.close();
+
+        }catch (Exception e){
+
+        }*/
 
         //step 3.word转pdf、加水印 300,300
-        byte[] outBuff = wordService.changeWordToPDF(request.getFileName(),inBuff,false,request.getTextMark());
+        String fileName = BizUtil.getTmpFileNameWithoutSuffix(request.getFileName());
+        byte[] outBuff = wordService.changeWordToPDF(fileName, inBuff,false, request.getTextMark());
         log.info("===changeToPDF===outBuff,length:{}", outBuff != null ? outBuff.length : 0);
         if(outBuff == null || outBuff.length == 0){
           log.info("===changeToPDF===pdfFileData is null .fileName:{}",request.getFileName());
@@ -270,23 +291,46 @@ public class AmazonController {
           return baseResponse;
         }
 
-      //step 4.实现加密
-      byte[] addPwdOutBuff = pdfService.addPwd(outBuff,request.getUserPwd(),request.getOwnerPwd());
-      if(addPwdOutBuff == null || addPwdOutBuff.length == 0){
-        log.info("===addPwd===file add pwd err.fileName:{}",request.getFileName());
-        baseResponse.setMsg("word转换的pdf加密后大小为0..");
-        return baseResponse;
-      }
+        //step 4.实现加密
+        if(!StringUtils.isBlank(request.getUserPwd()) && !StringUtils.isBlank(request.getOwnerPwd())){
+            byte[] addPwdOutBuff = pdfService.addPwd(outBuff,request.getUserPwd(),request.getOwnerPwd());
+            if(addPwdOutBuff == null || addPwdOutBuff.length == 0){
+                log.info("===addPwd===file add pwd err.fileName:{}",request.getFileName());
+                baseResponse.setMsg("word转换的pdf加密后大小为0..");
+                return baseResponse;
+            }
+        }
 
-      //step 5.上传到temp-001
-
+        //step 5.上传到temp-001
+        amasonService.upload(request.getBucketName(), fileName + "text.pdf", outBuff);
         //step 6.新文件入库
+        String serverNo = s3ClientFactory.getServerNo(request.getBucketName());
+        S3File addS3File = new S3File();
+        //服务器编号
+        addS3File.setServiceNo(serverNo);
+        //文件名称
+        addS3File.setFileName(fileName + "text.pdf");
+        //文件夹名称
+        addS3File.setFolderName(request.getBucketName());
+        //文件大小
+        addS3File.setFileSize(Long.valueOf(outBuff.length));
+        //上传时间
+        addS3File.setUploadTime(new Date());
+        //创建时间
+        addS3File.setCreateTime(new Date());
+        //文件内容md5
+        String md5Content = Md5Util.getMd5Content(new String(outBuff));
+        //文件内容md5
+        addS3File.setContentMd5(md5Content);
+        //向数据库保存文件信息
+        long num = fileService.addFileInfo(addS3File);
+        log.info("--插入数据返回num:{}", num);
 
-      //step 7.设置返回参数--TODO
-      WordToPDFDTO dto = new WordToPDFDTO();
-      dto.setBucketName(BizConfig.WORD_TO_PDF_BUCKET_NAME);
-      dto.setFileName("xxx.pdf");
-
+        //step 7.设置返回参数
+        WordToPDFDTO dto = new WordToPDFDTO();
+        dto.setBucketName(bizConfig.WORD_TO_PDF_BUCKET_NAME);
+        dto.setFileName(fileName + "text.pdf");
+        baseResponse.setModel(dto);
         return baseResponse;
     }
 

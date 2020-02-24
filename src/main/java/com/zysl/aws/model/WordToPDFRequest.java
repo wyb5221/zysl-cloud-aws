@@ -13,13 +13,13 @@ import lombok.Setter;
 public class WordToPDFRequest implements Serializable {
 
   private static final long serialVersionUID = 3231659254522990103L;
-  @ApiModelProperty(value = "文件夹名称", name = "userPwd", dataType = SwaggerConstants.DATA_TYPE_STRING, required = true)
+  @ApiModelProperty(value = "文件夹名称", name = "bucketName", dataType = SwaggerConstants.DATA_TYPE_STRING, required = true)
   private String bucketName;
 
-  @ApiModelProperty(value = "文件名", name = "userPwd", dataType = SwaggerConstants.DATA_TYPE_STRING, required = true)
+  @ApiModelProperty(value = "文件名", name = "fileName", dataType = SwaggerConstants.DATA_TYPE_STRING, required = true)
   private String fileName;
 
-  @ApiModelProperty(value = "文字水印", name = "fileId", dataType = SwaggerConstants.DATA_TYPE_STRING)
+  @ApiModelProperty(value = "文字水印", name = "textMark", dataType = SwaggerConstants.DATA_TYPE_STRING)
   private String textMark;
 
   @ApiModelProperty(value = "用户密码", name = "userPwd", dataType = SwaggerConstants.DATA_TYPE_STRING)

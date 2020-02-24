@@ -19,6 +19,7 @@ public class Md5Util {
         //获取文件内容MD5值
         try {
             if(StringUtils.isEmpty(str)){
+                log.info("--md5加密入参为空--str:{}", str);
                 return null;
             }
             //java自带工具包MessageDigest

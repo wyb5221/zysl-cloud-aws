@@ -7,17 +7,21 @@ import com.itextpdf.text.pdf.*;
 import com.zysl.aws.config.BizConfig;
 import com.zysl.aws.service.IPDFService;
 import com.zysl.cloud.utils.common.AppLogicException;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+
 @Service
 @Slf4j
 public class PDFServiceImpl implements IPDFService {
+
+    @Autowired
+    private BizConfig bizConfig;
 
     @Override
     public void addPdfImgMark(String InPdfFile, String outPdfFile, String markImagePath, int imgWidth,int imgHeight) {
@@ -62,7 +66,7 @@ public class PDFServiceImpl implements IPDFService {
 
             PdfContentByte under;
 
-            BaseFont font = BaseFont.createFont(BizConfig.FONT_FILE, BaseFont.IDENTITY_H, true); // 使用系统字体
+            BaseFont font = BaseFont.createFont(bizConfig.FONT_FILE, BaseFont.IDENTITY_H, true); // 使用系统字体
 
             int pageSize = reader.getNumberOfPages();// 原pdf文件的总页数
             for (int i = 1; i <= pageSize; i++) {
