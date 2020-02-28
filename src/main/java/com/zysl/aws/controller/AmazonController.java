@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.services.s3.model.Bucket;
 import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -28,6 +29,7 @@ import java.io.OutputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/aws/s3")
 @Slf4j
@@ -53,9 +55,9 @@ public class AmazonController {
      */
     @PostMapping("/shareFile")
     public Result shareFile(@RequestBody ShareFileRequest request){
-    log.info("--开始调用shareFile分享文件的信息接口:{}--",request);
+        log.info("--开始调用shareFile分享文件的信息接口:{}--",request);
 
-    return amasonService.shareFile(request);
+        return amasonService.shareFile(request);
     }
 
 
@@ -120,7 +122,7 @@ public class AmazonController {
     /**
      * 上传文件
      * @param request
-     * @return
+     * @returnuploadFile
      */
     @PostMapping("/uploadFile")
     public Result uploadFile(@RequestBody UploadFileRequest request){
@@ -264,22 +266,13 @@ public class AmazonController {
         //step 2.读取源文件--
         //调用s3接口下载文件内容
         String fileStr = amasonService.getS3FileInfo(request.getBucketName(),request.getFileName());
-        byte[] inBuff = fileStr.getBytes();
-        //测试直接读取本地文件 --TODO
-        /*byte[] inBuff = null;
+        BASE64Decoder decoder = new BASE64Decoder();
+        byte[] inBuff = null;
         try {
-            String filePath = "D:\\tmp\\testFile\\tt01.doc";
-
-            File file = new File(filePath);
-            FileInputStream inputStream = new FileInputStream(file);
-
-            inBuff = new byte[(int) file.length()];
-            inputStream.read(inBuff);
-            inputStream.close();
-
-        }catch (Exception e){
-
-        }*/
+            inBuff = decoder.decodeBuffer(fileStr);
+        } catch (IOException e) {
+            log.info("--changeWordToPdf文件下载异常：--{}", e);
+        }
 
         //step 3.word转pdf、加水印 300,300
         String fileName = BizUtil.getTmpFileNameWithoutSuffix(request.getFileName());
@@ -302,7 +295,9 @@ public class AmazonController {
         }
 
         //step 5.上传到temp-001
-        amasonService.upload(request.getBucketName(), fileName + "text.pdf", outBuff);
+        BASE64Encoder encoder = new BASE64Encoder();
+        String str = encoder.encode(outBuff);
+        amasonService.upload(request.getBucketName(), fileName + "text.pdf", str.getBytes());
         //step 6.新文件入库
         String serverNo = s3ClientFactory.getServerNo(request.getBucketName());
         S3File addS3File = new S3File();
@@ -331,6 +326,7 @@ public class AmazonController {
         dto.setBucketName(bizConfig.WORD_TO_PDF_BUCKET_NAME);
         dto.setFileName(fileName + "text.pdf");
         baseResponse.setModel(dto);
+        baseResponse.setSuccess(true);
         return baseResponse;
     }
 
