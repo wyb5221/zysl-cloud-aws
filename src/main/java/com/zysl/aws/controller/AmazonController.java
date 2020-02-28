@@ -11,7 +11,7 @@ import com.zysl.aws.service.FileService;
 import com.zysl.aws.service.IPDFService;
 import com.zysl.aws.service.IWordService;
 import com.zysl.aws.utils.BizUtil;
-import com.zysl.aws.utils.Md5Util;
+import com.zysl.aws.utils.MD5Utils;
 import com.zysl.aws.utils.S3ClientFactory;
 import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.common.BaseResponse;
@@ -315,7 +315,7 @@ public class AmazonController {
         //创建时间
         addS3File.setCreateTime(new Date());
         //文件内容md5
-        String md5Content = Md5Util.getMd5Content(new String(outBuff));
+        String md5Content = MD5Utils.encode(new String(outBuff));
         //文件内容md5
         addS3File.setContentMd5(md5Content);
         //向数据库保存文件信息

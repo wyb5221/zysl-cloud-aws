@@ -11,7 +11,7 @@ import com.zysl.aws.service.AmasonService;
 import com.zysl.aws.service.FileService;
 import com.zysl.aws.utils.BatchListUtil;
 import com.zysl.aws.utils.DateUtil;
-import com.zysl.aws.utils.Md5Util;
+import com.zysl.aws.utils.MD5Utils;
 import com.zysl.aws.utils.S3ClientFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -186,7 +186,7 @@ public class AmasonServiceImpl implements AmasonService {
              * 根据文件内容md5值判断文件是否存在，存在则直接返回
              */
             //文件内容md5
-            String md5Content = Md5Util.getMd5Content(request.getData());
+            String md5Content = MD5Utils.encode(request.getData());
             S3File s3File = fileService.queryFileInfoByMd5(md5Content);
             //文件信息存在
             if(null != s3File){
@@ -538,7 +538,7 @@ public class AmasonServiceImpl implements AmasonService {
       S3Client s3Client = s3ClientFactory.getS3Client(s3FileDB.getServiceNo());
       ResponseBytes<GetObjectResponse> objectAsBytes = s3Client.getObject(b -> b.bucket(bucketName).key(fileName),
           ResponseTransformer.toBytes());
-      String md5 = Md5Util.getMd5Content(objectAsBytes.asUtf8String());
+      String md5 = MD5Utils.encode(objectAsBytes.asUtf8String());
       s3FileDB.setContentMd5(md5);
 
       return fileService.addFileInfo(s3FileDB);
@@ -627,7 +627,7 @@ public class AmasonServiceImpl implements AmasonService {
 
             String fileContent = getS3FileInfo(defaultName, obj.key());
             //文件内容md5
-            String md5Content = Md5Util.getMd5Content(fileContent);
+            String md5Content = MD5Utils.encode(fileContent);
             //文件内容md5
             addS3File.setContentMd5(md5Content);
             //添加list集合
