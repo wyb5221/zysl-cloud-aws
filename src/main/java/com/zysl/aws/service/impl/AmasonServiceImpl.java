@@ -174,8 +174,6 @@ public class AmasonServiceImpl implements AmasonService {
         String bucketName = request.getBucketName();
         String fileId = request.getFileId();
         byte[] data = request.getData().getBytes();
-        //是否覆盖 0不覆盖 1覆盖
-        String inplace = request.getInplace();
 
         S3Client s3 = getS3Client(bucketName);
         boolean upFlag = false;
