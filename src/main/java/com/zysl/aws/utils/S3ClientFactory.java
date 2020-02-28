@@ -6,6 +6,7 @@ import com.zysl.aws.model.db.S3Service;
 import com.zysl.aws.service.FileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -38,7 +39,7 @@ public class S3ClientFactory {
      * @return
      * @throws Exception
      */
-    @PostConstruct
+//    @PostConstruct
     public void amazonS3ClientInit() {
         DefaultSdkHttpClientBuilder defaultSdkHttpClientBuilder = new DefaultSdkHttpClientBuilder();
         AttributeMap attributeMap = AttributeMap.builder()
@@ -94,6 +95,28 @@ public class S3ClientFactory {
     public S3Client getS3Client(String serverNo) {
         log.info("---getS3Client入参---serverNo：{}", serverNo);
         return  awsMap.get(serverNo);
+    }
+
+    public S3Client initS3Client(String folderName) {
+        DefaultSdkHttpClientBuilder defaultSdkHttpClientBuilder = new DefaultSdkHttpClientBuilder();
+        AttributeMap attributeMap = AttributeMap.builder()
+                .put(SdkHttpConfigurationOption.TRUST_ALL_CERTIFICATES, true)
+                .put(SdkHttpConfigurationOption.WRITE_TIMEOUT, Duration.ofSeconds(300))
+                .put(SdkHttpConfigurationOption.READ_TIMEOUT, Duration.ofSeconds(300))
+                .put(SdkHttpConfigurationOption.CONNECTION_TIMEOUT, Duration.ofSeconds(10))
+                .put(SdkHttpConfigurationOption.CONNECTION_MAX_IDLE_TIMEOUT, Duration.ofSeconds(300))
+                .build();
+
+        S3Service s3Service = fileService.queryServiceInfo(folderName);
+        //初始化s3连接
+        AwsBasicCredentials awsCreds = AwsBasicCredentials.create(s3Service.getAccesskey(), s3Service.getSecretkey());
+        S3Client s3Client = S3Client.builder().
+                httpClient(defaultSdkHttpClientBuilder.buildWithDefaults(attributeMap)).
+                credentialsProvider(StaticCredentialsProvider.create(awsCreds)).
+                endpointOverride(URI.create(s3Service.getEndpoint())).
+                region(Region.US_EAST_1).
+                build();
+        return s3Client;
     }
 
 }

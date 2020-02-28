@@ -23,6 +23,15 @@
     <result column="source_file_id" jdbcType="BIGINT" property="sourceFileId" />
   </resultMap>
 
+  <resultMap id="ServiceBaseResultMap" type="com.zysl.aws.model.db.S3Service">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="service_no" jdbcType="VARCHAR" property="serviceNo" />
+    <result column="service_name" jdbcType="VARCHAR" property="serviceName" />
+    <result column="accessKey" jdbcType="VARCHAR" property="accesskey" />
+    <result column="secretKey" jdbcType="VARCHAR" property="secretkey" />
+    <result column="endpoint" jdbcType="VARCHAR" property="endpoint" />
+  </resultMap>
+
 
   <select id="queryByName" parameterType="java.lang.String" resultMap="FolderBaseResultMap">
     select id, service_no, folder_name, create_time
@@ -64,5 +73,11 @@
       #{item.uploadTime},#{item.createTime},#{item.sourceFileId})
     </foreach>
   </insert>
+
+  <select id="queryServiceInfo" parameterType="java.lang.String" resultMap="ServiceBaseResultMap">
+    select ss.* from s3_service ss inner join s3_folder sf on
+    ss.service_no=sf.service_no
+    where sf.folder_name=#{folderName}
+  </select>
 
 </mapper>

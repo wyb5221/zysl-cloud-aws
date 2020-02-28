@@ -113,4 +113,11 @@ public interface FileService {
      * @return
      */
     int insertBatch(List<S3File> fileList);
+
+    /**
+     * 根据文件夹名称查询服务器信息
+     * @param folderName
+     * @return
+     */
+    S3Service queryServiceInfo(String folderName);
 }

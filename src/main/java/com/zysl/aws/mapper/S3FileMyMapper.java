@@ -2,6 +2,7 @@ package com.zysl.aws.mapper;
 
 import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.model.db.S3Folder;
+import com.zysl.aws.model.db.S3Service;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -52,4 +53,11 @@ public interface S3FileMyMapper {
      * @return
      */
     int insertBatch(List<S3File> list);
+
+    /**
+     * 根据文件夹名称查询服务器信息
+     * @param folderName
+     * @return
+     */
+    S3Service queryServiceInfo(String folderName);
 }

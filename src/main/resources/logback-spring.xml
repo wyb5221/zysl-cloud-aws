@@ -2,8 +2,8 @@
 <configuration>
     <contextName>logback</contextName>
     <springProperty scope="context" name="demo" source="spring.application.name"/>
-    <property name="log.path" value="/data/applogs/zysl-cloud-aws"/>
-    <property name="app_name" value="zysl-cloud-aws"/>
+    <property name="log.path" value="/data/applogs/zysl-cloud-aws-init"/>
+    <property name="app_name" value="zysl-cloud-aws-init"/>
     <!--控台输出-->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
