@@ -87,7 +87,7 @@ public class AmazonController {
      */
     @GetMapping("/createBucket")
     public Result createBucket(String bucketName, String serviceNo){
-        log.info("--开始调用createBucket创建文件夹接口--bucketName:{},serviceName:{}",
+        log.info("--开始调用createBucket创建文件夹接口--bucketName:{},serviceNo:{}",
                 bucketName, serviceNo);
         String pattern = "^[a-zA-Z0-9.\\-_]{3,60}$";
         //判断存储桶是否满足命名规则
@@ -126,7 +126,7 @@ public class AmazonController {
      */
     @PostMapping("/uploadFile")
     public Result uploadFile(@RequestBody UploadFileRequest request){
-        log.info("--开始调用uploadFile上传文件接口--");
+        log.info("--开始调用uploadFile上传文件接口request：{}--", request);
         return  amasonService.uploadFile(request);
     }
 
@@ -206,6 +206,7 @@ public class AmazonController {
      */
     @GetMapping("/getVideo")
     public void getVideo(HttpServletResponse response, String bucketName, String fileId){
+        log.info("--开始getVideo获取视频文件信息--bucketName:{},fileId:{}", bucketName, fileId);
         String str = amasonService.downloadFile(response, bucketName, fileId);
         try {
             BASE64Decoder decoder = new BASE64Decoder();
@@ -221,7 +222,7 @@ public class AmazonController {
                 out.write(bytes);
                 out.flush();
             }catch (Exception e){
-                log.info("--文件流转换异常：--", e);
+                log.error("--文件流转换异常：--", e);
             }finally {
                 try {
                     out.close();

@@ -278,7 +278,7 @@ public class AmasonServiceImpl implements AmasonService {
                 return true;
             }
         }catch (NoSuchKeyException e){
-            log.warn("--doesObjectExist异常--NoSuchKeyException:{}", fileId);
+            log.error("--doesObjectExist异常--NoSuchKeyException:{}", fileId);
         }catch (Exception e){
             log.error("--doesObjectExist异常--:{}", e);
         }
@@ -304,7 +304,7 @@ public class AmasonServiceImpl implements AmasonService {
                 return true;
             }
         }catch (Exception e){
-            log.info("--上传文件异常--：", e);
+            log.error("--上传文件异常--：", e);
         }
         return false;
     }
@@ -379,7 +379,7 @@ public class AmasonServiceImpl implements AmasonService {
 //            String str = objectAsBytes.asUtf8String();
             return new String(bytes);
         } catch (Exception e) {
-            log.info("--s3接口下载文件信息异常：--{}", e);
+            log.error("--s3接口下载文件信息异常：--{}", e);
             return null;
         }
     }
@@ -447,7 +447,7 @@ public class AmasonServiceImpl implements AmasonService {
             Long fileSize = headObjectResponse.contentLength();
             return fileSize;
         }catch (Exception e) {
-            log.info("--调用s3接口查询服务器文件大小异常：--{}", e.getMessage());
+            log.error("--调用s3接口查询服务器文件大小异常：--{}", e.getMessage());
             return -1L;
         }
     }
