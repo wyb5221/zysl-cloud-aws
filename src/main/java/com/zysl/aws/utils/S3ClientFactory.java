@@ -21,14 +21,10 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import software.amazon.awssdk.utils.StringUtils;
 
 @Component
 @Slf4j
 public class S3ClientFactory {
-
-    @Autowired
-    private MyConfig myConfig;
 
     @Autowired
     private FileService fileService;
