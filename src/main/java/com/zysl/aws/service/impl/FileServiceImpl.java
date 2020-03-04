@@ -176,4 +176,12 @@ public class FileServiceImpl implements FileService {
         log.info("--批量插入数据返回：--{}", insetNum);
         return insetNum;
     }
+
+    @Override
+    public int updateFileInfo(S3File s3File) {
+        log.info("--updateFileInfo修改文件信息s3File：--{}", s3File);
+        int upNum = s3FileMapper.updateByPrimaryKeySelective(s3File);
+        log.info("--updateFileInfo修改文件信息返回：--{}", upNum);
+        return upNum;
+    }
 }

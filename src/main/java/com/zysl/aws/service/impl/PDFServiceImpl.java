@@ -71,13 +71,13 @@ public class PDFServiceImpl implements IPDFService {
             int pageSize = reader.getNumberOfPages();// 原pdf文件的总页数
             for (int i = 1; i <= pageSize; i++) {
                 //under = stamp.getUnderContent(i);// 水印在之前文本下
-                for(int j=0;j<2;j++){
+                for(int j=0;j<5;j++){
                     under = stamp.getOverContent(i);//水印在之前文本上
                     under.beginText();
                     under.setColorFill(new BaseColor(211,211,211));// 文字水印 颜色
                     under.setFontAndSize(font, 50);// 文字水印 字体及字号
-                    under.setTextMatrix(textWidth, textHeight);// 文字水印 起始位置
-                    under.showTextAligned(Element.ALIGN_CENTER, textMark, textWidth, textHeight + j*100, 45);
+                    under.setTextMatrix(textWidth + (j * 10), textHeight + (j * 50));// 文字水印 起始位置
+                    under.showTextAligned(Element.ALIGN_CENTER, textMark, textWidth, textHeight + j*100, 45);//开始写入水印
                     under.endText();
                 }
 

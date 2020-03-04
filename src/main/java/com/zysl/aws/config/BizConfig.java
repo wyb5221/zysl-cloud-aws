@@ -18,14 +18,5 @@ public class BizConfig {
   @Value("${spring.pdf.BUCKET_NAME}")
   public String WORD_TO_PDF_BUCKET_NAME;
 
-  //是否初始化
-  @Value("${spring.s3.initFlag}")
-  public boolean initFlag;
-  //启动线程数
-  @Value("${spring.s3.thredaNum}")
-  public Integer thredaNum;
-  //默认文件夹
-  @Value("${spring.s3.defaultName}")
-  public String defaultName;
 
 }

@@ -2,9 +2,7 @@ package com.zysl.aws.service.impl;
 
 import com.zysl.aws.common.result.Result;
 import com.zysl.aws.config.BizConfig;
-import com.zysl.aws.model.FileInfo;
-import com.zysl.aws.model.ShareFileRequest;
-import com.zysl.aws.model.UploadFileRequest;
+import com.zysl.aws.model.*;
 import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.model.db.S3Folder;
 import com.zysl.aws.service.AmasonService;
@@ -23,6 +21,8 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.paginators.ListObjectVersionsIterable;
+import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletResponse;
@@ -75,6 +75,17 @@ public class AmasonServiceImpl implements AmasonService {
             //保存文件夹信息
             int num = fileService.insertFolderInfo(bucketName, serviceNo);
             log.info("--文件信息保存返回--num:{}", num);
+
+            //启动文件夹的版本控制
+            PutBucketVersioningResponse result = s3.putBucketVersioning(PutBucketVersioningRequest.builder()
+                    .bucket(bucketName)
+                    .versioningConfiguration(
+                            VersioningConfiguration.builder()
+                                    .status(BucketVersioningStatus.ENABLED)
+                                    .build())
+                    .build());
+            log.info("--启用版本控制返回--result:{}", result);
+
             return Result.success(fileName);
         }
     }
@@ -107,22 +118,25 @@ public class AmasonServiceImpl implements AmasonService {
         List<FileInfo> fileList = new ArrayList<>();
         S3Client s3 = getS3Client(bucketName);
 
-        ListObjectsV2Response result = s3.listObjectsV2(ListObjectsV2Request.builder().
-                bucket(bucketName).fetchOwner(true).build());
+        ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder().bucket(bucketName).build();
+        ListObjectsV2Response result = null;
 
         do{
+            result = s3.listObjectsV2(listObjectsV2Request);
+            log.info("--查询文件是否都已返回--：{}", result.isTruncated());
+
             List<S3Object> list = result.contents();
             List<FileInfo> resultList = addFileInfo(list);
             //合并list结果集
             fileList.addAll(resultList);
             String s = list.get(list.size()-1).key();
-            result = s3.listObjectsV2(ListObjectsV2Request.builder().bucket(bucketName).startAfter(s).build());
+            listObjectsV2Request = ListObjectsV2Request.builder()
+                    .bucket(bucketName)
+                    .startAfter(s)
+                    .continuationToken(result.nextContinuationToken())
+                    .build();
         }while (result.isTruncated());
 
-        List<S3Object> list = result.contents();
-        List<FileInfo> resultList = addFileInfo(list);
-        //合并list结果集
-        fileList.addAll(resultList);
         log.info("-----objectList.contents().fileList：{}", fileList.size());
 
         return Result.success(fileList);
@@ -146,24 +160,6 @@ public class AmasonServiceImpl implements AmasonService {
     public Result uploadFile(UploadFileRequest request) {
         Map<String, Object> map = new HashMap<>();
 
-       /* try {
-            String filePath = "D:\\tmp\\testFile\\tt01.doc";
-
-            File file = new File(filePath);
-            FileInputStream inputStream = new FileInputStream(file);
-
-            byte[] bytes = new byte[(int) file.length()];
-            inputStream.read(bytes);
-            inputStream.close();
-
-            BASE64Encoder encoder = new BASE64Encoder();
-            String str = encoder.encode(bytes);
-            request.setData(str);
-        }catch (Exception e){
-
-        }*/
-
-
         if(StringUtils.isEmpty(request.getBucketName())){
             return Result.error("入参bucketName不能为空");
         }
@@ -181,6 +177,7 @@ public class AmasonServiceImpl implements AmasonService {
             log.info("--文件夹存在--");
             if(StringUtils.isEmpty(fileId)){
                 fileId = UUID.randomUUID().toString().replaceAll("-","");
+                request.setFileId(fileId);
             }
             /**
              * 根据文件内容md5值判断文件是否存在，存在则直接返回
@@ -200,37 +197,9 @@ public class AmasonServiceImpl implements AmasonService {
                 upFlag = upload(bucketName, fileId, data);
 
                 if(upFlag){
-                    //上传时间
-                    Date uploadTime = new Date();
-                    //根据文件夹名称获取服务器编号
-                    String serverNo = s3ClientFactory.getServerNo(request.getBucketName());
-                    //文件大小
-                    long fileSize = request.getData().length();
+                    //修改文件信息
+                    updateFileInfo(request, md5Content);
 
-                    S3File addS3File = new S3File();
-                    //服务器编号
-                    addS3File.setServiceNo(serverNo);
-                    //文件名称
-                    addS3File.setFileName(request.getFileId());
-                    //文件夹名称
-                    addS3File.setFolderName(request.getBucketName());
-                    //文件大小
-                    addS3File.setFileSize(fileSize);
-                    //最大可下载次数
-                    addS3File.setMaxAmount(request.getMaxAmount());
-                    //上传时间
-                    addS3File.setUploadTime(uploadTime);
-                    //创建时间
-                    addS3File.setCreateTime(uploadTime);
-                    //获取下载有效截至时间
-                    if(!StringUtils.isEmpty(request.getValidity())){
-                        Date validityTime = DateUtil.addDateHour(uploadTime, request.getValidity());
-                        addS3File.setValidityTime(validityTime);
-                    }
-                    //文件内容md5
-                    addS3File.setContentMd5(md5Content);
-                    //向数据库保存文件信息
-                    fileService.addFileInfo(addS3File);
                     map.put("bucketName", request.getBucketName());
                     map.put("fileId", fileId);
                     return Result.success(map);
@@ -241,6 +210,54 @@ public class AmasonServiceImpl implements AmasonService {
         }else {
             log.info("--文件夹不存在:{}--",request.getBucketName());
             return Result.error(bucketName + "文件夹不存在,请先创建");
+        }
+    }
+
+    /**
+     *  新增或修改文件信息
+     */
+    public void updateFileInfo(UploadFileRequest request, String md5Content){
+        //查询文件是否存在
+        S3File s3File = fileService.getFileInfo(request.getBucketName(), request.getFileId());
+        //文件信息存在则修改
+        if(null != s3File){
+            s3File.setContentMd5(md5Content);//新文件内容md5
+            s3File.setUpdateTime(new Date());//修改时间
+            s3File.setFileSize((long)request.getData().length());//新文件大小
+            fileService.updateFileInfo(s3File);
+        }else {
+            //新增文件信息
+            //上传时间
+            Date uploadTime = new Date();
+            //根据文件夹名称获取服务器编号
+            String serverNo = s3ClientFactory.getServerNo(request.getBucketName());
+            //文件大小
+            long fileSize = request.getData().length();
+
+            S3File addS3File = new S3File();
+            //服务器编号
+            addS3File.setServiceNo(serverNo);
+            //文件名称
+            addS3File.setFileName(request.getFileId());
+            //文件夹名称
+            addS3File.setFolderName(request.getBucketName());
+            //文件大小
+            addS3File.setFileSize(fileSize);
+            //最大可下载次数
+            addS3File.setMaxAmount(request.getMaxAmount());
+            //上传时间
+            addS3File.setUploadTime(uploadTime);
+            //创建时间
+            addS3File.setCreateTime(uploadTime);
+            //获取下载有效截至时间
+            if(!StringUtils.isEmpty(request.getValidity())){
+                Date validityTime = DateUtil.addDateHour(uploadTime, request.getValidity());
+                addS3File.setValidityTime(validityTime);
+            }
+            //文件内容md5
+            addS3File.setContentMd5(md5Content);
+            //向数据库保存文件信息
+            fileService.addFileInfo(addS3File);
         }
     }
 
@@ -308,11 +325,11 @@ public class AmasonServiceImpl implements AmasonService {
     }
 
     @Override
-    public String downloadFile(HttpServletResponse response, String bucketName, String key) {
-        S3File s3File = fileService.getFileInfo(bucketName,key);
+    public String downloadFile(HttpServletResponse response, DownloadFileRequest request) {
+        S3File s3File = fileService.getFileInfo(request.getBucketName(), request.getFileId());
         if(null == s3File){
             log.info("--数据库记录不存在--");
-            String str = getS3FileInfo(bucketName, key);
+            String str = getS3FileInfo(request.getBucketName(), request.getFileId(), request.getVersionId());
             return str;
         }
         Long fileKey = s3File.getId();
@@ -330,6 +347,8 @@ public class AmasonServiceImpl implements AmasonService {
             return null;
         }
 
+        String bucketName = request.getBucketName();
+        String key = request.getFileId();
         // 判断是否源文件
         if (s3File != null && s3File.getSourceFileId() != null && s3File.getSourceFileId() > 0) {
           s3File = fileService.getFileInfo(s3File.getSourceFileId());
@@ -337,12 +356,10 @@ public class AmasonServiceImpl implements AmasonService {
             key = s3File.getFileName();
         }
 
-        String folderName = bucketName;
-        String fileName = key;
-        if(null != doesBucketExist(folderName)){
+        if(null != doesBucketExist(bucketName)){
             log.info("--文件夹存在--");
 
-            String str = getS3FileInfo(bucketName, key);
+            String str = getS3FileInfo(bucketName, key, request.getVersionId());
 
             //下载成功后修改最大下载次数
             if(!StringUtils.isEmpty(maxAmount)){
@@ -364,13 +381,22 @@ public class AmasonServiceImpl implements AmasonService {
      * @return
      */
     @Override
-    public String getS3FileInfo(String bucketName, String key){
-        log.info("--调用s3接口下载文件内容入参-bucketName:{},-key:{}", bucketName, key);
+    public String getS3FileInfo(String bucketName, String key, String versionId){
+        log.info("--调用s3接口下载文件内容入参-bucketName:{},-key:{},versionId:{}", bucketName, key, versionId);
         S3Client s3 = getS3Client(bucketName);
         try {
-            ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(b ->
-                            b.bucket(bucketName).key(key),
+            GetObjectRequest.Builder request = null;
+            if(StringUtils.isEmpty(versionId)){
+                request = GetObjectRequest.builder().bucket(bucketName).key(key);
+            }else {
+                request = GetObjectRequest.builder().bucket(bucketName).key(key).versionId(versionId);
+            }
+            ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(request.build(),
                     ResponseTransformer.toBytes());
+
+            /*ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(b ->
+                            b.bucket(bucketName).key(key).versionId(versionId),
+                    ResponseTransformer.toBytes());*/
             byte[] bytes = objectAsBytes.asByteArray();
 //            String a = new String(bytes);
 //            byte[] aa = a.getBytes();
@@ -475,9 +501,11 @@ public class AmasonServiceImpl implements AmasonService {
         }
 
         String shareFileName = getFileNameAddTimeStamp(request.getFileName());
+
         //设置分享-插入记录
         s3File.setSourceFileId(s3File.getId());
         s3File.setId(null);
+        s3File.setContentMd5("");
         s3File.setFileName(shareFileName);
         s3File.setMaxAmount(request.getMaxDownloadAmout());
         Date createDate = new Date();
@@ -544,105 +572,56 @@ public class AmasonServiceImpl implements AmasonService {
       return fileService.addFileInfo(s3FileDB);
     }
 
-    /**
-     * 服务器文件初始化
-     */
-    @PostConstruct
-    public void fileInfoInit(){
+    @Override
+    public List<FileVersionResponse> getS3FileVersion(String bucketName, String key) {
+        S3Client s3 = getS3Client(bucketName);
+        ListObjectVersionsResponse response = s3.
+                listObjectVersions(ListObjectVersionsRequest.builder().
+                bucket(bucketName).
+                prefix(key).
+                build());
 
-        log.info("initFlag:"+ bizConfig.initFlag);
+        List<FileVersionResponse> listVersion = new ArrayList<>();
+        List<ObjectVersion> list = response.versions();
+        list.forEach(obj -> {
+            FileVersionResponse version = new FileVersionResponse();
+            version.setKey(obj.key());
+            version.setETag(obj.eTag());
+            version.setIsLatest(obj.isLatest());
+            version.setLastModified(obj.lastModified());
+            version.setSize(obj.size());
+            version.setVersionId(obj.versionId());
+            version.setStorageClass(obj.storageClassAsString());
+            listVersion.add(version);
+        });
 
-        if(bizConfig.initFlag){
-            log.info("-----初始化开始------");
-            log.info("---开启线程数thredaNum:{}----", bizConfig.thredaNum);
-            S3Client s3 = getS3Client(bizConfig.defaultName);
-
-            ListObjectsV2Response result = s3.listObjectsV2(ListObjectsV2Request.builder().
-                    bucket(bizConfig.defaultName).fetchOwner(true).build());
-
-            do{
-                List<S3Object> list = result.contents();
-                creatThread(list);
-                try {
-                    Thread.sleep(3000);
-                }catch (Exception e) {
-
-                }
-                String s = list.get(list.size()-1).key();
-                result = s3.listObjectsV2(ListObjectsV2Request.builder().
-                        bucket(bizConfig.defaultName).
-                        startAfter(s).build());
-            }while (result.isTruncated());
-            List<S3Object> list = result.contents();
-            creatThread(list);
-        }
+        return listVersion;
     }
 
-    //创建线程处理初始化数据
-    public void creatThread(List<S3Object> list){
-        log.info("-----objectList.contents().list：{}", list.size());
+    @Override
+    public Result setFileVersion(SetFileVersionRequest request) {
+        if(null != request){
+            S3Client s3 = getS3Client(request.getBucketName());
+            //启动文件夹的版本控制
+            PutBucketVersioningResponse result = s3.putBucketVersioning(PutBucketVersioningRequest.builder()
+                    .bucket(request.getBucketName())
+                    .versioningConfiguration(
+                            VersioningConfiguration.builder()
+                                    .status(request.getStatus())//BucketVersioningStatus.ENABLED
+                                    .build())
+                    .build());
+            log.info("--setFileVersion启用版本控制返回--result:{}", result.sdkHttpResponse().statusCode());
 
-        Map<Integer,List<S3Object>> itemMap = new BatchListUtil<S3Object>().batchList(list, bizConfig.thredaNum);
-        log.info("-----objectList.contents().itemMap：{}", itemMap.size());
+            if("200".equals(result.sdkHttpResponse().statusCode()+"")){
+                return Result.success();
+            }else {
+                log.info("--setFileVersion启用版本控制返回--result.sdkHttpResponse:{}", result.sdkHttpResponse().statusText());
 
-        //分批次更新
-        for (int i = 0; i < itemMap.size(); i++) {
-            log.info("---启动线程：{}---", i);
-            int num = i+1;
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    log.info("---线程：{}启动开始：{}", Thread.currentThread().getId(), System.currentTimeMillis());
-                    List<S3Object> fileList = itemMap.get(num);
-                    insertFile(fileList, bizConfig.defaultName);
-                    log.info("---线程：{}执行结束：{}", Thread.currentThread().getId(), System.currentTimeMillis());
-                }
-            }).start();
-        }
-    }
-
-    /**
-     * 将服务器文件信息保存数据库
-     * @param fileList
-     * @param defaultName
-     */
-    public void insertFile(List<S3Object> fileList, String defaultName){
-        String serverNo = s3ClientFactory.getServerNo(defaultName);
-        List<S3File> insertList = new ArrayList<>();
-
-        for (S3Object obj : fileList) {
-            S3File addS3File = new S3File();
-            //服务器编号
-            addS3File.setServiceNo(serverNo);
-            //文件名称
-            addS3File.setFileName(obj.key());
-            //文件夹名称
-            addS3File.setFolderName(defaultName);
-            //文件大小
-            addS3File.setFileSize(obj.size());
-            //上传时间
-            addS3File.setUploadTime(Date.from(obj.lastModified()));
-            //创建时间
-            addS3File.setCreateTime(new Date());
-
-            String fileContent = getS3FileInfo(defaultName, obj.key());
-            //文件内容md5
-            String md5Content = MD5Utils.encode(fileContent);
-            //文件内容md5
-            addS3File.setContentMd5(md5Content);
-            //添加list集合
-            insertList.add(addS3File);
-            //每200条数据插入一次数据库
-            if(insertList.size() == 200){
-                int num = fileService.insertBatch(insertList);
-                log.info("--线程：{}--插入数据num:--{}", Thread.currentThread().getId(), num);
-                insertList = new ArrayList<>();
+                return Result.error("版本权限设置失败");
             }
-        }
-        //不足200条的时候，list循环完也插入一次数据库
-        if(!CollectionUtils.isEmpty(insertList)){
-            int num = fileService.insertBatch(insertList);
-            log.info("--线程：{}--插入数据num:--{}", Thread.currentThread().getId(), num);
+        }else {
+            log.info("--setFileVersion参数为空--");
+            return Result.error("参数为空");
         }
     }
 
