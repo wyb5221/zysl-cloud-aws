@@ -19,8 +19,6 @@ public class UploadFileRequest implements Serializable {
     private String bucketName;
     //文件名
     private String fileId;
-    //是否覆盖 0不覆盖 1覆盖
-    private String inplace;
     //文件流
     private String data;
     //最大可下载次数
@@ -33,8 +31,7 @@ public class UploadFileRequest implements Serializable {
         return "UploadFileRequest{" +
                 "bucketName='" + bucketName + '\'' +
                 ", fileId='" + fileId + '\'' +
-                ", inplace='" + inplace + '\'' +
-                ", data='" + data + '\'' +
+                ", data='" + data.length() + '\'' +
                 ", maxAmount=" + maxAmount +
                 ", validity=" + validity +
                 '}';

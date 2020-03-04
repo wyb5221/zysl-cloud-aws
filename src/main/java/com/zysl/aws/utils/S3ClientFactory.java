@@ -43,10 +43,10 @@ public class S3ClientFactory {
         DefaultSdkHttpClientBuilder defaultSdkHttpClientBuilder = new DefaultSdkHttpClientBuilder();
         AttributeMap attributeMap = AttributeMap.builder()
                 .put(SdkHttpConfigurationOption.TRUST_ALL_CERTIFICATES, true)
-                .put(SdkHttpConfigurationOption.WRITE_TIMEOUT, Duration.ofSeconds(300))
-                .put(SdkHttpConfigurationOption.READ_TIMEOUT, Duration.ofSeconds(300))
-                .put(SdkHttpConfigurationOption.CONNECTION_TIMEOUT, Duration.ofSeconds(10))
-                .put(SdkHttpConfigurationOption.CONNECTION_MAX_IDLE_TIMEOUT, Duration.ofSeconds(300))
+                .put(SdkHttpConfigurationOption.WRITE_TIMEOUT, Duration.ofSeconds(300))//写入超时
+                .put(SdkHttpConfigurationOption.READ_TIMEOUT, Duration.ofSeconds(300))//读取超时
+                .put(SdkHttpConfigurationOption.CONNECTION_TIMEOUT, Duration.ofSeconds(10))//连接超时
+                .put(SdkHttpConfigurationOption.CONNECTION_MAX_IDLE_TIMEOUT, Duration.ofSeconds(300))//连接最大空闲超时
                 .build();
 
         List<S3Service> serviceList = fileService.queryS3Service();

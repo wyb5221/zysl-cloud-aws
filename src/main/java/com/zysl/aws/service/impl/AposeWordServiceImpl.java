@@ -122,7 +122,7 @@ public class AposeWordServiceImpl implements IWordService {
             aposeLic.setLicense(is);
             result = true;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("--apose校验异常：{}--", e);
         }
         return result;
     }

@@ -113,4 +113,11 @@ public interface FileService {
      * @return
      */
     int insertBatch(List<S3File> fileList);
+
+    /**
+     * 修改文件信息
+     * @param s3File
+     * @return
+     */
+    int updateFileInfo(S3File s3File);
 }

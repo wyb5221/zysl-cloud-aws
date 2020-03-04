@@ -21,6 +21,7 @@
     <result column="validity_time" jdbcType="TIMESTAMP" property="validityTime" />
     <result column="upload_time" jdbcType="TIMESTAMP" property="uploadTime" />
     <result column="source_file_id" jdbcType="BIGINT" property="sourceFileId" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
   </resultMap>
 
 

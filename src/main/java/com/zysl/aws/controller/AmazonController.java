@@ -11,7 +11,7 @@ import com.zysl.aws.service.FileService;
 import com.zysl.aws.service.IPDFService;
 import com.zysl.aws.service.IWordService;
 import com.zysl.aws.utils.BizUtil;
-import com.zysl.aws.utils.Md5Util;
+import com.zysl.aws.utils.MD5Utils;
 import com.zysl.aws.utils.S3ClientFactory;
 import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.common.BaseResponse;
@@ -87,7 +87,7 @@ public class AmazonController {
      */
     @GetMapping("/createBucket")
     public Result createBucket(String bucketName, String serviceNo){
-        log.info("--开始调用createBucket创建文件夹接口--bucketName:{},serviceName:{}",
+        log.info("--开始调用createBucket创建文件夹接口--bucketName:{},serviceNo:{}",
                 bucketName, serviceNo);
         String pattern = "^[a-zA-Z0-9.\\-_]{3,60}$";
         //判断存储桶是否满足命名规则
@@ -126,7 +126,7 @@ public class AmazonController {
      */
     @PostMapping("/uploadFile")
     public Result uploadFile(@RequestBody UploadFileRequest request){
-        log.info("--开始调用uploadFile上传文件接口--");
+        log.info("--开始调用uploadFile上传文件接口request：{}--", request);
         return  amasonService.uploadFile(request);
     }
 
@@ -136,14 +136,14 @@ public class AmazonController {
      * @param fileId
      * @return
      */
-    @GetMapping("/downloadFile")
-    public Result downloadFile(HttpServletResponse response, String bucketName, String fileId, String type){
-        log.info("--开始调用downloadFile下载文件接口--bucketName:{},fileId:{}，type：{}", bucketName, fileId, type);
+    @PostMapping("/downloadFile")
+    public Result downloadFile(HttpServletResponse response,@RequestBody DownloadFileRequest request){
+        log.info("--开始调用downloadFile下载文件接口--request:{} ", request);
         Long startTime = System.currentTimeMillis();
-        String str = amasonService.downloadFile(response, bucketName, fileId);
+        String str = amasonService.downloadFile(response, request);
         if(!StringUtils.isEmpty(str)){
             log.info("--下载接口返回的文件数据大小--", str.length());
-            if(DownTypeEnum.COVER.getCode().equals(type)){
+            if(DownTypeEnum.COVER.getCode().equals(request.getType())){
                 Long usedTime = System.currentTimeMillis() - startTime;
                 Map<String, Object> result = new HashMap<>();
                 result.put("data", str);
@@ -155,7 +155,7 @@ public class AmazonController {
                     //1下载文件流
                     OutputStream outputStream = response.getOutputStream();
                     response.setContentType("application/octet-stream");//告诉浏览器输出内容为流
-                    response.setHeader("Content-Disposition", "attachment;fileName="+fileId);
+                    response.setHeader("Content-Disposition", "attachment;fileName="+request.getFileId());
                     response.setCharacterEncoding("UTF-8");
 
                     BASE64Decoder decoder = new BASE64Decoder();
@@ -206,7 +206,11 @@ public class AmazonController {
      */
     @GetMapping("/getVideo")
     public void getVideo(HttpServletResponse response, String bucketName, String fileId){
-        String str = amasonService.downloadFile(response, bucketName, fileId);
+        log.info("--开始getVideo获取视频文件信息--bucketName:{},fileId:{}", bucketName, fileId);
+        DownloadFileRequest request = new DownloadFileRequest();
+        request.setBucketName(bucketName);
+        request.setFileId(fileId);
+        String str = amasonService.downloadFile(response, request);
         try {
             BASE64Decoder decoder = new BASE64Decoder();
             byte[] bytes = decoder.decodeBuffer(str);
@@ -221,7 +225,7 @@ public class AmazonController {
                 out.write(bytes);
                 out.flush();
             }catch (Exception e){
-                log.info("--文件流转换异常：--", e);
+                log.error("--文件流转换异常：--", e);
             }finally {
                 try {
                     out.close();
@@ -265,7 +269,7 @@ public class AmazonController {
         }
         //step 2.读取源文件--
         //调用s3接口下载文件内容
-        String fileStr = amasonService.getS3FileInfo(request.getBucketName(),request.getFileName());
+        String fileStr = amasonService.getS3FileInfo(request.getBucketName(),request.getFileName(), "");
         BASE64Decoder decoder = new BASE64Decoder();
         byte[] inBuff = null;
         try {
@@ -314,7 +318,7 @@ public class AmazonController {
         //创建时间
         addS3File.setCreateTime(new Date());
         //文件内容md5
-        String md5Content = Md5Util.getMd5Content(new String(outBuff));
+        String md5Content = MD5Utils.encode(new String(outBuff));
         //文件内容md5
         addS3File.setContentMd5(md5Content);
         //向数据库保存文件信息
@@ -328,6 +332,32 @@ public class AmazonController {
         baseResponse.setModel(dto);
         baseResponse.setSuccess(true);
         return baseResponse;
+    }
+
+
+    /**
+     * 设置文件夹的版本控制权限
+     * @param bucketName
+     * @param status
+     * @return
+     */
+    @PostMapping("/setVersion")
+    public Result updatFileVersion(@RequestBody SetFileVersionRequest request){
+        log.info("--updatFileVersion设置文件夹的版本控制权限--request:{}", request);
+        return amasonService.setFileVersion(request);
+    }
+
+    /**
+     * 获取文件版本信息
+     * @param bucketName
+     * @param fileName
+     * @return
+     */
+    @GetMapping("/getFileVersion")
+    public Result getFileVersion(String bucketName, String fileName){
+        log.info("--getFileVersion获取文件版本信息--bucketName:{},fileName:{}", bucketName, fileName);
+        List<FileVersionResponse> list = amasonService.getS3FileVersion(bucketName, fileName);
+        return Result.success(list);
     }
 
 }

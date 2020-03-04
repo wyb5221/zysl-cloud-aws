@@ -1,8 +1,7 @@
 package com.zysl.aws.service;
 
 import com.zysl.aws.common.result.Result;
-import com.zysl.aws.model.ShareFileRequest;
-import com.zysl.aws.model.UploadFileRequest;
+import com.zysl.aws.model.*;
 import software.amazon.awssdk.services.s3.model.Bucket;
 
 import javax.servlet.http.HttpServletResponse;
@@ -40,7 +39,7 @@ public interface AmasonService {
     /**
      * 下载文件
      */
-    String downloadFile(HttpServletResponse response, String bucketName, String key);
+    String downloadFile(HttpServletResponse response, DownloadFileRequest request);
 
     /**
      * 删除文件
@@ -68,7 +67,7 @@ public interface AmasonService {
      * @param key
      * @return
      */
-    String getS3FileInfo(String bucketName, String key);
+    String getS3FileInfo(String bucketName, String key, String versionId);
 
     /**
      * 调用s3接口查询服务器文件大小
@@ -87,4 +86,16 @@ public interface AmasonService {
      */
     boolean upload(String bucketName, String fileId, byte[] data);
 
+    /**
+     *
+     * @param bucketName
+     * @param key
+     */
+    List<FileVersionResponse> getS3FileVersion(String bucketName, String key);
+
+    /**
+     * 设置文件版本权限
+     * @return
+     */
+    Result setFileVersion(SetFileVersionRequest request);
 }

@@ -8,7 +8,7 @@ import com.zysl.aws.model.UploadFileRequest;
 import com.zysl.aws.model.db.*;
 import com.zysl.aws.service.FileService;
 import com.zysl.aws.utils.DateUtil;
-import com.zysl.aws.utils.Md5Util;
+import com.zysl.aws.utils.MD5Utils;
 import com.zysl.aws.utils.S3ClientFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,7 +130,7 @@ public class FileServiceImpl implements FileService {
             s3File.setValidityTime(validityTime);
         }
         //文件内容md5
-        String md5Content = Md5Util.getMd5Content(request.getData());
+        String md5Content = MD5Utils.encode(request.getData());
         s3File.setContentMd5(md5Content);
 
         Integer num = s3FileMapper.insert(s3File);
@@ -175,5 +175,13 @@ public class FileServiceImpl implements FileService {
         int insetNum = s3FileMyMapper.insertBatch(fileList);
         log.info("--批量插入数据返回：--{}", insetNum);
         return insetNum;
+    }
+
+    @Override
+    public int updateFileInfo(S3File s3File) {
+        log.info("--updateFileInfo修改文件信息s3File：--{}", s3File);
+        int upNum = s3FileMapper.updateByPrimaryKeySelective(s3File);
+        log.info("--updateFileInfo修改文件信息返回：--{}", upNum);
+        return upNum;
     }
 }
