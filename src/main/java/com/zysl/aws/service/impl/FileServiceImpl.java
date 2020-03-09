@@ -186,4 +186,27 @@ public class FileServiceImpl implements FileService {
     public S3Service queryServiceInfo(String folderName) {
         return s3FileMyMapper.queryServiceInfo(folderName);
     }
+
+    @Override
+    public S3File queryPageFileInfo(int currPage, int pageSize) {
+
+        return s3FileMyMapper.queryPageFileInfo(currPage, pageSize);
+    }
+
+    @Override
+    public int updateFileInfo(S3File s3File) {
+        log.info("--updateFileInfo修改文件信息s3File：--{}", s3File);
+        int upNum = s3FileMapper.updateByPrimaryKeySelective(s3File);
+        log.info("--updateFileInfo修改文件信息返回：--{}", upNum);
+        return upNum;
+    }
+
+    @Override
+    public int updateTempFileInfo(S3File s3File) {
+        log.info("--updateTempFileInfo修改文件信息s3File：--{}", s3File);
+        int upNum = s3FileMyMapper.updateByPrimaryKeySelective(s3File);
+        log.info("--updateTempFileInfo修改文件信息返回：--{}", upNum);
+        return upNum;
+    }
+
 }

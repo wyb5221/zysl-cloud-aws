@@ -60,4 +60,19 @@ public interface S3FileMyMapper {
      * @return
      */
     S3Service queryServiceInfo(String folderName);
+
+    /**
+     * 分页查询文件信息
+     * @param currPage
+     * @param pageSize
+     * @return
+     */
+    S3File queryPageFileInfo(@Param("currPage") int currPage, @Param("pageSize") int pageSize);
+
+    /**
+     * 修改文件信息
+     * @param record
+     * @return
+     */
+    int updateByPrimaryKeySelective(S3File record);
 }

@@ -1,6 +1,7 @@
 package com.zysl.aws.service.impl;
 
 import com.zysl.aws.config.BizConfig;
+import com.zysl.aws.model.FileInfo;
 import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.service.FileService;
 import com.zysl.aws.utils.BatchListUtil;
@@ -10,13 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
-import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.model.*;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
@@ -46,33 +45,38 @@ public class FileInitServiceImpl {
         log.info("initFlag:"+ bizConfig.initFlag);
 
         if(bizConfig.initFlag){
-            log.info("-----初始化开始------");
+            log.info("-----初始化开始:{}------", System.currentTimeMillis());
+            String[] arrs = bizConfig.defaultName.split(",");
             log.info("---开启线程数thredaNum:{}----", bizConfig.thredaNum);
-            S3Client s3 = s3ClientFactory.initS3Client(bizConfig.defaultName);
+            for (int i = 0; i < arrs.length; i++) {
+                S3Client s3 = s3ClientFactory.initS3Client(arrs[i]);
 
-            ListObjectsV2Response result = s3.listObjectsV2(ListObjectsV2Request.builder().
-                    bucket(bizConfig.defaultName).fetchOwner(true).build());
+                ListObjectsResponse response = null;
+                ListObjectsRequest listObjectsRequest = null;
+                String key = "";
+                do{
+                    if(StringUtils.isEmpty(key)){
+                        listObjectsRequest =
+                                ListObjectsRequest.builder().bucket(arrs[i]).build();
+                    }else{
+                        listObjectsRequest =
+                                ListObjectsRequest.builder().bucket(arrs[i]).marker(key).build();
+                    }
+                    log.info("--查询文件列表入参listObjectsRequest:{}", listObjectsRequest);
 
-            do{
-                List<S3Object> list = result.contents();
-                creatThread(list, s3);
-                try {
-                    Thread.sleep(5000);
-                }catch (Exception e) {
+                    response = s3.listObjects(listObjectsRequest);
+                    List<S3Object> list = response.contents();
+                    key = list.get(list.size() - 1).key();
+                    creatThread(list, s3, arrs[i]);
 
-                }
-                String s = list.get(list.size()-1).key();
-                result = s3.listObjectsV2(ListObjectsV2Request.builder().
-                        bucket(bizConfig.defaultName).
-                        startAfter(s).build());
-            }while (result.isTruncated());
-            List<S3Object> list = result.contents();
-            creatThread(list, s3);
+                }while (response.isTruncated());
+            }
+            log.info("-----初始化结束：{}------", System.currentTimeMillis());
         }
     }
 
     //创建线程处理初始化数据
-    public void creatThread(List<S3Object> list, S3Client s3){
+    public void creatThread(List<S3Object> list, S3Client s3, String folderName){
         log.info("-----objectList.contents().list：{}", list.size());
 
         Map<Integer,List<S3Object>> itemMap = new BatchListUtil<S3Object>().batchList(list, bizConfig.thredaNum);
@@ -80,9 +84,13 @@ public class FileInitServiceImpl {
 
         //分批次更新
         for (int i = 0; i < itemMap.size(); i++) {
-            log.info("---启动线程：{}---", i);
+            log.info("---启动：{}---", i);
             int num = i+1;
-            new Thread(new Runnable() {
+            List<S3Object> fileList = itemMap.get(num);
+            insertFile(fileList, folderName, s3);
+            log.info("---执行结束：{}",  System.currentTimeMillis());
+
+           /* new Thread(new Runnable() {
                 @Override
                 public void run() {
                     log.info("---线程：{}启动开始：{}", Thread.currentThread().getId(), System.currentTimeMillis());
@@ -90,7 +98,7 @@ public class FileInitServiceImpl {
                     insertFile(fileList, bizConfig.defaultName, s3);
                     log.info("---线程：{}执行结束：{}", Thread.currentThread().getId(), System.currentTimeMillis());
                 }
-            }).start();
+            }).start();*/
         }
     }
 
@@ -118,12 +126,12 @@ public class FileInitServiceImpl {
             //创建时间
             addS3File.setCreateTime(new Date());
 
-            //调用s3接口下载文件内容
-            String fileContent = getS3FileInfo(defaultName, obj.key(), s3);
+//            //调用s3接口下载文件内容
+//            String fileContent = getS3FileInfo(defaultName, obj.key(), s3);
+//            //文件内容md5
+//            String md5Content = MD5Utils.encode(fileContent);
             //文件内容md5
-            String md5Content = MD5Utils.encode(fileContent);
-            //文件内容md5
-            addS3File.setContentMd5(md5Content);
+            addS3File.setContentMd5(null);
             //添加list集合
             insertList.add(addS3File);
             //每200条数据插入一次数据库
@@ -162,5 +170,34 @@ public class FileInitServiceImpl {
             return null;
         }
     }
+
+    @PostConstruct
+    public void updateFileContet(){
+        int currPage = 0;
+        int pageSize = 1;
+        log.info("updateFlag:"+ bizConfig.updateFlag);
+        if(bizConfig.updateFlag){
+            S3Client s3 = s3ClientFactory.initS3Client(bizConfig.defaultName);
+
+            S3File s3File = fileService.queryPageFileInfo(currPage, pageSize);
+            do{
+                try {
+                    //调用s3接口下载文件内容
+                    String fileContent = getS3FileInfo(s3File.getFolderName(), s3File.getFileName(), s3);
+                    //文件内容md5
+                    String md5Content = MD5Utils.encode(fileContent);
+                    s3File.setContentMd5(md5Content);
+                    //修改文件信息
+                    fileService.updateTempFileInfo(s3File);
+                }catch (Exception e){
+                    log.error("--updateFileContet修改文件md5内容异常：{}--", e);
+                }
+
+                currPage++;
+                s3File = fileService.queryPageFileInfo(currPage, pageSize);
+            }while (s3File != null);
+        }
+    }
+
 
 }

@@ -28,4 +28,7 @@ public class BizConfig {
   @Value("${spring.s3.defaultName}")
   public String defaultName;
 
+  @Value("${spring.s3.updateFlag}")
+  public boolean updateFlag;
+
 }
