@@ -118,24 +118,40 @@ public class AmasonServiceImpl implements AmasonService {
         List<FileInfo> fileList = new ArrayList<>();
         S3Client s3 = getS3Client(bucketName);
 
-        ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder().bucket(bucketName).build();
-        ListObjectsV2Response result = null;
-
-        do{
-            result = s3.listObjectsV2(listObjectsV2Request);
-            log.info("--查询文件是否都已返回--：{}", result.isTruncated());
-
-            List<S3Object> list = result.contents();
+        /*ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder()
+                .bucket(bucketName).build();
+        ListObjectsV2Iterable objs = s3.listObjectsV2Paginator(listObjectsV2Request);
+        Iterator<ListObjectsV2Response> iterator = objs.iterator();
+        while(iterator.hasNext()){
+            ListObjectsV2Response listObjectsV2Response = iterator.next();
+            List<S3Object> list = listObjectsV2Response.contents();
             List<FileInfo> resultList = addFileInfo(list);
             //合并list结果集
             fileList.addAll(resultList);
-            String s = list.get(list.size()-1).key();
-            listObjectsV2Request = ListObjectsV2Request.builder()
-                    .bucket(bucketName)
-                    .startAfter(s)
-                    .continuationToken(result.nextContinuationToken())
-                    .build();
-        }while (result.isTruncated());
+
+            log.info("---:{}", list.size());
+        }*/
+
+        ListObjectsResponse response = null;
+        ListObjectsRequest listObjectsRequest = null;
+        String key = "";
+        do{
+            if(StringUtils.isEmpty(key)){
+                listObjectsRequest =
+                        ListObjectsRequest.builder().bucket(bucketName).build();
+            }else{
+                listObjectsRequest =
+                        ListObjectsRequest.builder().bucket(bucketName).marker(key).build();
+            }
+            log.info("--查询文件列表入参listObjectsRequest:{}", listObjectsRequest);
+
+            response = s3.listObjects(listObjectsRequest);
+            List<S3Object> list = response.contents();
+            key = list.get(list.size() - 1).key();
+            List<FileInfo> resultList = addFileInfo(list);
+            //合并list结果集
+            fileList.addAll(resultList);
+        }while (response.isTruncated());
 
         log.info("-----objectList.contents().fileList：{}", fileList.size());
 
@@ -160,6 +176,7 @@ public class AmasonServiceImpl implements AmasonService {
     public Result uploadFile(UploadFileRequest request) {
         Map<String, Object> map = new HashMap<>();
 
+        log.info("--uploadFile下载文件开始时间--：{}", System.currentTimeMillis());
         if(StringUtils.isEmpty(request.getBucketName())){
             return Result.error("入参bucketName不能为空");
         }
@@ -326,7 +343,9 @@ public class AmasonServiceImpl implements AmasonService {
 
     @Override
     public String downloadFile(HttpServletResponse response, DownloadFileRequest request) {
+        log.info("--downloadFile下载文件开始时间--:{}", System.currentTimeMillis());
         S3File s3File = fileService.getFileInfo(request.getBucketName(), request.getFileId());
+        log.info("--downloadFile下载文件查询数据库结束时间--:{}", System.currentTimeMillis());
         if(null == s3File){
             log.info("--数据库记录不存在--");
             String str = getS3FileInfo(request.getBucketName(), request.getFileId(), request.getVersionId());
@@ -351,7 +370,9 @@ public class AmasonServiceImpl implements AmasonService {
         String key = request.getFileId();
         // 判断是否源文件
         if (s3File != null && s3File.getSourceFileId() != null && s3File.getSourceFileId() > 0) {
-          s3File = fileService.getFileInfo(s3File.getSourceFileId());
+            log.info("--downloadFile下载文件查询源文件开始时间--:{}", System.currentTimeMillis());
+            s3File = fileService.getFileInfo(s3File.getSourceFileId());
+            log.info("--downloadFile下载文件查询源文件结束时间--:{}", System.currentTimeMillis());
             bucketName = s3File.getFolderName();
             key = s3File.getFileName();
         }
@@ -365,8 +386,8 @@ public class AmasonServiceImpl implements AmasonService {
             if(!StringUtils.isEmpty(maxAmount)){
                 log.info("--修改文件下载次数--可用次数maxAmount:{}", maxAmount);
                 fileService.updateFileAmount(--maxAmount, fileKey);
+                log.info("--updateFileAmount修改文件下载次数结束时间--:{}", System.currentTimeMillis());
             }
-
             return str;
         }else {
             log.info("--文件夹不存在--");
@@ -383,7 +404,10 @@ public class AmasonServiceImpl implements AmasonService {
     @Override
     public String getS3FileInfo(String bucketName, String key, String versionId){
         log.info("--调用s3接口下载文件内容入参-bucketName:{},-key:{},versionId:{}", bucketName, key, versionId);
+        log.info("--getS3FileInfo下载文件开始时间--:{}", System.currentTimeMillis());
+
         S3Client s3 = getS3Client(bucketName);
+        log.info("--getS3Client获取初始化对象结束时间--:{}", System.currentTimeMillis());
         try {
             GetObjectRequest.Builder request = null;
             if(StringUtils.isEmpty(versionId)){
@@ -393,11 +417,13 @@ public class AmasonServiceImpl implements AmasonService {
             }
             ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(request.build(),
                     ResponseTransformer.toBytes());
+            log.info("--getObject结束时间--:{}", System.currentTimeMillis());
 
             /*ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(b ->
                             b.bucket(bucketName).key(key).versionId(versionId),
                     ResponseTransformer.toBytes());*/
             byte[] bytes = objectAsBytes.asByteArray();
+            log.info("--asByteArray结束时间--:{}", System.currentTimeMillis());
 //            String a = new String(bytes);
 //            byte[] aa = a.getBytes();
 //            String str = objectAsBytes.asUtf8String();
@@ -483,7 +509,7 @@ public class AmasonServiceImpl implements AmasonService {
         if(s3File == null){
             //查询服务器是否存在该文件
             if(!doesObjectExist(request.getBucketName(),request.getFileName())){
-                return Result.error("文件不文件");
+                return Result.error("文件信息不存在！");
             }
             //新增记录
           Long fileKey = addNewFile(request.getBucketName(),request.getFileName());

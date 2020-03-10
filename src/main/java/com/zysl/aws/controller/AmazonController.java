@@ -136,8 +136,13 @@ public class AmazonController {
      * @param fileId
      * @return
      */
-    @PostMapping("/downloadFile")
-    public Result downloadFile(HttpServletResponse response,@RequestBody DownloadFileRequest request){
+    @GetMapping("/downloadFile")
+    public Result downloadFile(HttpServletResponse response, String bucketName, String fileId, String type, String versionId){
+        DownloadFileRequest request = new DownloadFileRequest();
+        request.setBucketName(bucketName);
+        request.setFileId(fileId);
+        request.setVersionId(versionId);
+        request.setType(type);
         log.info("--开始调用downloadFile下载文件接口--request:{} ", request);
         Long startTime = System.currentTimeMillis();
         String str = amasonService.downloadFile(response, request);
