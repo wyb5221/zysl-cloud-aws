@@ -18,11 +18,13 @@ import com.zysl.cloud.utils.common.BaseResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import software.amazon.awssdk.services.s3.model.Bucket;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -128,6 +130,34 @@ public class AmazonController {
     public Result uploadFile(@RequestBody UploadFileRequest request){
         log.info("--开始调用uploadFile上传文件接口request：{}--", request);
         return  amasonService.uploadFile(request);
+    }
+
+    /**
+     * 上传文件
+     * @param request
+     * @returnuploadFile
+     */
+    @PostMapping("/uploadFileInfo")
+    public Result uploadFileInfo(HttpServletRequest request) throws IOException {
+        log.info("--开始调用uploadFile上传文件接口request：{}--", request.toString());
+
+        MultipartHttpServletRequest multipartHttpServletRequest = (MultipartHttpServletRequest)request;
+        byte[] bytes = multipartHttpServletRequest.getFile("file").getBytes();
+        String bucketName = request.getParameter("bucketName");
+        String fileId = request.getParameter("fileId");
+        Integer maxAmount = null == request.getParameter("maxAmount") ? null : Integer.valueOf(request.getParameter("maxAmount"));
+        Integer validity = null == request.getParameter("validity") ? null : Integer.valueOf(request.getParameter("validity"));
+
+        BASE64Encoder encoder = new BASE64Encoder();
+        String str = encoder.encode(bytes);
+        UploadFileRequest fileRequest = new UploadFileRequest();
+        fileRequest.setBucketName(bucketName);
+        fileRequest.setFileId(fileId);
+        fileRequest.setData(str);
+        fileRequest.setMaxAmount(maxAmount);
+        fileRequest.setValidity(validity);
+        log.info("--开始调用uploadFile上传文件接口fileRequest：{}--", fileRequest);
+        return amasonService.uploadFile(fileRequest);
     }
 
     /**
