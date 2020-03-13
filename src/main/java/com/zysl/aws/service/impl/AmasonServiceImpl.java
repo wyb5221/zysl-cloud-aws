@@ -7,7 +7,6 @@ import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.model.db.S3Folder;
 import com.zysl.aws.service.AmasonService;
 import com.zysl.aws.service.FileService;
-import com.zysl.aws.utils.BatchListUtil;
 import com.zysl.aws.utils.DateUtil;
 import com.zysl.aws.utils.MD5Utils;
 import com.zysl.aws.utils.S3ClientFactory;
@@ -21,10 +20,7 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
-import software.amazon.awssdk.services.s3.paginators.ListObjectVersionsIterable;
-import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
