@@ -1,13 +1,10 @@
 package com.zysl.aws.service;
 
-import com.zysl.aws.model.FileInfo;
-import com.zysl.aws.model.ShareFileRequest;
 import com.zysl.aws.model.UploadFileRequest;
 import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.model.db.S3Folder;
 import com.zysl.aws.model.db.S3Service;
 
-import javax.imageio.stream.IIOByteBuffer;
 import java.util.List;
 
 public interface FileService {

@@ -1,8 +1,5 @@
-/*
 package com.zysl.aws.controller;
 
-import com.zysl.aws.common.result.CodeMsg;
-import com.zysl.aws.common.result.Result;
 import com.zysl.aws.config.BizConfig;
 import com.zysl.aws.enums.DownTypeEnum;
 import com.zysl.aws.model.*;
@@ -15,12 +12,12 @@ import com.zysl.aws.utils.BizUtil;
 import com.zysl.aws.utils.MD5Utils;
 import com.zysl.aws.utils.S3ClientFactory;
 import com.zysl.cloud.utils.StringUtils;
+import com.zysl.cloud.utils.common.AppLogicException;
+import com.zysl.cloud.utils.common.BasePaginationResponse;
 import com.zysl.cloud.utils.common.BaseResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import software.amazon.awssdk.services.s3.model.Bucket;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
@@ -29,144 +26,104 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.Date;
+import java.util.List;
 
+/**
+ * 文件处理controller
+ */
 @CrossOrigin
 @RestController
-@RequestMapping("/aws/s3")
+@RequestMapping("/aws/file")
 @Slf4j
-public class AmazonController {
+public class S3FileController {
 
     @Autowired
     private AmasonService amasonService;
+    @Autowired
+    private FileService fileService;
+    @Autowired
+    private BizConfig bizConfig;
     @Autowired
     private IWordService wordService;
     @Autowired
     private IPDFService pdfService;
     @Autowired
     private S3ClientFactory s3ClientFactory;
-    @Autowired
-    private FileService fileService;
-    @Autowired
-    private BizConfig bizConfig;
 
-    */
-/**
-     * 文件分享
-     * @param request
-     * @return
-     *//*
-
-    @PostMapping("/shareFile")
-    public Result shareFile(@RequestBody ShareFileRequest request){
-        log.info("--开始调用shareFile分享文件的信息接口:{}--",request);
-
-        return amasonService.shareFile(request);
-    }
-
-    */
-/**
-     * 创建文件夹
-     * @param bucketName
-     * @return
-     *//*
-
-    @GetMapping("/createBucket")
-    public Result createBucket(String bucketName, String serviceNo){
-        log.info("--开始调用createBucket创建文件夹接口--bucketName:{},serviceNo:{}",
-                bucketName, serviceNo);
-        String pattern = "^[a-zA-Z0-9.\\-_]{3,60}$";
-        //判断存储桶是否满足命名规则
-        if(Pattern.compile(pattern).matcher(bucketName).matches()){
-            return amasonService.createBucket(bucketName, serviceNo);
-        }else{
-            return Result.error(CodeMsg.ILLEGAL_PARAMETER);
-        }
-    }
-
-    */
-/**
-     * 获取文件夹下所有对象
-     * @return
-     *//*
-
-    @GetMapping("/getFilesByBucket")
-    public Result getFilesByBucket(String bucketName){
-        log.info("--开始调用getFilesByBucket获取文件夹下所有对象接口--bucketName:{}", bucketName);
-        return amasonService.getFilesByBucket(bucketName);
-    }
-
-    */
-/**
+    /**
      * 上传文件
      * @param request
      * @returnuploadFile
-     *//*
-
+     */
     @PostMapping("/uploadFile")
-    public Result uploadFile(@RequestBody UploadFileRequest request){
+    public BaseResponse<UploadFieResponse> uploadFile(@RequestBody UploadFileRequest request){
         log.info("--开始调用uploadFile上传文件接口request：{}--", request);
-        return  amasonService.uploadFile(request);
+        BaseResponse<UploadFieResponse> baseResponse = new BaseResponse<UploadFieResponse>();
+
+        UploadFieResponse response = amasonService.uploadFile(request);
+        if(null != response){
+            baseResponse.setSuccess(true);
+            baseResponse.setModel(response);
+        }else{
+            baseResponse.setSuccess(false);
+            baseResponse.setMsg("文件上传失败");
+        }
+        return baseResponse;
     }
 
-    */
-/**
-     * 上传文件
+    /**
+     * 文件流上传
      * @param request
      * @returnuploadFile
-     *//*
-
+     */
     @PostMapping("/uploadFileInfo")
-    public Result uploadFileInfo(HttpServletRequest request) throws IOException {
+    public BaseResponse<UploadFieResponse> uploadFileInfo(HttpServletRequest request) throws IOException {
         log.info("--开始调用uploadFile上传文件接口request：{}--", request.toString());
+        BaseResponse<UploadFieResponse> baseResponse = new BaseResponse<UploadFieResponse>();
 
-        MultipartHttpServletRequest multipartHttpServletRequest = (MultipartHttpServletRequest)request;
-        byte[] bytes = multipartHttpServletRequest.getFile("file").getBytes();
-        String bucketName = request.getParameter("bucketName");
-        String fileId = request.getParameter("fileId");
-        Integer maxAmount = null == request.getParameter("maxAmount") ? null : Integer.valueOf(request.getParameter("maxAmount"));
-        Integer validity = null == request.getParameter("validity") ? null : Integer.valueOf(request.getParameter("validity"));
-
-        BASE64Encoder encoder = new BASE64Encoder();
-        String str = encoder.encode(bytes);
-        UploadFileRequest fileRequest = new UploadFileRequest();
-        fileRequest.setBucketName(bucketName);
-        fileRequest.setFileId(fileId);
-        fileRequest.setData(str);
-        fileRequest.setMaxAmount(maxAmount);
-        fileRequest.setValidity(validity);
-        log.info("--开始调用uploadFile上传文件接口fileRequest：{}--", fileRequest);
-        return amasonService.uploadFile(fileRequest);
+        UploadFieResponse response = amasonService.uploadFile(request);
+        if(null != response){
+            baseResponse.setSuccess(true);
+            baseResponse.setModel(response);
+        }else{
+            baseResponse.setSuccess(false);
+            baseResponse.setMsg("文件上传失败");
+        }
+        return baseResponse;
     }
 
-    */
-/**
+    /**
      * 下载文件
      * @param bucketName
      * @param fileId
      * @return
-     *//*
-
+     */
     @GetMapping("/downloadFile")
-    public Result downloadFile(HttpServletResponse response, String bucketName, String fileId, String type, String versionId){
+    public BaseResponse<DownloadFileResponse> downloadFile(HttpServletResponse response, String bucketName, String fileId, String type, String versionId){
         DownloadFileRequest request = new DownloadFileRequest();
         request.setBucketName(bucketName);
         request.setFileId(fileId);
         request.setVersionId(versionId);
         request.setType(type);
         log.info("--开始调用downloadFile下载文件接口--request:{} ", request);
+
+        BaseResponse<DownloadFileResponse> baseResponse = new BaseResponse<DownloadFileResponse>();
+
         Long startTime = System.currentTimeMillis();
         String str = amasonService.downloadFile(response, request);
         if(!StringUtils.isEmpty(str)){
             log.info("--下载接口返回的文件数据大小--", str.length());
             if(DownTypeEnum.COVER.getCode().equals(request.getType())){
                 Long usedTime = System.currentTimeMillis() - startTime;
-                Map<String, Object> result = new HashMap<>();
-                result.put("data", str);
-                result.put("reason", "");
-                result.put("usedTime", usedTime);
-                return Result.success(result);
+                DownloadFileResponse downloadFileResponse = new DownloadFileResponse();
+                downloadFileResponse.setData(str);
+                downloadFileResponse.setUsedTime(usedTime);
+
+                //获取返回对象
+                baseResponse.setSuccess(true);
+                baseResponse.setModel(downloadFileResponse);
+                return baseResponse;
             }else {
                 try {
                     //1下载文件流
@@ -182,51 +139,45 @@ public class AmazonController {
                     outputStream.close();
                 } catch (IOException e) {
                     log.info("--文件下载异常：--", e);
+                    throw new AppLogicException("文件流处理异常");
                 }
                 return null;
             }
         }else {
-            return Result.error("文件下载无数据返回");
+            //获取返回对象
+            baseResponse.setSuccess(false);
+            baseResponse.setMsg("文件下载无数据返回");
+            return baseResponse;
         }
     }
 
-    */
-/**
-     * 删除文件
-     * @param bucketName
-     * @param fileName
-     * @return
-     *//*
-
-    @GetMapping("/deleteFile")
-    public Result deleteFile(String bucketName, String fileName){
-        log.info("--开始调用uploadFile删除文件接口--bucketName:{},fileName:{}", bucketName, fileName);
-        amasonService.deleteFile(bucketName, fileName);
-        return Result.success();
-    }
-
-    */
-/**
+    /**
      * 获取文件大小
      * @param bucketName
      * @param fileName
-     *//*
-
+     */
     @GetMapping("/getFileSize")
-    public Result getFileSize(String bucketName, String fileName){
+    public BaseResponse<Long> getFileSize(String bucketName, String fileName){
         log.info("--开始getFileSize调用获取文件大小--bucketName:{},fileName:{}", bucketName, fileName);
-        return amasonService.getFileSize(bucketName, fileName);
+        BaseResponse<Long> baseResponse = new BaseResponse<Long>();
 
+        Long fileSize = amasonService.getFileSize(bucketName, fileName);
+        if(fileSize >= 0){
+            baseResponse.setSuccess(true);
+            baseResponse.setModel(fileSize);
+        }else{
+            baseResponse.setSuccess(false);
+            baseResponse.setMsg("文件大小查询失败");
+        }
+        return baseResponse;
     }
 
-    */
-/**
+    /**
      * 获取视频文件信息
      * @param response
      * @param bucketName
      * @param fileId
-     *//*
-
+     */
     @GetMapping("/getVideo")
     public void getVideo(HttpServletResponse response, String bucketName, String fileId){
         log.info("--开始getVideo获取视频文件信息--bucketName:{},fileId:{}", bucketName, fileId);
@@ -262,19 +213,16 @@ public class AmazonController {
         } catch (Exception ex) {
             log.error("--视频文件获取异常：--", ex);
         }
-
     }
 
-    */
-/**
+    /**
      * word转pdf
      * @description 可设置水印、密码
      * @author miaomingming
      * @date 16:35 2020/2/20
      * @param [request]
      * @return com.zysl.cloud.utils.common.BaseResponse<com.zysl.aws.model.WordToPDFDTO>
-     **//*
-
+     **/
     @PostMapping("/word2pdf")
     public BaseResponse<WordToPDFDTO> changeWordToPdf(@RequestBody WordToPDFRequest request){
         log.info("===changeWordToPdf.param:{}===",request);
@@ -287,7 +235,7 @@ public class AmazonController {
             return baseResponse;
         }
         if(!request.getFileName().toLowerCase().endsWith("doc")
-            && !request.getFileName().toLowerCase().endsWith("docx")){
+                && !request.getFileName().toLowerCase().endsWith("docx")){
             log.info("===不是word文件:{}===",request.getFileName());
             baseResponse.setMsg("不是word文件.");
             return baseResponse;
@@ -308,9 +256,9 @@ public class AmazonController {
         byte[] outBuff = wordService.changeWordToPDF(fileName, inBuff,false, request.getTextMark());
         log.info("===changeToPDF===outBuff,length:{}", outBuff != null ? outBuff.length : 0);
         if(outBuff == null || outBuff.length == 0){
-          log.info("===changeToPDF===pdfFileData is null .fileName:{}",request.getFileName());
-          baseResponse.setMsg("word转换的pdf大小为0..");
-          return baseResponse;
+            log.info("===changeToPDF===pdfFileData is null .fileName:{}",request.getFileName());
+            baseResponse.setMsg("word转换的pdf大小为0..");
+            return baseResponse;
         }
 
         //step 4.实现加密
@@ -352,79 +300,50 @@ public class AmazonController {
 
         //step 7.设置返回参数
         WordToPDFDTO dto = new WordToPDFDTO();
-        dto.setBucketName(bizConfig.WORD_TO_PDF_BUCKET_NAME);
+        dto.setBucketName(request.getBucketName());
         dto.setFileName(fileName + "text.pdf");
         baseResponse.setModel(dto);
         baseResponse.setSuccess(true);
         return baseResponse;
     }
 
-
-    */
-/**
-     * 设置文件夹的版本控制权限
-     * @param bucketName
-     * @param status
+    /**
+     * 文件分享
+     * @param request
      * @return
-     *//*
+     */
+    @PostMapping("/shareFile")
+    public BaseResponse<UploadFieResponse> shareFile(@RequestBody ShareFileRequest request){
+        log.info("--开始调用shareFile分享文件的信息接口:{}--",request);
+        BaseResponse<UploadFieResponse> baseResponse = new BaseResponse<UploadFieResponse>();
 
-    @PostMapping("/setVersion")
-    public Result updatFileVersion(@RequestBody SetFileVersionRequest request){
-        log.info("--updatFileVersion设置文件夹的版本控制权限--request:{}", request);
-        return amasonService.setFileVersion(request);
+        UploadFieResponse uploadFieResponse = amasonService.shareFile(request);
+        if(null != uploadFieResponse){
+            baseResponse.setSuccess(true);
+            baseResponse.setModel(uploadFieResponse);
+        }else{
+            baseResponse.setSuccess(false);
+            baseResponse.setMsg("文件分享失败");
+        }
+        return baseResponse;
     }
 
-    */
-/**
+    /**
      * 获取文件版本信息
      * @param bucketName
      * @param fileName
      * @return
-     *//*
-
+     */
     @GetMapping("/getFileVersion")
-    public Result getFileVersion(String bucketName, String fileName){
+    public BasePaginationResponse<FileVersionResponse> getFileVersion(String bucketName, String fileName){
         log.info("--getFileVersion获取文件版本信息--bucketName:{},fileName:{}", bucketName, fileName);
         List<FileVersionResponse> list = amasonService.getS3FileVersion(bucketName, fileName);
-        return Result.success(list);
+
+        BasePaginationResponse<FileVersionResponse> baseResponse = new BasePaginationResponse<>();
+
+        baseResponse.setSuccess(true);
+        baseResponse.setModelList(list);
+        return baseResponse;
     }
 
-    */
-/**
-     * 删除文件夹
-     * @param bucketName
-     * @return
-     *//*
-
-    */
-/*@GetMapping("/deleteBucket")
-    public Result deleteBucket(String bucketName){
-        log.info("--开始调用deleteBucket删除文件夹接口--bucketName:{}", bucketName);
-        return amasonService.deleteBucket(bucketName);
-    }*//*
-
-    */
-/**
-     * 获取所有文件夹（bucket）的信息
-     * @return
-     *//*
-
-    */
-/*@GetMapping("/buckets")
-    public Result getBuckets(){
-        log.info("--开始调用queryBuckets查询获取所有文件夹（bucket）的信息接口--");
-        List<Bucket> bucketList = amasonService.getBuckets();
-        List<BucketResponse> result = new ArrayList<>();
-        for (Bucket bucket : bucketList) {
-            BucketResponse bucketResponse = new BucketResponse();
-            bucketResponse.setName(bucket.name());
-            bucketResponse.setCreationDate(bucket.creationDate());
-            result.add(bucketResponse);
-        }
-
-        return Result.success(result);
-    }*//*
-
-
 }
-*/

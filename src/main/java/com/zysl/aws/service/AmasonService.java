@@ -4,9 +4,9 @@ import com.zysl.aws.common.result.Result;
 import com.zysl.aws.model.*;
 import software.amazon.awssdk.services.s3.model.Bucket;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-import java.util.Optional;
 
 public interface AmasonService {
 
@@ -18,7 +18,7 @@ public interface AmasonService {
     /**
      * 创建文件夹
      */
-    Result createBucket(String bucketName, String serviceNo);
+    String createBucket(String bucketName, String serviceNo);
 
     /**
      * 删除文件夹
@@ -28,13 +28,15 @@ public interface AmasonService {
     /**
      * 获取文件夹下所有对象
      */
-    Result getFilesByBucket(String bucketName);
+    List<FileInfo> getFilesByBucket(String bucketName);
 
     /**
      * 上传文件到对应路径
      * @param request
      */
-    Result uploadFile(UploadFileRequest request);
+    UploadFieResponse uploadFile(UploadFileRequest request);
+
+    UploadFieResponse uploadFile(HttpServletRequest request);
 
     /**
      * 下载文件
@@ -52,14 +54,14 @@ public interface AmasonService {
      * @param key
      * @return
      */
-    Result getFileSize(String bucketName, String key);
+    Long getFileSize(String bucketName, String key);
 
     /**
      * 分享文件
      * @param request
      * @return
      */
-    Result shareFile(ShareFileRequest request);
+    UploadFieResponse shareFile(ShareFileRequest request);
 
     /**
      * 调用s3接口下载文件内容
@@ -97,5 +99,5 @@ public interface AmasonService {
      * 设置文件版本权限
      * @return
      */
-    Result setFileVersion(SetFileVersionRequest request);
+    Integer setFileVersion(SetFileVersionRequest request);
 }
