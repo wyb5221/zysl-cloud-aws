@@ -9,8 +9,8 @@ import lombok.Getter;
 @Getter
 public enum DownTypeEnum {
 
-    NOCOVER("0", "默认"),
-    COVER("1", "文件流");
+    NOCOVER("0", "默认,下载文件流"),
+    COVER("1", "base64进制的String");
 
     private String code;
 

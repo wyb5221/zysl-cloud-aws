@@ -6,6 +6,9 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.time.Instant;
 
+/**
+ * 文件版本信息
+ */
 @Setter
 @Getter
 public class FileVersionResponse implements Serializable {
