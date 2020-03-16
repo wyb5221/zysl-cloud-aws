@@ -1,5 +1,7 @@
 package com.zysl.aws.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.zysl.aws.common.result.Result;
 import com.zysl.aws.config.BizConfig;
 import com.zysl.aws.model.*;
@@ -10,6 +12,7 @@ import com.zysl.aws.service.FileService;
 import com.zysl.aws.utils.DateUtil;
 import com.zysl.aws.utils.MD5Utils;
 import com.zysl.aws.utils.S3ClientFactory;
+import com.zysl.cloud.utils.BeanCopyUtil;
 import com.zysl.cloud.utils.common.AppLogicException;
 import com.zysl.cloud.utils.enums.RespCodeEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +30,9 @@ import sun.misc.BASE64Encoder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 
@@ -116,9 +121,23 @@ public class AmasonServiceImpl implements AmasonService {
     }
 
     @Override
-    public List<FileInfo> getFilesByBucket(String bucketName) {
-        List<FileInfo> fileList = new ArrayList<>();
-        S3Client s3 = getS3Client(bucketName);
+    public List<FileInfo> getFilesByBucket(BucketFileRequest request) {
+
+        PageHelper.startPage(request.getPageIndex(), request.getPageSize());
+        //数据库返回信息
+        List<S3File> fileList = fileService.queryFileBybucket(request);
+        List<FileInfo> fileInfoList = new ArrayList<>();
+        fileList.forEach(obj -> {
+            FileInfo fileInfo = BeanCopyUtil.copy(obj, FileInfo.class);
+            fileInfoList.add(fileInfo);
+        });
+
+        PageInfo<FileInfo> pageInfo = new PageInfo<>(fileInfoList);
+        log.info("-----objectList.contents().fileInfoList：{}", fileInfoList.size());
+
+        return fileInfoList;
+
+        /*S3Client s3 = getS3Client(bucketName);
 
         ListObjectsResponse response = null;
         ListObjectsRequest listObjectsRequest = null;
@@ -140,25 +159,22 @@ public class AmasonServiceImpl implements AmasonService {
             //合并list结果集
             fileList.addAll(resultList);
         }while (response.isTruncated());
-
-        log.info("-----objectList.contents().fileList：{}", fileList.size());
-
-        return fileList;
+*/
     }
 
-    public List<FileInfo> addFileInfo(List<S3Object> list){
-        List<FileInfo> fileList = new ArrayList<>();
-        list.stream().forEach(obj -> {
-            FileInfo fileInfo = new FileInfo();
-            fileInfo.setKey(obj.key());
-            fileInfo.setETag(obj.eTag());
-            fileInfo.setLastModified(obj.lastModified());
-            fileInfo.setSize(obj.size());
-            fileList.add(fileInfo);
-        });
-        log.info("-----fileList：{}", fileList.size());
-        return fileList;
-    }
+//    public List<FileInfo> addFileInfo(List<S3Object> list){
+//        List<FileInfo> fileList = new ArrayList<>();
+//        list.stream().forEach(obj -> {
+//            FileInfo fileInfo = new FileInfo();
+//            fileInfo.setKey(obj.key());
+//            fileInfo.setETag(obj.eTag());
+//            fileInfo.setLastModified(obj.lastModified());
+//            fileInfo.setSize(obj.size());
+//            fileList.add(fileInfo);
+//        });
+//        log.info("-----fileList：{}", fileList.size());
+//        return fileList;
+//    }
 
     @Override
     public UploadFieResponse uploadFile(UploadFileRequest request) {
@@ -170,7 +186,6 @@ public class AmasonServiceImpl implements AmasonService {
         byte[] data = request.getData().getBytes();
 
         S3Client s3 = getS3Client(bucketName);
-        boolean upFlag = false;
         if(null != doesBucketExist(bucketName)){
             log.info("--文件夹存在--");
             if(StringUtils.isEmpty(fileId)){
@@ -192,14 +207,15 @@ public class AmasonServiceImpl implements AmasonService {
             }else{
                 //文件不存在，则上传
                 //上传文件
-                upFlag = upload(bucketName, fileId, data);
+                PutObjectResponse putObjectResponse = upload(bucketName, fileId, data);
 
-                if(upFlag){
+                if(null != putObjectResponse){
                     //修改文件信息
                     updateFileInfo(request, md5Content);
 
                     response.setFolderName(request.getBucketName());
                     response.setFileName(fileId);
+                    response.setVersionId(putObjectResponse.versionId());
                     return response;
                 }else {
                     log.info("--文件上传失败--");
@@ -336,7 +352,7 @@ public class AmasonServiceImpl implements AmasonService {
      * @param data
      */
     @Override
-    public boolean upload(String bucketName, String fileId, byte[] data){
+    public PutObjectResponse upload(String bucketName, String fileId, byte[] data){
         log.info("--upload开始上传文件，入参bucketName：{}-,fileId:{}-,data:{}", bucketName, fileId, data.length);
         S3Client s3 = getS3Client(bucketName);
         try {
@@ -344,14 +360,11 @@ public class AmasonServiceImpl implements AmasonService {
                             .build(),
                     RequestBody.fromBytes(data));
             log.info("--上传文件--putObjectResponse:{}", putObjectResponse);
-            if(null != putObjectResponse){
-                return true;
-            }
+            return putObjectResponse;
         }catch (Exception e){
             log.error("--上传文件异常--：", e);
             throw new AppLogicException("上传文件失败");
         }
-        return false;
     }
 
     @Override
@@ -652,6 +665,17 @@ public class AmasonServiceImpl implements AmasonService {
             log.info("--setFileVersion参数为空--");
             return RespCodeEnum.ILLEGAL_PARAMETER.getCode();
         }
+    }
+
+    @Override
+    public void createFolder() {
+        S3Client s3 = getS3Client("test-yy05");
+
+        PutObjectResponse putObjectResponse = s3.putObject(PutObjectRequest.builder().bucket("test-yy05").key("doc")
+                        .build(), (Path) new ByteArrayInputStream(new byte[0])
+        );
+
+        System.out.println(putObjectResponse);
     }
 
 }

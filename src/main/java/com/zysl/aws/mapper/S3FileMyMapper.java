@@ -1,5 +1,6 @@
 package com.zysl.aws.mapper;
 
+import com.zysl.aws.model.BucketFileRequest;
 import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.model.db.S3Folder;
 import org.apache.ibatis.annotations.Param;
@@ -34,7 +35,7 @@ public interface S3FileMyMapper {
      * @param content
      * @return
      */
-    S3File queryFileInfoByMd5(String content);
+    List<S3File> queryFileInfoByMd5(String content);
 
     /**
      * 查询文件信息
@@ -52,4 +53,6 @@ public interface S3FileMyMapper {
      * @return
      */
     int insertBatch(List<S3File> list);
+
+    List<S3File> queryFileByBucket(@Param("item") BucketFileRequest file);
 }

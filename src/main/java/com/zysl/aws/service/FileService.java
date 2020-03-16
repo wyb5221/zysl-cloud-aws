@@ -1,5 +1,6 @@
 package com.zysl.aws.service;
 
+import com.zysl.aws.model.BucketFileRequest;
 import com.zysl.aws.model.UploadFileRequest;
 import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.model.db.S3Folder;
@@ -117,4 +118,6 @@ public interface FileService {
      * @return
      */
     int updateFileInfo(S3File s3File);
+
+    List<S3File> queryFileBybucket(BucketFileRequest file);
 }

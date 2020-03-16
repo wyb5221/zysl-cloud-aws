@@ -12,17 +12,21 @@ import lombok.Setter;
 @ApiModel(description = "word转pdf返回对象")
 public class WordToPDFDTO implements Serializable {
     private static final long serialVersionUID = -2403682161678847220L;
-    @ApiModelProperty(value = "文件夹名称", name = "userPwd", dataType = SwaggerConstants.DATA_TYPE_STRING, required = true)
+    @ApiModelProperty(value = "文件夹名称", name = "bucketName", dataType = SwaggerConstants.DATA_TYPE_STRING)
     private String bucketName;
 
-    @ApiModelProperty(value = "文件名", name = "userPwd", dataType = SwaggerConstants.DATA_TYPE_STRING, required = true)
+    @ApiModelProperty(value = "文件名", name = "fileName", dataType = SwaggerConstants.DATA_TYPE_STRING)
     private String fileName;
+
+    @ApiModelProperty(value = "文件版本id", name = "versionId", dataType = SwaggerConstants.DATA_TYPE_STRING)
+    private String versionId;
 
     @Override
     public String toString() {
         return "WordToPDFDTO{" +
-            "bucketName='" + bucketName + '\'' +
-            ", fileName='" + fileName + '\'' +
-            '}';
+                "bucketName='" + bucketName + '\'' +
+                ", fileName='" + fileName + '\'' +
+                ", versionId='" + versionId + '\'' +
+                '}';
     }
 }

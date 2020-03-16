@@ -3,6 +3,7 @@ package com.zysl.aws.service;
 import com.zysl.aws.common.result.Result;
 import com.zysl.aws.model.*;
 import software.amazon.awssdk.services.s3.model.Bucket;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,7 +29,7 @@ public interface AmasonService {
     /**
      * 获取文件夹下所有对象
      */
-    List<FileInfo> getFilesByBucket(String bucketName);
+    List<FileInfo> getFilesByBucket(BucketFileRequest request);
 
     /**
      * 上传文件到对应路径
@@ -86,7 +87,7 @@ public interface AmasonService {
      * @param data
      * @return
      */
-    boolean upload(String bucketName, String fileId, byte[] data);
+    PutObjectResponse upload(String bucketName, String fileId, byte[] data);
 
     /**
      *
@@ -100,4 +101,6 @@ public interface AmasonService {
      * @return
      */
     Integer setFileVersion(SetFileVersionRequest request);
+
+    void createFolder();
 }

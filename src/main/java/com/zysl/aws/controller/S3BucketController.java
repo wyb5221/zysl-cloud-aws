@@ -1,5 +1,6 @@
 package com.zysl.aws.controller;
 
+import com.zysl.aws.model.BucketFileRequest;
 import com.zysl.aws.model.FileInfo;
 import com.zysl.aws.model.SetFileVersionRequest;
 import com.zysl.aws.service.AmasonService;
@@ -83,10 +84,10 @@ public class S3BucketController {
      * @return
      */
     @PostMapping("/getFilesByBucket")
-    public BasePaginationResponse<FileInfo> getFilesByBucket(String bucketName){
-        log.info("--开始调用getFilesByBucket获取文件夹下所有对象接口--bucketName:{}", bucketName);
+    public BasePaginationResponse<FileInfo> getFilesByBucket(@RequestBody BucketFileRequest request){
+        log.info("--开始调用getFilesByBucket获取文件夹下所有对象接口--request:{}", request);
         BasePaginationResponse baseResponse = new BasePaginationResponse<>();
-        List<FileInfo> fileList = amasonService.getFilesByBucket(bucketName);
+        List<FileInfo> fileList = amasonService.getFilesByBucket(request);
         baseResponse.setSuccess(true);
         baseResponse.setModelList(fileList);
         return baseResponse;

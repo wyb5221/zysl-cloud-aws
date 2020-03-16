@@ -4,6 +4,7 @@ import com.zysl.aws.mapper.S3FileMapper;
 import com.zysl.aws.mapper.S3FileMyMapper;
 import com.zysl.aws.mapper.S3FolderMapper;
 import com.zysl.aws.mapper.S3ServiceMapper;
+import com.zysl.aws.model.BucketFileRequest;
 import com.zysl.aws.model.UploadFileRequest;
 import com.zysl.aws.model.db.*;
 import com.zysl.aws.service.FileService;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Date;
@@ -95,9 +97,13 @@ public class FileServiceImpl implements FileService {
     @Override
     public S3File queryFileInfoByMd5(String content) {
         log.info("--queryFileByMd5--content:{}", content);
-        S3File s3File = s3FileMyMapper.queryFileInfoByMd5(content);
-        log.info("--queryFileByMd5--根据Md5查询文件信息返回s3File:{}", s3File);
-        return s3File;
+        List<S3File> fileList = s3FileMyMapper.queryFileInfoByMd5(content);
+        log.info("--queryFileByMd5--根据Md5查询文件信息返回s3File:{}", fileList);
+        if(!CollectionUtils.isEmpty(fileList)){
+            return fileList.get(0);
+        }else{
+            return null;
+        }
     }
 
     @Override
@@ -183,5 +189,13 @@ public class FileServiceImpl implements FileService {
         int upNum = s3FileMapper.updateByPrimaryKeySelective(s3File);
         log.info("--updateFileInfo修改文件信息返回：--{}", upNum);
         return upNum;
+    }
+
+    @Override
+    public List<S3File> queryFileBybucket(BucketFileRequest file) {
+        log.info("--queryFileBybucket查询文件夹下文件信息：--{}", file);
+        List<S3File> fileList = s3FileMyMapper.queryFileByBucket(file);
+        log.info("--queryFileBybucket查询文件夹下文件信息返回：--{}", fileList.size());
+        return fileList;
     }
 }

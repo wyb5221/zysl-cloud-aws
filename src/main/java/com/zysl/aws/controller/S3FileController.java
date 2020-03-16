@@ -18,6 +18,7 @@ import com.zysl.cloud.utils.common.BaseResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
@@ -242,13 +243,18 @@ public class S3FileController {
         }
         //step 2.读取源文件--
         //调用s3接口下载文件内容
-        String fileStr = amasonService.getS3FileInfo(request.getBucketName(),request.getFileName(), "");
+        String fileStr = amasonService.getS3FileInfo(request.getBucketName(),request.getFileName(), request.getVersionId());
+        if(StringUtils.isBlank(fileStr)){
+            log.info("===文件不存在:{}===",request.getFileName());
+            baseResponse.setMsg("文件不存在.");
+            return baseResponse;
+        }
         BASE64Decoder decoder = new BASE64Decoder();
         byte[] inBuff = null;
         try {
             inBuff = decoder.decodeBuffer(fileStr);
         } catch (IOException e) {
-            log.info("--changeWordToPdf文件下载异常：--{}", e);
+            log.error("--changeWordToPdf文件下载异常：--{}", e);
         }
 
         //step 3.word转pdf、加水印 300,300
@@ -274,16 +280,42 @@ public class S3FileController {
         //step 5.上传到temp-001
         BASE64Encoder encoder = new BASE64Encoder();
         String str = encoder.encode(outBuff);
-        amasonService.upload(request.getBucketName(), fileName + "text.pdf", str.getBytes());
-        //step 6.新文件入库
-        String serverNo = s3ClientFactory.getServerNo(request.getBucketName());
+        PutObjectResponse putObjectResponse = amasonService.upload(request.getBucketName(), fileName + "text.pdf", str.getBytes());
+
+        WordToPDFDTO dto = new WordToPDFDTO();
+        if(null != putObjectResponse){
+            //文件上传成功
+            dto.setVersionId(putObjectResponse.versionId());
+            //step 6.新文件入库
+            //向数据库保存文件信息
+            S3File addS3File = initS3File(request.getBucketName(), fileName, outBuff);
+            long num = fileService.addFileInfo(addS3File);
+            log.info("--插入数据返回num:{}", num);
+        }
+        //step 7.设置返回参数
+        dto.setBucketName(request.getBucketName());
+        dto.setFileName(fileName + "text.pdf");
+        baseResponse.setModel(dto);
+        baseResponse.setSuccess(true);
+        return baseResponse;
+    }
+
+    /**
+     * 获取文件对象
+     * @param bucketName
+     * @param fileName
+     * @param outBuff
+     * @return
+     */
+    public S3File initS3File(String bucketName, String fileName, byte[] outBuff){
         S3File addS3File = new S3File();
+        String serverNo = s3ClientFactory.getServerNo(bucketName);
         //服务器编号
         addS3File.setServiceNo(serverNo);
         //文件名称
         addS3File.setFileName(fileName + "text.pdf");
         //文件夹名称
-        addS3File.setFolderName(request.getBucketName());
+        addS3File.setFolderName(bucketName);
         //文件大小
         addS3File.setFileSize(Long.valueOf(outBuff.length));
         //上传时间
@@ -294,19 +326,8 @@ public class S3FileController {
         String md5Content = MD5Utils.encode(new String(outBuff));
         //文件内容md5
         addS3File.setContentMd5(md5Content);
-        //向数据库保存文件信息
-        long num = fileService.addFileInfo(addS3File);
-        log.info("--插入数据返回num:{}", num);
-
-        //step 7.设置返回参数
-        WordToPDFDTO dto = new WordToPDFDTO();
-        dto.setBucketName(request.getBucketName());
-        dto.setFileName(fileName + "text.pdf");
-        baseResponse.setModel(dto);
-        baseResponse.setSuccess(true);
-        return baseResponse;
+        return addS3File;
     }
-
     /**
      * 文件分享
      * @param request
