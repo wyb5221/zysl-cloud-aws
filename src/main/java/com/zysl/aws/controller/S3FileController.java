@@ -1,16 +1,14 @@
 package com.zysl.aws.controller;
 
-import com.zysl.aws.config.BizConfig;
 import com.zysl.aws.enums.DownTypeEnum;
 import com.zysl.aws.model.*;
 import com.zysl.aws.model.db.S3File;
-import com.zysl.aws.service.AmasonService;
+import com.zysl.aws.service.AwsFileService;
 import com.zysl.aws.service.FileService;
 import com.zysl.aws.service.IPDFService;
 import com.zysl.aws.service.IWordService;
 import com.zysl.aws.utils.BizUtil;
 import com.zysl.aws.utils.MD5Utils;
-import com.zysl.aws.utils.S3ClientFactory;
 import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.common.AppLogicException;
 import com.zysl.cloud.utils.common.BasePaginationResponse;
@@ -42,17 +40,13 @@ import java.util.List;
 public class S3FileController {
 
     @Autowired
-    private AmasonService amasonService;
-    @Autowired
     private FileService fileService;
-    @Autowired
-    private BizConfig bizConfig;
     @Autowired
     private IWordService wordService;
     @Autowired
     private IPDFService pdfService;
     @Autowired
-    private S3ClientFactory s3ClientFactory;
+    private AwsFileService awsFileService;
 
     /**
      * 上传文件
@@ -64,7 +58,7 @@ public class S3FileController {
         log.info("--开始调用uploadFile上传文件接口request：{}--", request);
         BaseResponse<UploadFieResponse> baseResponse = new BaseResponse<UploadFieResponse>();
 
-        UploadFieResponse response = amasonService.uploadFile(request);
+        UploadFieResponse response = awsFileService.uploadFile(request);
         if(null != response){
             baseResponse.setSuccess(true);
             baseResponse.setModel(response);
@@ -85,7 +79,7 @@ public class S3FileController {
         log.info("--开始调用uploadFile上传文件接口request：{}--", request.toString());
         BaseResponse<UploadFieResponse> baseResponse = new BaseResponse<UploadFieResponse>();
 
-        UploadFieResponse response = amasonService.uploadFile(request);
+        UploadFieResponse response = awsFileService.uploadFile(request);
         if(null != response){
             baseResponse.setSuccess(true);
             baseResponse.setModel(response);
@@ -114,7 +108,7 @@ public class S3FileController {
         BaseResponse<DownloadFileResponse> baseResponse = new BaseResponse<DownloadFileResponse>();
 
         Long startTime = System.currentTimeMillis();
-        String str = amasonService.downloadFile(response, request);
+        String str = awsFileService.downloadFile(response, request);
         if(!StringUtils.isEmpty(str)){
             log.info("--下载接口返回的文件数据大小--", str.length());
             if(DownTypeEnum.COVER.getCode().equals(request.getType())){
@@ -164,7 +158,7 @@ public class S3FileController {
         log.info("--开始getFileSize调用获取文件大小--bucketName:{},fileName:{}", bucketName, fileName);
         BaseResponse<Long> baseResponse = new BaseResponse<Long>();
 
-        Long fileSize = amasonService.getFileSize(bucketName, fileName);
+        Long fileSize = awsFileService.getFileSize(bucketName, fileName);
         if(fileSize >= 0){
             baseResponse.setSuccess(true);
             baseResponse.setModel(fileSize);
@@ -187,7 +181,7 @@ public class S3FileController {
         DownloadFileRequest request = new DownloadFileRequest();
         request.setBucketName(bucketName);
         request.setFileId(fileId);
-        String str = amasonService.downloadFile(response, request);
+        String str = awsFileService.downloadFile(response, request);
         try {
             BASE64Decoder decoder = new BASE64Decoder();
             byte[] bytes = decoder.decodeBuffer(str);
@@ -245,7 +239,7 @@ public class S3FileController {
         }
         //step 2.读取源文件--
         //调用s3接口下载文件内容
-        String fileStr = amasonService.getS3FileInfo(request.getBucketName(),request.getFileName(), request.getVersionId());
+        String fileStr = awsFileService.getS3FileInfo(request.getBucketName(),request.getFileName(), request.getVersionId());
         if(StringUtils.isBlank(fileStr)){
             log.info("===文件不存在:{}===",request.getFileName());
             baseResponse.setMsg("文件不存在.");
@@ -282,7 +276,7 @@ public class S3FileController {
         //step 5.上传到temp-001
         BASE64Encoder encoder = new BASE64Encoder();
         String str = encoder.encode(outBuff);
-        PutObjectResponse putObjectResponse = amasonService.upload(request.getBucketName(), fileName + "text.pdf", str.getBytes());
+        PutObjectResponse putObjectResponse = awsFileService.upload(request.getBucketName(), fileName + "text.pdf", str.getBytes());
 
         WordToPDFDTO dto = new WordToPDFDTO();
         if(null != putObjectResponse){
@@ -311,9 +305,9 @@ public class S3FileController {
      */
     public S3File initS3File(String bucketName, String fileName, byte[] outBuff){
         S3File addS3File = new S3File();
-        String serverNo = s3ClientFactory.getServerNo(bucketName);
+//        String serverNo = getServiceNo(bucketName);
         //服务器编号
-        addS3File.setServiceNo(serverNo);
+        addS3File.setServiceNo("");
         //文件名称
         addS3File.setFileName(fileName + "text.pdf");
         //文件夹名称
@@ -340,7 +334,7 @@ public class S3FileController {
         log.info("--开始调用shareFile分享文件的信息接口:{}--",request);
         BaseResponse<UploadFieResponse> baseResponse = new BaseResponse<UploadFieResponse>();
 
-        UploadFieResponse uploadFieResponse = amasonService.shareFile(request);
+        UploadFieResponse uploadFieResponse = awsFileService.shareFile(request);
         if(null != uploadFieResponse){
             baseResponse.setSuccess(true);
             baseResponse.setModel(uploadFieResponse);
@@ -360,7 +354,7 @@ public class S3FileController {
     @GetMapping("/getFileVersion")
     public BasePaginationResponse<FileVersionResponse> getFileVersion(String bucketName, String fileName){
         log.info("--getFileVersion获取文件版本信息--bucketName:{},fileName:{}", bucketName, fileName);
-        List<FileVersionResponse> list = amasonService.getS3FileVersion(bucketName, fileName);
+        List<FileVersionResponse> list = awsFileService.getS3FileVersion(bucketName, fileName);
 
         BasePaginationResponse<FileVersionResponse> baseResponse = new BasePaginationResponse<>();
 
@@ -400,7 +394,7 @@ public class S3FileController {
             return baseResponse;
         }
 
-        String str = amasonService.shareDownloadFile(response, request);
+        String str = awsFileService.shareDownloadFile(response, request);
         if(!StringUtils.isEmpty(str)){
             log.info("--下载接口返回的文件数据大小--", str.length());
             try {

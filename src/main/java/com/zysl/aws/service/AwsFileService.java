@@ -1,45 +1,13 @@
 package com.zysl.aws.service;
 
-import com.zysl.aws.common.result.Result;
 import com.zysl.aws.model.*;
-import software.amazon.awssdk.services.s3.model.Bucket;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
-public interface AmasonService {
-
-    /**
-     * 获取存储桶所有文件夹（bucket）的信息
-     */
-    List<Bucket> getBuckets();
-
-    /**
-     * 创建存储桶bucket
-     */
-    String createBucket(String bucketName, String serviceNo);
-
-    /**
-     * 删除文件夹
-     */
-    Result deleteBucket(String bucketName);
-
-    /**
-     * 查询数据库获取文件夹下所有对象
-     * @param request
-     * @return
-     */
-    List<FileInfo> getFilesByBucket(BucketFileRequest request);
-
-    /**
-     * 调用s3接口查询文件夹下的对象
-     * @param request
-     * @return
-     */
-    List<FileInfo> getS3FileList(BucketFileRequest request);
-
+public interface AwsFileService {
 
     /**
      * 上传文件到对应路径
@@ -63,11 +31,6 @@ public interface AmasonService {
      * 分享文件下载
      */
     String shareDownloadFile(HttpServletResponse response, DownloadFileRequest request);
-
-    /**
-     * 删除文件
-     */
-    boolean deleteFile(String bucketName, String key);
 
     /**
      * 查询文件大小
@@ -110,22 +73,15 @@ public interface AmasonService {
     PutObjectResponse upload(String bucketName, String fileId, byte[] data);
 
     /**
+     * 删除文件
+     */
+    boolean deleteFile(String bucketName, String key);
+
+    /**
      *
      * @param bucketName
      * @param key
      */
     List<FileVersionResponse> getS3FileVersion(String bucketName, String key);
 
-    /**
-     * 设置文件版本权限
-     * @return
-     */
-    Integer setFileVersion(SetFileVersionRequest request);
-
-    /**
-     * 创建文件夹folder
-     */
-    boolean createFolder(CreateFolderRequest request);
-
-    void copyObject();
 }

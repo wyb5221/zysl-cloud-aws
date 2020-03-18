@@ -21,17 +21,12 @@ public class CreateFolderRequest implements Serializable {
      * 文件夹名称
      */
     private String folderName;
-    /**
-     * 上级文件夹名称
-     */
-    private String upName;
 
     @Override
     public String toString() {
         return "CreateFolderRequest{" +
                 "bucketName='" + bucketName + '\'' +
                 ", folderName='" + folderName + '\'' +
-                ", upName='" + upName + '\'' +
                 '}';
     }
 }
