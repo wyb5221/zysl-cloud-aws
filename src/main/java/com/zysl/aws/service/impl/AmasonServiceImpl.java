@@ -30,10 +30,11 @@ import sun.misc.BASE64Encoder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 
 @Service
@@ -137,7 +138,12 @@ public class AmasonServiceImpl implements AmasonService {
 
         return fileInfoList;
 
-        /*S3Client s3 = getS3Client(bucketName);
+    }
+
+    @Override
+    public List<FileInfo> getS3FileList(BucketFileRequest request) {
+        S3Client s3 = getS3Client(request.getBucketName());
+        List<FileInfo> fileList = new ArrayList<>();
 
         ListObjectsResponse response = null;
         ListObjectsRequest listObjectsRequest = null;
@@ -145,36 +151,42 @@ public class AmasonServiceImpl implements AmasonService {
         do{
             if(StringUtils.isEmpty(key)){
                 listObjectsRequest =
-                        ListObjectsRequest.builder().bucket(bucketName).build();
+                        ListObjectsRequest.builder()
+                                .bucket(request.getBucketName())
+                                .prefix("doc/")
+                                .delimiter("/")
+                                .build();
             }else{
                 listObjectsRequest =
-                        ListObjectsRequest.builder().bucket(bucketName).marker(key).build();
+                        ListObjectsRequest.builder().bucket(request.getBucketName()).marker(key).build();
             }
             log.info("--查询文件列表入参listObjectsRequest:{}", listObjectsRequest);
 
             response = s3.listObjects(listObjectsRequest);
+
+            List folderList = response.commonPrefixes();
+
             List<S3Object> list = response.contents();
             key = list.get(list.size() - 1).key();
             List<FileInfo> resultList = addFileInfo(list);
             //合并list结果集
             fileList.addAll(resultList);
         }while (response.isTruncated());
-*/
+        return fileList;
     }
 
-//    public List<FileInfo> addFileInfo(List<S3Object> list){
-//        List<FileInfo> fileList = new ArrayList<>();
-//        list.stream().forEach(obj -> {
-//            FileInfo fileInfo = new FileInfo();
-//            fileInfo.setKey(obj.key());
-//            fileInfo.setETag(obj.eTag());
-//            fileInfo.setLastModified(obj.lastModified());
-//            fileInfo.setSize(obj.size());
-//            fileList.add(fileInfo);
-//        });
-//        log.info("-----fileList：{}", fileList.size());
-//        return fileList;
-//    }
+    public List<FileInfo> addFileInfo(List<S3Object> list){
+        List<FileInfo> fileList = new ArrayList<>();
+        list.stream().forEach(obj -> {
+            FileInfo fileInfo = new FileInfo();
+            fileInfo.setFileName(obj.key());
+            fileInfo.setUploadTime(Date.from(obj.lastModified()));
+            fileInfo.setFileSize(obj.size());
+            fileList.add(fileInfo);
+        });
+        log.info("-----fileList：{}", fileList.size());
+        return fileList;
+    }
 
     @Override
     public UploadFieResponse uploadFile(UploadFileRequest request) {
@@ -194,24 +206,24 @@ public class AmasonServiceImpl implements AmasonService {
             }
             /**
              * 根据文件内容md5值判断文件是否存在，存在则直接返回
+             * 20200317，根据业务场景，需要保留文件历史版本，去掉md5的校验，直接上传
              */
             //文件内容md5
-            String md5Content = MD5Utils.encode(request.getData());
-            S3File s3File = fileService.queryFileInfoByMd5(md5Content);
+//            String md5Content = MD5Utils.encode(request.getData());
+//            S3File s3File = fileService.queryFileInfoByMd5(md5Content);
             //文件信息存在
-            if(null != s3File){
-                //文件存在则直接返回
-                response.setFolderName(s3File.getFolderName());
-                response.setFileName(s3File.getFileName());
-                return response;
-            }else{
-                //文件不存在，则上传
+//            if(null != s3File){
+//                //文件存在则直接返回
+//                response.setFolderName(s3File.getFolderName());
+//                response.setFileName(s3File.getFileName());
+//                return response;
+//            }else{
                 //上传文件
                 PutObjectResponse putObjectResponse = upload(bucketName, fileId, data);
 
                 if(null != putObjectResponse){
                     //修改文件信息
-                    updateFileInfo(request, md5Content);
+                    updateFileInfo(request);
 
                     response.setFolderName(request.getBucketName());
                     response.setFileName(fileId);
@@ -221,7 +233,7 @@ public class AmasonServiceImpl implements AmasonService {
                     log.info("--文件上传失败--");
                     return null;
                 }
-            }
+//            }
         }else {
             log.info("--文件夹不存在:{}--",request.getBucketName());
             return null;
@@ -261,12 +273,12 @@ public class AmasonServiceImpl implements AmasonService {
     /**
      *  新增或修改文件信息
      */
-    public void updateFileInfo(UploadFileRequest request, String md5Content){
+    public void updateFileInfo(UploadFileRequest request){
         //查询文件是否存在
         S3File s3File = fileService.getFileInfo(request.getBucketName(), request.getFileId());
         //文件信息存在则修改
         if(null != s3File){
-            s3File.setContentMd5(md5Content);//新文件内容md5
+            s3File.setContentMd5("");//新文件内容md5
             s3File.setUpdateTime(new Date());//修改时间
             s3File.setFileSize((long)request.getData().length());//新文件大小
             fileService.updateFileInfo(s3File);
@@ -300,7 +312,7 @@ public class AmasonServiceImpl implements AmasonService {
                 addS3File.setValidityTime(validityTime);
             }
             //文件内容md5
-            addS3File.setContentMd5(md5Content);
+            addS3File.setContentMd5("");
             //向数据库保存文件信息
             fileService.addFileInfo(addS3File);
         }
@@ -421,6 +433,19 @@ public class AmasonServiceImpl implements AmasonService {
         }
     }
 
+    @Override
+    public String shareDownloadFile(HttpServletResponse response, DownloadFileRequest request) {
+        //查询文件信息
+        S3File s3File = fileService.getFileInfo(request.getBucketName(), request.getFileId());
+        if(null != s3File && !StringUtils.isEmpty(s3File.getSourceFileId())){
+            return this.downloadFile(response, request);
+        }else{
+            log.info("--不是分享文件，不能下载--");
+            return null;
+        }
+
+    }
+
     /**
      * 调用s3接口下载文件内容
      * @param bucketName
@@ -461,18 +486,22 @@ public class AmasonServiceImpl implements AmasonService {
     }
 
     @Override
-    public Result deleteFile(String bucketName, String key) {
+    public boolean deleteFile(String bucketName, String key) {
         S3Client s3 = getS3Client(bucketName);
 
-        DeleteObjectResponse deleteObjectResponse = s3.deleteObject(DeleteObjectRequest.
-                builder().
-                bucket(bucketName).
-                key(key).
-                build());
-        log.info("deleteObjectResponse:"+deleteObjectResponse.toString());
-        log.info("deleteObjectResponse.deleteMarker():"+deleteObjectResponse.deleteMarker());
-
-       return null;
+        try {
+            DeleteObjectResponse deleteObjectResponse = s3.deleteObject(DeleteObjectRequest.
+                    builder().
+                    bucket(bucketName).
+                    key(key).
+                    build());
+            log.info("deleteObjectResponse:"+deleteObjectResponse.toString());
+            log.info("deleteObjectResponse.deleteMarker():"+deleteObjectResponse.deleteMarker());
+            return deleteObjectResponse.deleteMarker();
+        }catch (Exception e){
+            log.info("--deleteFile文件删除异常：{}--", e);
+            throw new AppLogicException("文件删除失败");
+        }
     }
 
     @Override
@@ -668,14 +697,49 @@ public class AmasonServiceImpl implements AmasonService {
     }
 
     @Override
-    public void createFolder() {
+    public void copyObject() {
         S3Client s3 = getS3Client("test-yy05");
+        //copySource 目标对象，文件夹+文件地址
+        //bucket复制后的文件夹， key 复制后的文件名称
+        /*CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder().
+                bucket("test-yy03").key("doc/tt01.doc").copySource("test-yy05/txt/tt01.doc").build();
+        */
+//        CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder().
+//                bucket("test-yy03").key("txt/").copySource("test-yy05/txt/").build();
+        CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder().
+                bucket("test-yy03").key("txt/").copySource("test-yy05/txt/").
+                copySourceSSECustomerAlgorithm("copySourceSSECustomerAlgorithm").build();
 
-        PutObjectResponse putObjectResponse = s3.putObject(PutObjectRequest.builder().bucket("test-yy05").key("doc")
-                        .build(), (Path) new ByteArrayInputStream(new byte[0])
-        );
+        CopyObjectResponse copyObjectResponse = s3.copyObject(copyObjectRequest);
+        PutBucketReplicationRequest putBucketReplicationRequest = PutBucketReplicationRequest.builder()
+                .bucket("")
+                .build();
+        System.out.println(copyObjectResponse);
 
-        System.out.println(putObjectResponse);
+    }
+
+    @Override
+    public boolean createFolder(CreateFolderRequest request) {
+        //获取s3连接
+        S3Client s3 = getS3Client(request.getBucketName());
+
+        String key = "";
+        if(StringUtils.isEmpty(request.getUpName())){
+            key = request.getFolderName() + "/";
+        }else{
+            key = request.getUpName() + "/" + request.getFolderName() + "/";
+        }
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(request.getBucketName()).
+                key(key).build();
+        RequestBody body = RequestBody.empty();
+        try {
+            log.info("--createFolder文件夹创建putObjectRequest：{}--" , putObjectRequest);
+            PutObjectResponse putObjectResponse = s3.putObject(putObjectRequest, body);
+            return null != putObjectResponse;
+        }catch (Exception e) {
+            log.info("--createFolder文件夹创建异常：{}--" , e);
+            throw new AppLogicException("文件夹创建异常");
+        }
     }
 
 }

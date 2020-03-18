@@ -17,6 +17,7 @@ import com.zysl.cloud.utils.common.BasePaginationResponse;
 import com.zysl.cloud.utils.common.BaseResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import sun.misc.BASE64Decoder;
@@ -27,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -365,6 +367,65 @@ public class S3FileController {
         baseResponse.setSuccess(true);
         baseResponse.setModelList(list);
         return baseResponse;
+    }
+
+
+    /**
+     * 分享下载文件
+     * @param bucketName
+     * @param fileId
+     * @return
+     */
+    @GetMapping("/shareDownloadFile")
+    public BaseResponse<DownloadFileResponse> shareDownloadFile(HttpServletResponse response, String bucketName, String fileId, String versionId){
+        DownloadFileRequest request = new DownloadFileRequest();
+        request.setBucketName(bucketName);
+        request.setFileId(fileId);
+        request.setVersionId(versionId);
+        log.info("--开始调用downloadFile下载文件接口--request:{} ", request);
+        BaseResponse<DownloadFileResponse> baseResponse = new BaseResponse<DownloadFileResponse>();
+
+        //入参校验
+        List<String> validations = new ArrayList<>();
+        if(StringUtils.isBlank(bucketName)){
+            validations.add("bucketName不能为空！");
+        }
+        if(StringUtils.isBlank(fileId)){
+            validations.add("fileId不能为空！");
+        }
+        //入参校验不通过
+        if(!CollectionUtils.isEmpty(validations)){
+            baseResponse.setSuccess(false);
+            baseResponse.setValidations(validations);
+            return baseResponse;
+        }
+
+        String str = amasonService.shareDownloadFile(response, request);
+        if(!StringUtils.isEmpty(str)){
+            log.info("--下载接口返回的文件数据大小--", str.length());
+            try {
+                //1下载文件流
+                OutputStream outputStream = response.getOutputStream();
+                response.setContentType("application/octet-stream");//告诉浏览器输出内容为流
+                response.setHeader("Content-Disposition", "attachment;fileName="+request.getFileId());
+                response.setCharacterEncoding("UTF-8");
+
+                BASE64Decoder decoder = new BASE64Decoder();
+                byte[] bytes = decoder.decodeBuffer(str);
+                outputStream.write(bytes);
+                outputStream.flush();
+                outputStream.close();
+            } catch (IOException e) {
+                log.info("--文件下载异常：--", e);
+                throw new AppLogicException("文件流处理异常");
+            }
+            return null;
+        }else {
+            //获取返回对象
+            baseResponse.setSuccess(false);
+            baseResponse.setMsg("文件下载无数据返回");
+            return baseResponse;
+        }
     }
 
 }

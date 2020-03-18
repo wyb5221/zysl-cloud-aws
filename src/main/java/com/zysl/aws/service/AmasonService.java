@@ -17,7 +17,7 @@ public interface AmasonService {
     List<Bucket> getBuckets();
 
     /**
-     * 创建文件夹
+     * 创建存储桶bucket
      */
     String createBucket(String bucketName, String serviceNo);
 
@@ -27,9 +27,19 @@ public interface AmasonService {
     Result deleteBucket(String bucketName);
 
     /**
-     * 获取文件夹下所有对象
+     * 查询数据库获取文件夹下所有对象
+     * @param request
+     * @return
      */
     List<FileInfo> getFilesByBucket(BucketFileRequest request);
+
+    /**
+     * 调用s3接口查询文件夹下的对象
+     * @param request
+     * @return
+     */
+    List<FileInfo> getS3FileList(BucketFileRequest request);
+
 
     /**
      * 上传文件到对应路径
@@ -37,6 +47,11 @@ public interface AmasonService {
      */
     UploadFieResponse uploadFile(UploadFileRequest request);
 
+    /**
+     * 文件流上传
+     * @param request
+     * @return
+     */
     UploadFieResponse uploadFile(HttpServletRequest request);
 
     /**
@@ -45,9 +60,14 @@ public interface AmasonService {
     String downloadFile(HttpServletResponse response, DownloadFileRequest request);
 
     /**
+     * 分享文件下载
+     */
+    String shareDownloadFile(HttpServletResponse response, DownloadFileRequest request);
+
+    /**
      * 删除文件
      */
-    Result deleteFile(String bucketName, String key);
+    boolean deleteFile(String bucketName, String key);
 
     /**
      * 查询文件大小
@@ -102,5 +122,10 @@ public interface AmasonService {
      */
     Integer setFileVersion(SetFileVersionRequest request);
 
-    void createFolder();
+    /**
+     * 创建文件夹folder
+     */
+    boolean createFolder(CreateFolderRequest request);
+
+    void copyObject();
 }

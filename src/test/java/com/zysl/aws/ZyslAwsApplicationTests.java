@@ -1,9 +1,12 @@
 package com.zysl.aws;
 
 import com.zysl.aws.model.BucketFileRequest;
+import com.zysl.aws.model.CreateFolderRequest;
 import com.zysl.aws.model.DownloadFileRequest;
 import com.zysl.aws.model.FileInfo;
 import com.zysl.aws.service.AmasonService;
+import com.zysl.aws.service.FileService;
+import com.zysl.aws.service.TestService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +26,12 @@ public class ZyslAwsApplicationTests {
     @Test
     public void contextLoads() {
     }
+//    @Test
+//    public void querySql(){
+//        String str = "select * from s3_folder where folder_name='test-yy05'";
+//        Object obj = testService.querySql(str);
+//        System.out.println("obj:"+obj.toString());
+//    }
 
     @Test
     public void getFilesByBucket(){
@@ -37,10 +46,25 @@ public class ZyslAwsApplicationTests {
     }
 
     @Test
+    public void getS3FileList(){
+        BucketFileRequest request = new BucketFileRequest();
+        request.setBucketName("test-yy03");
+        List<FileInfo> list = amasonService.getS3FileList(request);
+        System.out.println("list:"+list);
+    }
+
+    @Test
     public void createFolder(){
         System.out.println("----");
-        amasonService.createFolder();
+        CreateFolderRequest request = new CreateFolderRequest();
+        amasonService.createFolder(request);
         System.out.println("----");
+    }
+
+    @Test
+    public void createBucket(){
+        String bucket = amasonService.createBucket("test-yy03/doc", "001");
+        System.out.println("bucket:"+bucket);
     }
 
     @Test
@@ -48,9 +72,19 @@ public class ZyslAwsApplicationTests {
         System.out.println("----");
         HttpServletResponse response = null;
         DownloadFileRequest request = new DownloadFileRequest();
-        request.setFileId("tt-txt.txt");
-        request.setBucketName("test-yy05/txt");
+        request.setFileId("tt-txt.txt");//txt/tt-txt.txt
+        request.setBucketName("test-yy05");
         String str = amasonService.downloadFile(response, request);
         System.out.println("str:" + str);
+    }
+
+    @Test
+    public void deleteFile(){
+        amasonService.deleteFile("test-yy06", "111");
+    }
+
+    @Test
+    public void copyObject(){
+        amasonService.copyObject();
     }
 }
