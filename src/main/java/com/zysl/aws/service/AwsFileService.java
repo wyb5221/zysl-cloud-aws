@@ -91,6 +91,7 @@ public interface AwsFileService {
      */
     CopyObjectResponse copyFile(CopyFileRequest request);
 
+    void uploadPartCopy(CopyFileRequest request);
     /**
      * 文件复制
      * @param request

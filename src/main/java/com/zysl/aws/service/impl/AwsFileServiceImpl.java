@@ -555,6 +555,13 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         //获取s3连接对象
         S3Client s3 = getS3Client(getServiceNo(request.getSourceBucket()));
 
+        List<Tag> tagSet = new ArrayList<>();
+        tagSet.add(Tag.builder().key("foo").value("1").build());
+        tagSet.add(Tag.builder().key("bar").value("2").build());
+        tagSet.add(Tag.builder().key("baz").value("3").build());
+        Tagging tagsCopy = Tagging.builder().tagSet(tagSet).build();
+
+
         //copySource 目标对象，文件夹+文件地址
         //bucket复制后的文件夹， key 复制后的文件名称
         CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder().
@@ -570,6 +577,20 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
             log.error("----文件复制异常：{}", e);
             throw new AppLogicException("copyFile文件复制异常");
         }
+    }
+
+    @Override
+    public void uploadPartCopy(CopyFileRequest request) {
+        //获取s3连接对象
+        S3Client s3 = getS3Client(getServiceNo(request.getSourceBucket()));
+        UploadPartCopyRequest uploadPartCopyRequest = UploadPartCopyRequest.builder()
+                .bucket(request.getDestBucket())
+                .key(request.getDestKey())
+                .copySource(request.getSourceBucket()+"/"+request.getSourceKey())
+                .build();
+        UploadPartCopyResponse uploadPartCopyResponse = s3.uploadPartCopy(uploadPartCopyRequest);
+
+        System.out.println("uploadPartCopyResponse:"+uploadPartCopyResponse);
     }
 
     @Override

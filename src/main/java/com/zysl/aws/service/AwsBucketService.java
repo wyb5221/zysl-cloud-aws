@@ -30,7 +30,7 @@ public interface AwsBucketService {
     /**
      * 获取所有存储桶（bucket）的信息
      */
-    List<Bucket> getBuckets();
+    List<String> getBuckets(String serviceNo);
 
 
 

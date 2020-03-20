@@ -1,7 +1,6 @@
 package com.zysl.aws.controller;
 
 import com.zysl.aws.model.BucketFileRequest;
-import com.zysl.aws.model.BucketInfoResponse;
 import com.zysl.aws.model.FileInfo;
 import com.zysl.aws.model.SetFileVersionRequest;
 import com.zysl.aws.service.AwsBucketService;
@@ -101,10 +100,14 @@ public class S3BucketController {
      * @return
      */
     @GetMapping("/getBuckets")
-    public BaseResponse<BucketInfoResponse> createBucket(String serviceNo){
+    public BasePaginationResponse<String> getBuckets(String serviceNo){
+        log.info("--getBuckets查询所有bucket列表 serviceNo:{}", serviceNo);
+        BasePaginationResponse<String> response = new BasePaginationResponse<>();
+        List<String> bucketList = bucketService.getBuckets(serviceNo);
+        response.setSuccess(true);
+        response.setModelList(bucketList);
 
-        bucketService.getBuckets();
-        return null;
+        return response;
     }
 
 }

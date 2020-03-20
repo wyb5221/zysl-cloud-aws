@@ -9,6 +9,7 @@ import com.zysl.aws.model.SetFileVersionRequest;
 import com.zysl.aws.model.UploadFileRequest;
 import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.model.db.S3Folder;
+import com.zysl.aws.model.db.S3Service;
 import com.zysl.aws.service.AwsBucketService;
 import com.zysl.aws.service.FileService;
 import com.zysl.aws.utils.DateUtil;
@@ -37,17 +38,39 @@ public class AwsBucketServiceImpl extends BaseService implements AwsBucketServic
     private BizConfig bizConfig;
 
     @Override
-    public List<Bucket> getBuckets() {
-        log.info("--getBuckets获取存储桶信息--");
-        S3Client s3 = getS3Client("");
-        ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
-        ListBucketsResponse response = s3.listBuckets(listBucketsRequest);
-        List<Bucket> bucketList = response.buckets();
-        log.info("---bucketList:{}", bucketList);
-
+    public List<String> getBuckets(String serviceNo) {
+        log.info("--getBuckets获取存储桶信息--serviceNo：{}", serviceNo);
+        List<String> bucketList = new ArrayList<>();
+        if(StringUtils.isEmpty(serviceNo)){
+            //查询数据库的服务信息
+            List<S3Service> serviceList = fileService.queryS3Service();
+            for (S3Service obj: serviceList) {
+                List<String> buckets = getS3Buckets(obj.getServiceNo());
+                bucketList.addAll(buckets);
+            }
+        }else{
+            List<String> buckets = getS3Buckets(serviceNo);
+            bucketList.addAll(buckets);
+        }
         return bucketList;
     }
 
+    /**
+     * 调用s3接口查询bucket
+     * @param serviceNo
+     * @return
+     */
+    public List<String> getS3Buckets(String serviceNo){
+        S3Client s3 = getS3Client(serviceNo);
+        ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
+        ListBucketsResponse response = s3.listBuckets(listBucketsRequest);
+        List<Bucket> bucketList = response.buckets();
+
+        List<String> buskets = new ArrayList<>();
+        bucketList.forEach(obj -> buskets.add(obj.name()));
+        log.info("---buskets:{}", buskets.size());
+        return buskets;
+    }
     @Override
     public String createBucket(String bucketName, String serviceNo) {
         log.info("---创建文件夹createBucket:---bucketName:{},serviceName:{}",bucketName, serviceNo);
@@ -59,22 +82,27 @@ public class AwsBucketServiceImpl extends BaseService implements AwsBucketServic
             return "文件夹已经存在";
         }else{
             CreateBucketResponse response = s3.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
-            String fileName = response.location();
-            //保存文件夹信息
-            int num = fileService.insertFolderInfo(bucketName, serviceNo);
-            log.info("--文件信息保存返回--num:{}", num);
+            if(null != response){
+                String fileName = response.location();
+                log.info("--创建接口返回--fileName:{}， response：{}", fileName, response);
+                //保存文件夹信息
+                int num = fileService.insertFolderInfo(bucketName, serviceNo);
+                log.info("--文件信息保存返回--num:{}", num);
 
-            //启动文件夹的版本控制
-            PutBucketVersioningResponse result = s3.putBucketVersioning(PutBucketVersioningRequest.builder()
-                    .bucket(bucketName)
-                    .versioningConfiguration(
-                            VersioningConfiguration.builder()
-                                    .status(BucketVersioningStatus.ENABLED)
-                                    .build())
-                    .build());
-            log.info("--启用版本控制返回--result:{}", result);
-
-            return fileName;
+                //启动文件夹的版本控制
+                PutBucketVersioningResponse result = s3.putBucketVersioning(PutBucketVersioningRequest.builder()
+                        .bucket(bucketName)
+                        .versioningConfiguration(
+                                VersioningConfiguration.builder()
+                                        .status(BucketVersioningStatus.ENABLED)
+                                        .build())
+                        .build());
+                log.info("--启用版本控制返回--result:{}", result);
+                return bucketName;
+            }else{
+                log.info("--bucket创建失败--");
+                return null;
+            }
         }
     }
 

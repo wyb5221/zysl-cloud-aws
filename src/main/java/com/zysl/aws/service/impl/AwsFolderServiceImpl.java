@@ -1,10 +1,7 @@
 package com.zysl.aws.service.impl;
 
 import com.zysl.aws.enums.KeyTypeEnum;
-import com.zysl.aws.model.BucketFileRequest;
-import com.zysl.aws.model.CreateFolderRequest;
-import com.zysl.aws.model.FileInfo;
-import com.zysl.aws.model.QueryObjectsRequest;
+import com.zysl.aws.model.*;
 import com.zysl.aws.service.AwsFileService;
 import com.zysl.aws.service.AwsFolderService;
 import com.zysl.cloud.utils.common.AppLogicException;
@@ -48,19 +45,24 @@ public class AwsFolderServiceImpl extends BaseService implements AwsFolderServic
         }
     }
 
+    //TODO  目录下内容不为空的异常情况需要单独处理
     @Override
-    public boolean deleteFolder(String bucketName, String key, Integer deleteStore) {
-        S3Client s3 = getS3Client(getServiceNo(bucketName));
+    public boolean deleteFolder(DelObjectRequest request) {
+        S3Client s3 = getS3Client(getServiceNo(request.getBucketName()));
 
         List<ObjectIdentifier> objects = new ArrayList<>();
-
+        ObjectIdentifier objectIdentifier = ObjectIdentifier.builder().key(request.getKey()+"/").build();
+        objects.add(objectIdentifier);
         Delete delete = Delete.builder().objects(objects).build();
         DeleteObjectsResponse deleteObjectsResponse = s3.deleteObjects(DeleteObjectsRequest.builder()
-                .bucket(bucketName)
+                .bucket(request.getBucketName())
                 .delete(delete).build());
-        deleteObjectsResponse.responseMetadata();
-
-        return true;
+        log.info("deleteObjectsResponse:{}", deleteObjectsResponse);
+        if(null != deleteObjectsResponse){
+            return true;
+        }else {
+            return false;
+        }
 
 //        if(null == doesBucketExist(bucketName)){
 //            log.info("--文件夹不存在,NoSuchBucket--");
@@ -82,6 +84,7 @@ public class AwsFolderServiceImpl extends BaseService implements AwsFolderServic
 //        }
     }
 
+    //TODO  需要支持分页查询
     @Override
     public List<FileInfo> getS3FileList(QueryObjectsRequest request) {
         S3Client s3 = getS3Client(getServiceNo(request.getBucketName()));
@@ -92,14 +95,14 @@ public class AwsFolderServiceImpl extends BaseService implements AwsFolderServic
         String key = "";
         if(KeyTypeEnum.FOLDER.getCode().equals(request.getKeyType())){
             //查询目录
-            do{
-                if(StringUtils.isEmpty(key)){
+//            do{
+                if(StringUtils.isEmpty(request.getKey())){
                     listObjectsRequest =
                             ListObjectsRequest.builder()
                                     .bucket(request.getBucketName())
-                                    .prefix(request.getKey()+"/")
+//                                    .prefix(request.getKey()+"/")
                                     .delimiter("/")
-                                    .maxKeys(2)
+//                                    .maxKeys(2)
                                     .build();
                 }else{
                     listObjectsRequest =
@@ -107,16 +110,17 @@ public class AwsFolderServiceImpl extends BaseService implements AwsFolderServic
                                     .bucket(request.getBucketName())
                                     .prefix(request.getKey()+"/")
                                     .delimiter("/")
-                                    .maxKeys(2)
-                                    .marker(key).build();
+//                                    .maxKeys(2)
+//                                    .marker(key)
+                                    .build();
                 }
                 log.info("--查询文件列表入参listObjectsRequest:{}", listObjectsRequest);
 
                 response = s3.listObjects(listObjectsRequest);
                 List<CommonPrefix> folderList = response.commonPrefixes();
 
-                List<S3Object> list = response.contents();
-                key = folderList.get(folderList.size() - 1).prefix();
+//                List<S3Object> list = response.contents();
+//                key = folderList.get(folderList.size() - 1).prefix();
                 List<FileInfo> resultList = new ArrayList<>();
 
                 folderList.forEach(obj ->{
@@ -127,25 +131,27 @@ public class AwsFolderServiceImpl extends BaseService implements AwsFolderServic
 
                 //合并list结果集
                 fileList.addAll(resultList);
-            }while (response.isTruncated());
+//            }while (response.isTruncated());
         }else if(KeyTypeEnum.FILE.getCode().equals(request.getKeyType())){
             //查询文件
-            do{
-                if(StringUtils.isEmpty(key)){
+//            do{
+                if(StringUtils.isEmpty(request.getKey())){
                     listObjectsRequest =
                             ListObjectsRequest.builder()
                                     .bucket(request.getBucketName())
-                                    .prefix(request.getKey()+"/")
-//                                    .delimiter("/")
-                                    .maxKeys(2)
+//                                    .prefix(request.getKey()+"/")
+                                    .delimiter("/")
+//                                    .maxKeys(2)
                                     .build();
                 }else{
                     listObjectsRequest =
                             ListObjectsRequest.builder()
                                     .bucket(request.getBucketName())
                                     .prefix(request.getKey()+"/")
-                                    .maxKeys(2)
-                                    .marker(key).build();
+                                    .delimiter("/")
+//                                    .maxKeys(2)
+//                                    .marker(key)
+                                    .build();
                 }
                 log.info("--查询文件列表入参listObjectsRequest:{}", listObjectsRequest);
 
@@ -154,7 +160,7 @@ public class AwsFolderServiceImpl extends BaseService implements AwsFolderServic
 //                List<CommonPrefix> folderList = response.commonPrefixes();
 
                 List<S3Object> list = response.contents();
-                key = list.get(list.size() - 1).key();
+//                key = list.get(list.size() - 1).key();
                 List<FileInfo> resultList = new ArrayList<>();
 
                 list.forEach(obj ->{
@@ -167,15 +173,74 @@ public class AwsFolderServiceImpl extends BaseService implements AwsFolderServic
 
                 //合并list结果集
                 fileList.addAll(resultList);
-            }while (response.isTruncated());
+//            }while (response.isTruncated());
         }else{
             //查询全部
+            if(StringUtils.isEmpty(request.getKey())){
+                listObjectsRequest =
+                        ListObjectsRequest.builder()
+                                .bucket(request.getBucketName())
+//                                    .prefix(request.getKey()+"/")
+//                                .delimiter("/")
+//                                    .maxKeys(2)
+                                .build();
+            }else{
+                listObjectsRequest =
+                        ListObjectsRequest.builder()
+                                .bucket(request.getBucketName())
+                                .prefix(request.getKey()+"/")
+//                                .delimiter("/")
+//                                    .maxKeys(2)
+//                                    .marker(key)
+                                .build();
+            }
+            log.info("--查询文件列表入参listObjectsRequest:{}", listObjectsRequest);
 
+            response = s3.listObjects(listObjectsRequest);
+
+//                List<CommonPrefix> folderList = response.commonPrefixes();
+
+            List<S3Object> list = response.contents();
+//                key = list.get(list.size() - 1).key();
+            List<FileInfo> resultList = new ArrayList<>();
+
+            list.forEach(obj ->{
+                FileInfo fileInfo = new FileInfo();
+                fileInfo.setKey(obj.key());
+                fileInfo.setFileSize(obj.size());
+                fileInfo.setUploadTime(Date.from(obj.lastModified()));
+                resultList.add(fileInfo);
+            });
+
+            //合并list结果集
+            fileList.addAll(resultList);
         }
 
         return fileList;
     }
 
+    @Override
+    public CopyObjectResponse copyFolder(CopyFileRequest request) {
+        //获取s3连接对象
+        S3Client s3 = getS3Client(getServiceNo(request.getSourceBucket()));
+
+
+        //copySource 目标对象，文件夹+文件地址
+        //bucket复制后的文件夹， key 复制后的文件名称
+        CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder().
+                bucket(request.getDestBucket()).key(request.getDestKey()+"/")
+                .copySource(request.getSourceBucket()+"/"+request.getSourceKey()+"/").build();
+
+        try {
+            log.info("--调用s3 接口复制文件copyObject--copyObjectRequest:{}", copyObjectRequest);
+            CopyObjectResponse copyObjectResponse = s3.copyObject(copyObjectRequest);
+            log.info("----copyObjectResponse:{}", copyObjectResponse);
+            return copyObjectResponse;
+        }catch (Exception e){
+            log.error("----文件复制异常：{}", e);
+            throw new AppLogicException("copyFile文件复制异常");
+        }
+    }
 
     /**
      * 拼接返回集合
