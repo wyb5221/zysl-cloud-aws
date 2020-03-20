@@ -1,6 +1,7 @@
 package com.zysl.aws.service;
 
 import com.zysl.aws.model.*;
+import software.amazon.awssdk.services.s3.model.CopyObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,7 +26,7 @@ public interface AwsFileService {
     /**
      * 下载文件
      */
-    String downloadFile(HttpServletResponse response, DownloadFileRequest request);
+    String downloadFile(DownloadFileRequest request);
 
     /**
      * 分享文件下载
@@ -38,7 +39,7 @@ public interface AwsFileService {
      * @param key
      * @return
      */
-    Long getFileSize(String bucketName, String key);
+//    Long getFileSize(String bucketName, String key);
 
     /**
      * 分享文件
@@ -61,7 +62,7 @@ public interface AwsFileService {
      * @param key
      * @return
      */
-    Long getS3FileSize(String bucketName, String key);
+    Long getS3FileSize(String bucketName, String key, String versionId);
 
     /**
      * 调用s3接口上传文件
@@ -73,15 +74,34 @@ public interface AwsFileService {
     PutObjectResponse upload(String bucketName, String fileId, byte[] data);
 
     /**
-     * 删除文件
-     */
-    boolean deleteFile(String bucketName, String key);
-
-    /**
-     *
+     * 调用s3接口查询文件版本列表
      * @param bucketName
      * @param key
      */
     List<FileVersionResponse> getS3FileVersion(String bucketName, String key);
+
+    /**
+     * 删除文件
+     */
+    boolean deleteFile(DelObjectRequest request);
+
+    /**
+     * 文件复制
+     * @param request
+     */
+    CopyObjectResponse copyFile(CopyFileRequest request);
+
+    /**
+     * 文件复制
+     * @param request
+     */
+    boolean moveFile(CopyFileRequest request);
+
+
+    /**
+     * 还原已删除对象
+     * @param request
+     */
+    void restoreObject(ResObjectRequest request);
 
 }

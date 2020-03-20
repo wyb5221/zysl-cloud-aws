@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
+import software.amazon.awssdk.services.s3.model.CopyObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
@@ -56,7 +57,21 @@ public class S3FileController {
     @PostMapping("/uploadFile")
     public BaseResponse<UploadFieResponse> uploadFile(@RequestBody UploadFileRequest request){
         log.info("--开始调用uploadFile上传文件接口request：{}--", request);
-        BaseResponse<UploadFieResponse> baseResponse = new BaseResponse<UploadFieResponse>();
+        BaseResponse<UploadFieResponse> baseResponse = new BaseResponse<>();
+
+        List<String> validations = new ArrayList<>();
+        if(StringUtils.isBlank(request.getBucketName())){
+            validations.add("bucketName不能为空！");
+        }
+        if(StringUtils.isBlank(request.getFileId())){
+            validations.add("fileId不能为空！");
+        }
+        //入参校验不通过
+        if(!CollectionUtils.isEmpty(validations)){
+            baseResponse.setSuccess(false);
+            baseResponse.setValidations(validations);
+            return baseResponse;
+        }
 
         UploadFieResponse response = awsFileService.uploadFile(request);
         if(null != response){
@@ -77,7 +92,20 @@ public class S3FileController {
     @PostMapping("/uploadFileInfo")
     public BaseResponse<UploadFieResponse> uploadFileInfo(HttpServletRequest request) throws IOException {
         log.info("--开始调用uploadFile上传文件接口request：{}--", request.toString());
-        BaseResponse<UploadFieResponse> baseResponse = new BaseResponse<UploadFieResponse>();
+        BaseResponse<UploadFieResponse> baseResponse = new BaseResponse<>();
+        List<String> validations = new ArrayList<>();
+        if(StringUtils.isBlank(request.getParameter("bucketName"))){
+            validations.add("bucketName不能为空！");
+        }
+        if(StringUtils.isBlank(request.getParameter("fileId"))){
+            validations.add("fileId不能为空！");
+        }
+        //入参校验不通过
+        if(!CollectionUtils.isEmpty(validations)){
+            baseResponse.setSuccess(false);
+            baseResponse.setValidations(validations);
+            return baseResponse;
+        }
 
         UploadFieResponse response = awsFileService.uploadFile(request);
         if(null != response){
@@ -98,20 +126,28 @@ public class S3FileController {
      */
     @GetMapping("/downloadFile")
     public BaseResponse<DownloadFileResponse> downloadFile(HttpServletResponse response, String bucketName, String fileId, String type, String versionId){
-        DownloadFileRequest request = new DownloadFileRequest();
-        request.setBucketName(bucketName);
-        request.setFileId(fileId);
-        request.setVersionId(versionId);
-        request.setType(type);
-        log.info("--开始调用downloadFile下载文件接口--request:{} ", request);
-
-        BaseResponse<DownloadFileResponse> baseResponse = new BaseResponse<DownloadFileResponse>();
+        log.info("--开始调用downloadFile下载文件接口--bucketName:{},fileId：{}，versionId:{} ", bucketName, fileId, versionId);
+        BaseResponse<DownloadFileResponse> baseResponse = new BaseResponse<>();
+        List<String> validations = new ArrayList<>();
+        if(StringUtils.isBlank(bucketName)){
+            validations.add("bucketName不能为空！");
+        }
+        if(StringUtils.isBlank(fileId)){
+            validations.add("fileId不能为空！");
+        }
+        //入参校验不通过
+        if(!CollectionUtils.isEmpty(validations)){
+            baseResponse.setSuccess(false);
+            baseResponse.setValidations(validations);
+            return baseResponse;
+        }
 
         Long startTime = System.currentTimeMillis();
-        String str = awsFileService.downloadFile(response, request);
+//        String str = awsFileService.downloadFile(response, request);
+        String str = awsFileService.getS3FileInfo(bucketName, fileId, versionId);
         if(!StringUtils.isEmpty(str)){
             log.info("--下载接口返回的文件数据大小--", str.length());
-            if(DownTypeEnum.COVER.getCode().equals(request.getType())){
+            if(DownTypeEnum.COVER.getCode().equals(type)){
                 Long usedTime = System.currentTimeMillis() - startTime;
                 DownloadFileResponse downloadFileResponse = new DownloadFileResponse();
                 downloadFileResponse.setData(str);
@@ -126,7 +162,7 @@ public class S3FileController {
                     //1下载文件流
                     OutputStream outputStream = response.getOutputStream();
                     response.setContentType("application/octet-stream");//告诉浏览器输出内容为流
-                    response.setHeader("Content-Disposition", "attachment;fileName="+request.getFileId());
+                    response.setHeader("Content-Disposition", "attachment;fileName="+fileId);
                     response.setCharacterEncoding("UTF-8");
 
                     BASE64Decoder decoder = new BASE64Decoder();
@@ -154,11 +190,24 @@ public class S3FileController {
      * @param fileName
      */
     @GetMapping("/getFileSize")
-    public BaseResponse<Long> getFileSize(String bucketName, String fileName){
-        log.info("--开始getFileSize调用获取文件大小--bucketName:{},fileName:{}", bucketName, fileName);
-        BaseResponse<Long> baseResponse = new BaseResponse<Long>();
+    public BaseResponse<Long> getFileSize(String bucketName, String fileName, String versionId){
+        log.info("--开始getFileSize调用获取文件大小--bucketName:{},fileName:{},versionId:{}", bucketName, fileName, versionId);
+        BaseResponse<Long> baseResponse = new BaseResponse<>();
+        List<String> validations = new ArrayList<>();
+        if(StringUtils.isBlank(bucketName)){
+            validations.add("bucketName不能为空！");
+        }
+        if(StringUtils.isBlank(fileName)){
+            validations.add("fileName不能为空！");
+        }
+        //入参校验不通过
+        if(!CollectionUtils.isEmpty(validations)){
+            baseResponse.setSuccess(false);
+            baseResponse.setValidations(validations);
+            return baseResponse;
+        }
 
-        Long fileSize = awsFileService.getFileSize(bucketName, fileName);
+        Long fileSize = awsFileService.getS3FileSize(bucketName, fileName, versionId);
         if(fileSize >= 0){
             baseResponse.setSuccess(true);
             baseResponse.setModel(fileSize);
@@ -176,12 +225,12 @@ public class S3FileController {
      * @param fileId
      */
     @GetMapping("/getVideo")
-    public void getVideo(HttpServletResponse response, String bucketName, String fileId){
-        log.info("--开始getVideo获取视频文件信息--bucketName:{},fileId:{}", bucketName, fileId);
+    public void getVideo(HttpServletResponse response, String bucketName, String fileId, String versionId){
+        log.info("--开始getVideo获取视频文件信息--bucketName:{},fileId:{},versionId:{}", bucketName, fileId, versionId);
         DownloadFileRequest request = new DownloadFileRequest();
         request.setBucketName(bucketName);
         request.setFileId(fileId);
-        String str = awsFileService.downloadFile(response, request);
+        String str = awsFileService.getS3FileInfo(bucketName, fileId, versionId);
         try {
             BASE64Decoder decoder = new BASE64Decoder();
             byte[] bytes = decoder.decodeBuffer(str);
@@ -332,7 +381,7 @@ public class S3FileController {
     @PostMapping("/shareFile")
     public BaseResponse<UploadFieResponse> shareFile(@RequestBody ShareFileRequest request){
         log.info("--开始调用shareFile分享文件的信息接口:{}--",request);
-        BaseResponse<UploadFieResponse> baseResponse = new BaseResponse<UploadFieResponse>();
+        BaseResponse<UploadFieResponse> baseResponse = new BaseResponse<>();
 
         UploadFieResponse uploadFieResponse = awsFileService.shareFile(request);
         if(null != uploadFieResponse){
@@ -354,9 +403,23 @@ public class S3FileController {
     @GetMapping("/getFileVersion")
     public BasePaginationResponse<FileVersionResponse> getFileVersion(String bucketName, String fileName){
         log.info("--getFileVersion获取文件版本信息--bucketName:{},fileName:{}", bucketName, fileName);
-        List<FileVersionResponse> list = awsFileService.getS3FileVersion(bucketName, fileName);
-
         BasePaginationResponse<FileVersionResponse> baseResponse = new BasePaginationResponse<>();
+        List<String> validations = new ArrayList<>();
+        if(StringUtils.isBlank(bucketName)){
+            validations.add("bucketName不能为空！");
+        }
+        if(StringUtils.isBlank(fileName)){
+            validations.add("fileName不能为空！");
+        }
+        //入参校验不通过
+        if(!CollectionUtils.isEmpty(validations)){
+            baseResponse.setSuccess(false);
+            baseResponse.setMsg("入参校验失败");
+            baseResponse.setValidations(validations);
+            return baseResponse;
+        }
+
+        List<FileVersionResponse> list = awsFileService.getS3FileVersion(bucketName, fileName);
 
         baseResponse.setSuccess(true);
         baseResponse.setModelList(list);
@@ -377,7 +440,7 @@ public class S3FileController {
         request.setFileId(fileId);
         request.setVersionId(versionId);
         log.info("--开始调用downloadFile下载文件接口--request:{} ", request);
-        BaseResponse<DownloadFileResponse> baseResponse = new BaseResponse<DownloadFileResponse>();
+        BaseResponse<DownloadFileResponse> baseResponse = new BaseResponse<>();
 
         //入参校验
         List<String> validations = new ArrayList<>();
@@ -418,6 +481,118 @@ public class S3FileController {
             //获取返回对象
             baseResponse.setSuccess(false);
             baseResponse.setMsg("文件下载无数据返回");
+            return baseResponse;
+        }
+    }
+
+    /**
+     * 删除文件
+     * @param request
+     * @return
+     */
+    @PostMapping("/delete")
+    public BaseResponse<String> deleteFile(@RequestBody DelObjectRequest request){
+        log.info("--开始调用deleteFile删除文件接口--request:{} ", request);
+        BaseResponse<String> baseResponse = new BaseResponse<>();
+
+        //入参校验
+        List<String> validations = new ArrayList<>();
+        if(StringUtils.isBlank(request.getBucketName())){
+            validations.add("bucketName不能为空！");
+        }
+        if(StringUtils.isBlank(request.getKey())){
+            validations.add("fileId不能为空！");
+        }
+        //入参校验不通过
+        if(!CollectionUtils.isEmpty(validations)){
+            baseResponse.setSuccess(false);
+            baseResponse.setValidations(validations);
+            return baseResponse;
+        }
+
+        boolean delFlag = awsFileService.deleteFile(request);
+        baseResponse.setSuccess(delFlag);
+        return baseResponse;
+    }
+
+    /**
+     * 文件复制
+     * @param request
+     * @return
+     */
+    @PostMapping("/copy")
+    public BaseResponse<String> copyFile(@RequestBody CopyFileRequest request){
+        log.info("--copyFile 文件复制--request:{}", request);
+        BaseResponse<String> baseResponse = new BaseResponse<>();
+        //入参校验
+        List<String> validations = new ArrayList<>();
+        if(StringUtils.isBlank(request.getSourceBucket())){
+            validations.add("sourceBucket不能为空！");
+        }
+        if(StringUtils.isBlank(request.getSourceKey())){
+            validations.add("sourceKey不能为空！");
+        }
+        if(StringUtils.isBlank(request.getDestBucket())){
+            validations.add("destBucket不能为空！");
+        }
+        if(StringUtils.isBlank(request.getDestKey())){
+            validations.add("destKey不能为空！");
+        }
+        //入参校验不通过
+        if(!CollectionUtils.isEmpty(validations)){
+            baseResponse.setSuccess(false);
+            baseResponse.setValidations(validations);
+            return baseResponse;
+        }
+        CopyObjectResponse response = awsFileService.copyFile(request);
+        if(null != response){
+            baseResponse.setSuccess(true);
+            baseResponse.setMsg("文件复制成功！");
+            return baseResponse;
+        }else{
+            baseResponse.setSuccess(false);
+            baseResponse.setMsg("文件复制失败！");
+            return baseResponse;
+        }
+    }
+
+    /**
+     * 文件移动
+     * @param request
+     * @return
+     */
+    @PostMapping("/move")
+    public BaseResponse<String> moveFile(@RequestBody CopyFileRequest request){
+        log.info("--moveFile 文件移动--request:{}", request);
+        BaseResponse<String> baseResponse = new BaseResponse<>();
+        //入参校验
+        List<String> validations = new ArrayList<>();
+        if(StringUtils.isBlank(request.getSourceBucket())){
+            validations.add("sourceBucket不能为空！");
+        }
+        if(StringUtils.isBlank(request.getSourceKey())){
+            validations.add("sourceKey不能为空！");
+        }
+        if(StringUtils.isBlank(request.getDestBucket())){
+            validations.add("destBucket不能为空！");
+        }
+        if(StringUtils.isBlank(request.getDestKey())){
+            validations.add("destKey不能为空！");
+        }
+        //入参校验不通过
+        if(!CollectionUtils.isEmpty(validations)){
+            baseResponse.setSuccess(false);
+            baseResponse.setValidations(validations);
+            return baseResponse;
+        }
+        boolean moveFlag = awsFileService.moveFile(request);
+        if(moveFlag){
+            baseResponse.setSuccess(true);
+            baseResponse.setMsg("文件移动成功！");
+            return baseResponse;
+        }else{
+            baseResponse.setSuccess(false);
+            baseResponse.setMsg("文件移动失败！");
             return baseResponse;
         }
     }

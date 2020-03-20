@@ -43,6 +43,7 @@ public class S3FolderController {
         //入参校验不通过
         if(!CollectionUtils.isEmpty(validations)){
             baseResponse.setSuccess(false);
+            baseResponse.setMsg("入参校验失败");
             baseResponse.setValidations(validations);
             return baseResponse;
         }
@@ -58,15 +59,16 @@ public class S3FolderController {
     }
 
     /**
-     * 删除bucket下的对象
+     * 删除目录
      * @param bucketName
      * @param key
      * @return
      */
-    @GetMapping("/deleteFile")
-    public BaseResponse<String> deleteFile(String bucketName, String key){
-        log.info("--getFileVersion获取文件版本信息--bucketName:{},key:{}", bucketName, key);
-        BaseResponse<String> baseResponse = new BaseResponse<String>();
+    //DOTO
+    @GetMapping("/delete")
+    public BaseResponse<String> deleteFile(String bucketName, String key, Integer deleteStore){
+        log.info("--deleteFile删除目录--bucketName:{},key:{},deleteStore:{}", bucketName, key, deleteStore);
+        BaseResponse<String> baseResponse = new BaseResponse<>();
         List<String> validations = new ArrayList<>();
         if(StringUtils.isBlank(bucketName)){
             validations.add("bucketName不能为空！");
@@ -77,14 +79,14 @@ public class S3FolderController {
         //入参校验不通过
         if(!CollectionUtils.isEmpty(validations)){
             baseResponse.setSuccess(false);
+            baseResponse.setMsg("入参校验失败");
             baseResponse.setValidations(validations);
             return baseResponse;
         }
 
-        boolean flag = folderService.deleteFolder(bucketName, key);
+        boolean flag = folderService.deleteFolder(bucketName, key, deleteStore);
         baseResponse.setSuccess(flag);
         return baseResponse;
-
     }
 
 }

@@ -36,7 +36,7 @@ public class BaseService {
     }
 
     /**
-     * 判断文件夹是否存在
+     * 判断bucket是否存在
      * @param bucketName
      * @return
      */

@@ -1,6 +1,8 @@
 package com.zysl.aws.service.impl;
 
+import com.zysl.aws.enums.DeleteStoreEnum;
 import com.zysl.aws.model.*;
+import com.zysl.aws.model.DelObjectRequest;
 import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.service.AwsFileService;
 import com.zysl.aws.service.FileService;
@@ -10,6 +12,7 @@ import com.zysl.cloud.utils.common.AppLogicException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import software.amazon.awssdk.core.ResponseBytes;
@@ -48,7 +51,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
 
         S3Client s3 = getS3Client(getServiceNo(bucketName));
         if(null != doesBucketExist(bucketName)){
-            log.info("--文件夹存在--");
+            log.info("--bucket存在--");
             if(StringUtils.isEmpty(fileId)){
                 fileId = UUID.randomUUID().toString().replaceAll("-","");
                 request.setFileId(fileId);
@@ -128,7 +131,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
     }
 
     @Override
-    public String downloadFile(HttpServletResponse response, DownloadFileRequest request) {
+    public String downloadFile(DownloadFileRequest request) {
         log.info("--downloadFile下载文件开始时间--:{}", System.currentTimeMillis());
         S3File s3File = fileService.getFileInfo(request.getBucketName(), request.getFileId());
         log.info("--downloadFile下载文件查询数据库结束时间--:{}", System.currentTimeMillis());
@@ -181,12 +184,66 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         }
     }
 
+  /*  @Override
+    public String shareDownloadFile(HttpServletResponse response, DownloadFileRequest request) {
+        log.info("--shareDownloadFile下载文件开始时间--:{}", System.currentTimeMillis());
+        S3File s3File = fileService.getFileInfo(request.getBucketName(), request.getFileId());
+        log.info("--shareDownloadFile下载文件查询数据库结束时间--:{}", System.currentTimeMillis());
+        if(null == s3File){
+            log.info("--数据库记录不存在--");
+            String str = getS3FileInfo(request.getBucketName(), request.getFileId(), request.getVersionId());
+            return str;
+        }
+        Long fileKey = s3File.getId();
+        //最大可下载次数
+        Integer maxAmount = s3File.getMaxAmount();
+        //下载有效截至时间
+        Date validityTime = s3File.getValidityTime();
+        //判断文件是否还在有效期,当前时间小于截至时间则还可以下载
+        if(!StringUtils.isEmpty(validityTime) && !DateUtil.doCompareDate(new Date(), validityTime)) {
+            log.info("--文件已超过有效期,有效期截至时间validityTime:--{}", validityTime);
+            return null;
+        }
+        if(!StringUtils.isEmpty(maxAmount) && maxAmount <= 0){
+            log.info("--文件已无可下载次数--可用次数maxAmount:{}", maxAmount);
+            return null;
+        }
+
+        String bucketName = request.getBucketName();
+        String key = request.getFileId();
+        // 判断是否源文件
+        if (s3File != null && s3File.getSourceFileId() != null && s3File.getSourceFileId() > 0) {
+            log.info("--downloadFile下载文件查询源文件开始时间--:{}", System.currentTimeMillis());
+            s3File = fileService.getFileInfo(s3File.getSourceFileId());
+            log.info("--downloadFile下载文件查询源文件结束时间--:{}", System.currentTimeMillis());
+            bucketName = s3File.getFolderName();
+            key = s3File.getFileName();
+        }
+
+        if(null != doesBucketExist(bucketName)){
+            log.info("--文件夹存在--");
+
+            String str = getS3FileInfo(bucketName, key, request.getVersionId());
+
+            //下载成功后修改最大下载次数
+            if(!StringUtils.isEmpty(maxAmount)){
+                log.info("--修改文件下载次数--可用次数maxAmount:{}", maxAmount);
+                fileService.updateFileAmount(--maxAmount, fileKey);
+                log.info("--updateFileAmount修改文件下载次数结束时间--:{}", System.currentTimeMillis());
+            }
+            return str;
+        }else {
+            log.info("--文件夹不存在--");
+            return null;
+        }
+    }*/
+
     @Override
     public String shareDownloadFile(HttpServletResponse response, DownloadFileRequest request) {
         //查询文件信息
         S3File s3File = fileService.getFileInfo(request.getBucketName(), request.getFileId());
         if(null != s3File && !StringUtils.isEmpty(s3File.getSourceFileId())){
-            return this.downloadFile(response, request);
+            return this.downloadFile(request);
         }else{
             log.info("--不是分享文件，不能下载--");
             return null;
@@ -232,12 +289,12 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         }
     }
 
-    @Override
+    /*@Override
     public Long getFileSize(String bucketName, String key) {
         //查询是否存在db，不存在则查询服务器
         S3File s3File = fileService.getFileInfo(bucketName, key);
         if(null == s3File){
-            Long fileSize = getS3FileSize(bucketName, key);
+            Long fileSize = getS3FileSize(bucketName, key, "");
             return fileSize;
         }
         //判断是否源文件
@@ -253,9 +310,9 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         String folderName = s3File.getFolderName();
         String FileName = s3File.getFileName();
         //查询文件大小
-        Long fileSize = getS3FileSize(folderName, FileName);
+        Long fileSize = getS3FileSize(folderName, FileName, "");
         return fileSize;
-    }
+    }*/
 
     /**
      * 调用s3接口查询服务器文件大小
@@ -264,11 +321,17 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
      * @return
      */
     @Override
-    public Long getS3FileSize(String bucketName, String key){
+    public Long getS3FileSize(String bucketName, String key, String versionId){
         S3Client s3 = getS3Client(getServiceNo(bucketName));
         try {
-            HeadObjectResponse headObjectResponse = s3.headObject(b ->
-                    b.bucket(bucketName).key(key));
+            HeadObjectRequest headObjectRequest = null;
+            if(StringUtils.isEmpty(versionId)){
+                headObjectRequest = HeadObjectRequest.builder().bucket(bucketName).key(key).build();
+            }else{
+                headObjectRequest = HeadObjectRequest.builder().bucket(bucketName).key(key).versionId(versionId).build();
+            }
+            log.info("--headObject-s3下载接口入参--headObjectRequest:{}", headObjectRequest);
+            HeadObjectResponse headObjectResponse = s3.headObject(headObjectRequest);
             Long fileSize = headObjectResponse.contentLength();
             return fileSize;
         }catch (Exception e) {
@@ -327,27 +390,6 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
     }
 
     @Override
-    public boolean deleteFile(String bucketName, String key) {
-        S3Client s3 = getS3Client(getServiceNo(bucketName));
-
-        try {
-//            DeleteObjectsRequest
-//            s3.deleteObjects()
-            DeleteObjectResponse deleteObjectResponse = s3.deleteObject(DeleteObjectRequest.
-                    builder().
-                    bucket(bucketName).
-                    key(key).
-                    build());
-            log.info("deleteObjectResponse:"+deleteObjectResponse.toString());
-            log.info("deleteObjectResponse.deleteMarker():"+deleteObjectResponse.deleteMarker());
-            return deleteObjectResponse.deleteMarker();
-        }catch (Exception e){
-            log.info("--deleteFile文件删除异常：{}--", e);
-            throw new AppLogicException("文件删除失败");
-        }
-    }
-
-    @Override
     public List<FileVersionResponse> getS3FileVersion(String bucketName, String key) {
         S3Client s3 = getS3Client(getServiceNo(bucketName));
         ListObjectVersionsResponse response = s3.
@@ -401,12 +443,12 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
      */
     private Long addNewFile(String bucketName,String fileName){
         //获取文件大小
-        Long fileSize = getFileSize(bucketName,fileName);
+//        Long fileSize = getFileSize(bucketName,fileName);
         S3File s3FileDB = new S3File();
         s3FileDB.setServiceNo(getServiceNo(bucketName));
         s3FileDB.setFolderName(bucketName);
         s3FileDB.setFileName(fileName);
-        s3FileDB.setFileSize(fileSize);
+//        s3FileDB.setFileSize();
         s3FileDB.setCreateTime(new Date());
 
         //文件内容md5码
@@ -441,6 +483,134 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
             log.error("--doesObjectExist异常--:{}", e);
         }
         return false;
+    }
+
+    @Override
+    public boolean deleteFile(DelObjectRequest request) {
+        //获取s3连接对象
+        S3Client s3 = getS3Client(getServiceNo(request.getBucketName()));
+
+        try {
+            DeleteObjectsRequest deleteObjectsRequest = null;
+            if(DeleteStoreEnum.COVER.getCode().equals(request.getDeleteStore())){
+                if(StringUtils.isEmpty(request.getVersionId())){
+                    //删除整个文件信息
+                    List<ObjectIdentifier> objects = new ArrayList<>();
+                    //查询文件的版本信息
+                    List<FileVersionResponse> versions = getS3FileVersion(request.getBucketName(), request.getKey());
+                    versions.forEach(obj -> {
+                        ObjectIdentifier objectIdentifier = ObjectIdentifier.builder()
+                                .key(obj.getKey())
+                                .versionId(obj.getVersionId()).build();
+                        objects.add(objectIdentifier);
+                    });
+                    //删除列表
+                    Delete delete = Delete.builder().objects(objects).build();
+                    //逻辑删除
+                    deleteObjectsRequest = DeleteObjectsRequest.builder()
+                            .bucket(request.getBucketName())
+                            .delete(delete)
+                            .build();
+                }else{
+                    //删除文件指定版本信息
+                    ObjectIdentifier objectIdentifier = ObjectIdentifier.builder()
+                            .key(request.getKey())
+                            .versionId(request.getVersionId()).build();
+                    List<ObjectIdentifier> objects = new ArrayList<>();
+                    objects.add(objectIdentifier);
+                    Delete delete = Delete.builder().objects(objects).build();
+
+                    //逻辑删除
+                    deleteObjectsRequest = DeleteObjectsRequest.builder()
+                            .bucket(request.getBucketName())
+                            .delete(delete)
+                            .build();
+                }
+            }else{
+                ObjectIdentifier objectIdentifier = ObjectIdentifier.builder().key(request.getKey()).build();
+                List<ObjectIdentifier> objects = new ArrayList<>();
+                objects.add(objectIdentifier);
+                Delete delete = Delete.builder().objects(objects).build();
+
+                //逻辑删除
+                deleteObjectsRequest = DeleteObjectsRequest.builder()
+                        .bucket(request.getBucketName())
+                        .delete(delete)
+                        .build();
+            }
+            log.info("---deleteObjects删除对象入参-deleteObjectsRequest：{}", deleteObjectsRequest);
+            DeleteObjectsResponse deleteObjectsResponse = s3.deleteObjects(deleteObjectsRequest);
+            log.info("deleteObjectResponse:"+deleteObjectsResponse.toString());
+            log.info("deleteObjectResponse.deleteMarker():"+deleteObjectsResponse.deleted());
+            log.info("deleteObjectsResponse.errors():"+deleteObjectsResponse.errors());
+            return CollectionUtils.isEmpty(deleteObjectsResponse.errors());
+        }catch (Exception e){
+            log.info("--deleteFile文件删除异常：{}--", e);
+            throw new AppLogicException("文件删除失败");
+        }
+    }
+
+    @Override
+    public CopyObjectResponse copyFile(CopyFileRequest request) {
+        //获取s3连接对象
+        S3Client s3 = getS3Client(getServiceNo(request.getSourceBucket()));
+
+        //copySource 目标对象，文件夹+文件地址
+        //bucket复制后的文件夹， key 复制后的文件名称
+        CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder().
+                bucket(request.getDestBucket()).key(request.getDestKey())
+                .copySource(request.getSourceBucket()+"/"+request.getSourceKey()).build();
+
+        try {
+            log.info("--调用s3 接口复制文件copyObject--copyObjectRequest:{}", copyObjectRequest);
+            CopyObjectResponse copyObjectResponse = s3.copyObject(copyObjectRequest);
+            log.info("----copyObjectResponse:{}", copyObjectResponse);
+            return copyObjectResponse;
+        }catch (Exception e){
+            log.error("----文件复制异常：{}", e);
+            throw new AppLogicException("copyFile文件复制异常");
+        }
+    }
+
+    @Override
+    public boolean moveFile(CopyFileRequest request) {
+        //先复制文件
+        CopyObjectResponse copyObjectResponse = this.copyFile(request);
+        if(null != copyObjectResponse){
+            //复制成功后，物理删除源文件
+            DelObjectRequest delRequest = new DelObjectRequest();
+            delRequest.setBucketName(request.getSourceBucket());
+            delRequest.setKey(request.getSourceKey());
+            delRequest.setDeleteStore(DeleteStoreEnum.COVER.getCode());
+            boolean delFlag = this.deleteFile(delRequest);
+            return delFlag;
+        }
+        return false;
+    }
+
+
+    @Override
+    public void restoreObject(ResObjectRequest request) {
+        //获取s3连接对象
+        S3Client s3 = getS3Client(getServiceNo(request.getBucketName()));
+        RestoreObjectRequest restoreObjectRequest = null;
+        if(StringUtils.isEmpty(request.getVersionId())){
+            restoreObjectRequest = RestoreObjectRequest.builder()
+                    .bucket(request.getBucketName())
+                    .key(request.getKey()).build();
+        }else {
+            restoreObjectRequest = RestoreObjectRequest.builder()
+                    .bucket(request.getBucketName())
+                    .key(request.getKey()).versionId(request.getVersionId()).build();
+        }
+
+        log.info("---restoreObject还原删除对象入参-restoreObjectRequest：{}", restoreObjectRequest);
+
+
+//        s3.re
+        RestoreObjectResponse restoreObjectResponse = s3.restoreObject(restoreObjectRequest);
+        log.info("---restoreObject还原删除对象入参-restoreObjectRequest：{}", restoreObjectResponse.toString());
+
     }
 
 }

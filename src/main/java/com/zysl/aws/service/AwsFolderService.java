@@ -3,6 +3,7 @@ package com.zysl.aws.service;
 import com.zysl.aws.model.BucketFileRequest;
 import com.zysl.aws.model.CreateFolderRequest;
 import com.zysl.aws.model.FileInfo;
+import com.zysl.aws.model.QueryObjectsRequest;
 
 import java.util.List;
 
@@ -16,13 +17,13 @@ public interface AwsFolderService {
     /**
      * 删除目录（文件夹）
      */
-    boolean deleteFolder(String bucketName, String key);
+    boolean deleteFolder(String bucketName, String key, Integer deleteStore);
 
     /**
      * 调用s3接口查询文件夹下的对象
      * @param request
      * @return
      */
-    List<FileInfo> getS3FileList(BucketFileRequest request);
+    List<FileInfo> getS3FileList(QueryObjectsRequest request);
 
 }
