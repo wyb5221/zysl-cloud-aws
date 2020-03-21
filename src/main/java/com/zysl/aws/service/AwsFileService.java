@@ -1,34 +1,14 @@
 package com.zysl.aws.service;
 
-import com.zysl.aws.common.result.Result;
 import com.zysl.aws.model.*;
-import software.amazon.awssdk.services.s3.model.Bucket;
+import software.amazon.awssdk.services.s3.model.CopyObjectResponse;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
-public interface AmasonService {
-
-    /**
-     * 获取存储桶所有文件夹（bucket）的信息
-     */
-    List<Bucket> getBuckets();
-
-    /**
-     * 创建文件夹
-     */
-    String createBucket(String bucketName, String serviceNo);
-
-    /**
-     * 删除文件夹
-     */
-    Result deleteBucket(String bucketName);
-
-    /**
-     * 获取文件夹下所有对象
-     */
-    List<FileInfo> getFilesByBucket(String bucketName);
+public interface AwsFileService {
 
     /**
      * 上传文件到对应路径
@@ -36,17 +16,22 @@ public interface AmasonService {
      */
     UploadFieResponse uploadFile(UploadFileRequest request);
 
+    /**
+     * 文件流上传
+     * @param request
+     * @return
+     */
     UploadFieResponse uploadFile(HttpServletRequest request);
 
     /**
      * 下载文件
      */
-    String downloadFile(HttpServletResponse response, DownloadFileRequest request);
+    String downloadFile(DownloadFileRequest request);
 
     /**
-     * 删除文件
+     * 分享文件下载
      */
-    Result deleteFile(String bucketName, String key);
+    String shareDownloadFile(HttpServletResponse response, DownloadFileRequest request);
 
     /**
      * 查询文件大小
@@ -54,7 +39,7 @@ public interface AmasonService {
      * @param key
      * @return
      */
-    Long getFileSize(String bucketName, String key);
+//    Long getFileSize(String bucketName, String key);
 
     /**
      * 分享文件
@@ -77,7 +62,7 @@ public interface AmasonService {
      * @param key
      * @return
      */
-    Long getS3FileSize(String bucketName, String key);
+    Long getS3FileSize(String bucketName, String key, String versionId);
 
     /**
      * 调用s3接口上传文件
@@ -86,18 +71,38 @@ public interface AmasonService {
      * @param data
      * @return
      */
-    boolean upload(String bucketName, String fileId, byte[] data);
+    PutObjectResponse upload(String bucketName, String fileId, byte[] data);
 
     /**
-     *
+     * 调用s3接口查询文件版本列表
      * @param bucketName
      * @param key
      */
     List<FileVersionResponse> getS3FileVersion(String bucketName, String key);
 
     /**
-     * 设置文件版本权限
-     * @return
+     * 删除文件
      */
-    Integer setFileVersion(SetFileVersionRequest request);
+    boolean deleteFile(DelObjectRequest request);
+
+    /**
+     * 文件复制
+     * @param request
+     */
+    CopyObjectResponse copyFile(CopyFileRequest request);
+
+    void uploadPartCopy(CopyFileRequest request);
+    /**
+     * 文件复制
+     * @param request
+     */
+    boolean moveFile(CopyFileRequest request);
+
+
+    /**
+     * 还原已删除对象
+     * @param request
+     */
+    void restoreObject(ResObjectRequest request);
+
 }

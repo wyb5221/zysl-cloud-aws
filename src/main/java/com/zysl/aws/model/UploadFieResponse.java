@@ -17,12 +17,15 @@ public class UploadFieResponse implements Serializable {
     private String folderName;
     //文件名称
     private String fileName;
+    //文件版本id
+    private String versionId;
 
     @Override
     public String toString() {
         return "UploadFieResponse{" +
                 "folderName='" + folderName + '\'' +
                 ", fileName='" + fileName + '\'' +
+                ", versionId='" + versionId + '\'' +
                 '}';
     }
 }

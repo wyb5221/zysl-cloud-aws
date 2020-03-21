@@ -2,12 +2,12 @@
 <configuration>
     <contextName>logback</contextName>
     <springProperty scope="context" name="demo" source="spring.application.name"/>
-    <property name="log.path" value="/data/applogs/zysl-cloud-aws"/>
-    <property name="app_name" value="zysl-cloud-aws"/>
+    <property name="app_name" value="zysl-data-announcement"/>
+    <property name="log.path" value="/data/applogs/${app_name}"/>
     <!--控台输出-->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [${app_name}] [%thread]-5level %logger{36} - %msg%n </pattern>
+            <pattern>[%d{HH:mm:ss.SSS}] [%-20.20thread] [%-5level] [%-40.40logger{40}:%-4.4line] - %msg%n </pattern>
         </encoder>
     </appender>
     <!--不带过滤器，记录所有-->
@@ -23,7 +23,7 @@
             <totalSizeCap>20GB</totalSizeCap>
         </rollingPolicy>
         <layout class="ch.qos.logback.classic.PatternLayout">
-            <pattern>%d{HH:mm:ss.SSS} [${app_name}] [%thread]-5level %logger{36} - %msg%n </pattern>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] [${app_name}] [%-20.20thread] [%-5level] [%-40.40logger{40}:%-4.4line] - %msg%n </pattern>
         </layout>
     </appender>
 
@@ -42,13 +42,10 @@
             <totalSizeCap>20GB</totalSizeCap>
         </rollingPolicy>
         <layout class="ch.qos.logback.classic.PatternLayout">
-            <pattern>%d{HH:mm:ss.SSS} [${app_name}] [%thread]-5level %logger{36} - %msg%n </pattern>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] [${app_name}] [%-20.20thread] [%-5level] [%-40.40logger{40}:%-4.4line] - %msg%n </pattern>
         </layout>
     </appender>
 
-    <logger name="com.zysl.demo.dal" level="debug" additivity="false">
-        <appender-ref ref="STDOUT"/>
-    </logger>
 
 
     <root level="info">

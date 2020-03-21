@@ -25,6 +25,7 @@
   </resultMap>
 
 
+
   <select id="queryByName" parameterType="java.lang.String" resultMap="FolderBaseResultMap">
     select id, service_no, folder_name, create_time
     from s3_folder where folder_name = #{folderName}
@@ -65,5 +66,16 @@
       #{item.uploadTime},#{item.createTime},#{item.sourceFileId})
     </foreach>
   </insert>
+
+  <select id="queryFileByBucket" resultMap="FileBaseResultMap" parameterType="com.zysl.aws.model.BucketFileRequest">
+    select * from s3_file where 1=1
+    <if test="item.bucketName != null">
+      and folder_name = #{item.bucketName}
+    </if>
+    <if test="item.fileName != null">
+      and file_name like CONCAT('',#{item.fileName},'%')
+    </if>
+    order by upload_time desc
+  </select>
 
 </mapper>

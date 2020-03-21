@@ -7,7 +7,7 @@ import com.zysl.aws.config.BizConfig;
 import com.zysl.aws.enums.DownTypeEnum;
 import com.zysl.aws.model.*;
 import com.zysl.aws.model.db.S3File;
-import com.zysl.aws.service.AmasonService;
+import com.zysl.aws.service.AwsBucketService;
 import com.zysl.aws.service.FileService;
 import com.zysl.aws.service.IPDFService;
 import com.zysl.aws.service.IWordService;
@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
 public class AmazonController {
 
     @Autowired
-    private AmasonService amasonService;
+    private AwsBucketService amasonService;
     @Autowired
     private IWordService wordService;
     @Autowired

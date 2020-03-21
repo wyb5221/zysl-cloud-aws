@@ -19,6 +19,9 @@ public class WordToPDFRequest implements Serializable {
   @ApiModelProperty(value = "文件名", name = "fileName", dataType = SwaggerConstants.DATA_TYPE_STRING, required = true)
   private String fileName;
 
+  @ApiModelProperty(value = "文件版本id", name = "versionId", dataType = SwaggerConstants.DATA_TYPE_STRING)
+  private String versionId;
+
   @ApiModelProperty(value = "文字水印", name = "textMark", dataType = SwaggerConstants.DATA_TYPE_STRING)
   private String textMark;
 
