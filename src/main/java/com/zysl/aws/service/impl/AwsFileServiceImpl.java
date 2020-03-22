@@ -2,7 +2,6 @@ package com.zysl.aws.service.impl;
 
 import com.zysl.aws.enums.DeleteStoreEnum;
 import com.zysl.aws.model.*;
-import com.zysl.aws.model.DelObjectRequest;
 import com.zysl.aws.model.db.S3File;
 import com.zysl.aws.service.AwsFileService;
 import com.zysl.aws.service.FileService;
@@ -20,7 +19,7 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
-import sun.misc.BASE64Encoder;
+import sun.misc.BASE64Decoder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,7 +46,15 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
 
         String bucketName = request.getBucketName();
         String fileId = request.getFileId();
-        byte[] data = request.getData().getBytes();
+//        byte[] data = request.getData().getBytes();
+        //进行解密
+        BASE64Decoder decoder = new BASE64Decoder();
+        byte[] data = null;
+        try {
+            data = decoder.decodeBuffer(request.getData());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         S3Client s3 = getS3Client(getServiceNo(bucketName));
         if(null != doesBucketExist(bucketName)){
@@ -95,17 +102,20 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         Integer maxAmount = null == request.getParameter("maxAmount") ? null : Integer.valueOf(request.getParameter("maxAmount"));
         Integer validity = null == request.getParameter("validity") ? null : Integer.valueOf(request.getParameter("validity"));
 
-        BASE64Encoder encoder = new BASE64Encoder();
-        String str = encoder.encode(bytes);
-        UploadFileRequest fileRequest = new UploadFileRequest();
-        fileRequest.setBucketName(bucketName);
-        fileRequest.setFileId(fileId);
-        fileRequest.setData(str);
-        fileRequest.setMaxAmount(maxAmount);
-        fileRequest.setValidity(validity);
-        log.info("--开始调用uploadFile上传文件接口fileRequest：{}--", fileRequest);
+        //上传文件
+        PutObjectResponse putObjectResponse = upload(bucketName, fileId, bytes);
 
-        return this.uploadFile(fileRequest);
+        UploadFieResponse response = new UploadFieResponse();
+        if(null != putObjectResponse){
+            //修改文件信息
+            response.setFolderName(bucketName);
+            response.setFileName(fileId);
+            response.setVersionId(putObjectResponse.versionId());
+            return response;
+        }else {
+            log.info("--文件上传失败--");
+            return null;
+        }
     }
 
     /**
@@ -131,14 +141,14 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
     }
 
     @Override
-    public String downloadFile(DownloadFileRequest request) {
+    public byte[] downloadFile(DownloadFileRequest request) {
         log.info("--downloadFile下载文件开始时间--:{}", System.currentTimeMillis());
         S3File s3File = fileService.getFileInfo(request.getBucketName(), request.getFileId());
         log.info("--downloadFile下载文件查询数据库结束时间--:{}", System.currentTimeMillis());
         if(null == s3File){
             log.info("--数据库记录不存在--");
-            String str = getS3FileInfo(request.getBucketName(), request.getFileId(), request.getVersionId());
-            return str;
+            byte[] bytes = getS3FileInfo(request.getBucketName(), request.getFileId(), request.getVersionId());
+            return bytes;
         }
         Long fileKey = s3File.getId();
         //最大可下载次数
@@ -146,7 +156,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         //下载有效截至时间
         Date validityTime = s3File.getValidityTime();
         //判断文件是否还在有效期,当前时间小于截至时间则还可以下载
-        if(!StringUtils.isEmpty(validityTime) && !DateUtil.doCompareDate(new Date(), validityTime)) {
+        if(!StringUtils.isEmpty(validityTime) && DateUtil.doCompareDate(new Date(), validityTime) < 0) {
             log.info("--文件已超过有效期,有效期截至时间validityTime:--{}", validityTime);
             return null;
         }
@@ -169,7 +179,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         if(null != doesBucketExist(bucketName)){
             log.info("--文件夹存在--");
 
-            String str = getS3FileInfo(bucketName, key, request.getVersionId());
+            byte[] bytes = getS3FileInfo(bucketName, key, request.getVersionId());
 
             //下载成功后修改最大下载次数
             if(!StringUtils.isEmpty(maxAmount)){
@@ -177,7 +187,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
                 fileService.updateFileAmount(--maxAmount, fileKey);
                 log.info("--updateFileAmount修改文件下载次数结束时间--:{}", System.currentTimeMillis());
             }
-            return str;
+            return bytes;
         }else {
             log.info("--文件夹不存在--");
             return null;
@@ -239,7 +249,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
     }*/
 
     @Override
-    public String shareDownloadFile(HttpServletResponse response, DownloadFileRequest request) {
+    public byte[] shareDownloadFile(HttpServletResponse response, DownloadFileRequest request) {
         //查询文件信息
         S3File s3File = fileService.getFileInfo(request.getBucketName(), request.getFileId());
         if(null != s3File && !StringUtils.isEmpty(s3File.getSourceFileId())){
@@ -257,7 +267,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
      * @return
      */
     @Override
-    public String getS3FileInfo(String bucketName, String key, String versionId){
+    public byte[] getS3FileInfo(String bucketName, String key, String versionId){
         log.info("--调用s3接口下载文件内容入参-bucketName:{},-key:{},versionId:{}", bucketName, key, versionId);
         log.info("--getS3FileInfo下载文件开始时间--:{}", System.currentTimeMillis());
 
@@ -273,16 +283,28 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
             ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(request.build(),
                     ResponseTransformer.toBytes());
             log.info("--getObject结束时间--:{}", System.currentTimeMillis());
+            GetObjectResponse objectResponse = objectAsBytes.response();
 
-            /*ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(b ->
-                            b.bucket(bucketName).key(key).versionId(versionId),
-                    ResponseTransformer.toBytes());*/
+            Date date1 = Date.from(objectResponse.lastModified());
+            Date date2 = DateUtil.createDate("2020-03-21 22:00:00");
+
             byte[] bytes = objectAsBytes.asByteArray();
             log.info("--asByteArray结束时间--:{}", System.currentTimeMillis());
+            if(DateUtil.doCompareDate(date1, date2) < 0){
+                //进行解码
+                BASE64Decoder decoder = new BASE64Decoder();
+                byte[] fileContent = decoder.decodeBuffer(new String(bytes));
+                return fileContent;
+            }else {
+                return bytes;
+            }
+
+//            byte[] bytes = objectAsBytes.asByteArray();
+//            log.info("--asByteArray结束时间--:{}", System.currentTimeMillis());
 //            String a = new String(bytes);
 //            byte[] aa = a.getBytes();
 //            String str = objectAsBytes.asUtf8String();
-            return new String(bytes);
+//            return new String(bytes);
         } catch (Exception e) {
             log.error("--s3接口下载文件信息异常：--{}", e);
             return null;
@@ -455,7 +477,8 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         S3Client s3Client = getS3Client(s3FileDB.getServiceNo());
         ResponseBytes<GetObjectResponse> objectAsBytes = s3Client.getObject(b -> b.bucket(bucketName).key(fileName),
                 ResponseTransformer.toBytes());
-        String md5 = MD5Utils.encode(objectAsBytes.asUtf8String());
+        byte[] bytes = objectAsBytes.asByteArray();
+        String md5 = MD5Utils.encode(new String(bytes));
         s3FileDB.setContentMd5(md5);
 
         return fileService.addFileInfo(s3FileDB);

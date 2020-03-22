@@ -25,7 +25,7 @@
         var host = document.getElementById("host").value;
         var name = document.getElementById("name").value;
         var key = document.getElementById("key").value;
-        var str = host+"/aws/s3/getVideo?bucketName="+name+"&fileId="+key;
+        var str = host+"/aws/file/getVideo?bucketName="+name+"&fileId="+key;
         document.getElementById("vv").src=str;
     }
 
