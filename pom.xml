@@ -1,29 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-<!--    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.1.RELEASE</version>
-        <relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;
-    </parent>
-    <groupId>com.zysl</groupId>-->
+  <parent>
+    <artifactId>zysl-cloud-parent</artifactId>
+    <groupId>com.zysl.cloud</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
 
-    <parent>
-      <groupId>com.zysl.cloud</groupId>
-      <artifactId>zysl-cloud-parent</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>zysl-cloud-aws</artifactId>
+  <version>1.1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
 
-    <artifactId>aws</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
-    <name>zysl-aws</name>
-    <description>Demo project for Spring Boot</description>
+  <properties>
+    <aws.version>1.1.0-SNAPSHOT</aws.version>
+    <zysl-cloud.version>1.0-SNAPSHOT</zysl-cloud.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.version>1.8</java.version>
+  </properties>
 
-    <properties>
-        <java.version>1.8</java.version>
-    </properties>
+  <modules>
+    <module>aws-api</module>
+    <module>aws-domain</module>
+    <module>aws-biz</module>
+    <module>aws-config</module>
+    <module>aws-utils</module>
+    <module>aws-web</module>
+  </modules>
 
     <dependencies>
       <dependency>
@@ -33,6 +36,7 @@
       <dependency>
         <groupId>com.zysl.cloud</groupId>
         <artifactId>zysl-cloud-utils</artifactId>
+        <version>${zysl-cloud.version}</version>
       </dependency>
       <dependency>
         <groupId>com.aspose</groupId>
@@ -70,7 +74,7 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
-            <version>2.5.25</version>
+            <version>2.10.90</version>
         </dependency>
 
         <dependency>
@@ -134,6 +138,17 @@
 
     <dependencyManagement>
         <dependencies>
+
+          <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>javax.persistence</artifactId>
+            <version>2.2.1</version>
+          </dependency>
+          <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.9.11</version>
+          </dependency>
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
                 <artifactId>bom</artifactId>
@@ -145,6 +160,7 @@
     </dependencyManagement>
 
 
+<!--
     <build>
         <plugins>
             <plugin>
@@ -182,5 +198,32 @@
 
         </plugins>
     </build>
+-->
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.6.1</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <encoding>${project.build.sourceEncoding}</encoding>
+          <compilerArgs>
+            <arg>-parameters</arg>
+          </compilerArgs>
+          <useIncrementalCompilation>false</useIncrementalCompilation>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>2.8.2</version>
+        <configuration>
+          <skip>false</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
