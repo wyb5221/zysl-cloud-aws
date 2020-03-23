@@ -19,7 +19,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.services.s3.model.CopyObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
-import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
 import javax.servlet.ServletOutputStream;
@@ -144,13 +143,16 @@ public class S3FileController {
 
         Long startTime = System.currentTimeMillis();
 //        String str = awsFileService.downloadFile(response, request);
-        String str = awsFileService.getS3FileInfo(bucketName, fileId, versionId);
-        if(!StringUtils.isEmpty(str)){
-            log.info("--下载接口返回的文件数据大小--", str.length());
+        byte[] str = awsFileService.getS3FileInfo(bucketName, fileId, versionId);
+        if(null != str){
+            log.info("--下载接口返回的文件数据大小--", str.length);
             if(DownTypeEnum.COVER.getCode().equals(type)){
                 Long usedTime = System.currentTimeMillis() - startTime;
                 DownloadFileResponse downloadFileResponse = new DownloadFileResponse();
-                downloadFileResponse.setData(str);
+
+                BASE64Encoder encoder = new BASE64Encoder();
+                //返回加密
+                downloadFileResponse.setData(encoder.encode(str));
                 downloadFileResponse.setUsedTime(usedTime);
 
                 //获取返回对象
@@ -165,9 +167,7 @@ public class S3FileController {
                     response.setHeader("Content-Disposition", "attachment;fileName="+fileId);
                     response.setCharacterEncoding("UTF-8");
 
-                    BASE64Decoder decoder = new BASE64Decoder();
-                    byte[] bytes = decoder.decodeBuffer(str);
-                    outputStream.write(bytes);
+                    outputStream.write(str);
                     outputStream.flush();
                     outputStream.close();
                 } catch (IOException e) {
@@ -230,11 +230,9 @@ public class S3FileController {
         DownloadFileRequest request = new DownloadFileRequest();
         request.setBucketName(bucketName);
         request.setFileId(fileId);
-        String str = awsFileService.getS3FileInfo(bucketName, fileId, versionId);
-        try {
-            BASE64Decoder decoder = new BASE64Decoder();
-            byte[] bytes = decoder.decodeBuffer(str);
 
+        try {
+            byte[] bytes = awsFileService.getS3FileInfo(bucketName, fileId, versionId);
             response.reset();
             //设置头部类型
             response.setContentType("video/mp4;charset=UTF-8");
@@ -254,8 +252,6 @@ public class S3FileController {
                 }
                 out = null;
             }
-        } catch (IOException e) {
-            log.error("--文件下载异常：--", e);
         } catch (Exception ex) {
             log.error("--视频文件获取异常：--", ex);
         }
@@ -288,19 +284,19 @@ public class S3FileController {
         }
         //step 2.读取源文件--
         //调用s3接口下载文件内容
-        String fileStr = awsFileService.getS3FileInfo(request.getBucketName(),request.getFileName(), request.getVersionId());
-        if(StringUtils.isBlank(fileStr)){
+        byte[] inBuff = awsFileService.getS3FileInfo(request.getBucketName(),request.getFileName(), request.getVersionId());
+        if(null == inBuff){
             log.info("===文件不存在:{}===",request.getFileName());
             baseResponse.setMsg("文件不存在.");
             return baseResponse;
         }
-        BASE64Decoder decoder = new BASE64Decoder();
-        byte[] inBuff = null;
-        try {
-            inBuff = decoder.decodeBuffer(fileStr);
-        } catch (IOException e) {
-            log.error("--changeWordToPdf文件下载异常：--{}", e);
-        }
+//        BASE64Decoder decoder = new BASE64Decoder();
+//        byte[] inBuff = null;
+//        try {
+//            inBuff = decoder.decodeBuffer(fileStr);
+//        } catch (IOException e) {
+//            log.error("--changeWordToPdf文件下载异常：--{}", e);
+//        }
 
         //step 3.word转pdf、加水印 300,300
         String fileName = BizUtil.getTmpFileNameWithoutSuffix(request.getFileName());
@@ -323,9 +319,9 @@ public class S3FileController {
         }
 
         //step 5.上传到temp-001
-        BASE64Encoder encoder = new BASE64Encoder();
-        String str = encoder.encode(outBuff);
-        PutObjectResponse putObjectResponse = awsFileService.upload(request.getBucketName(), fileName + "text.pdf", str.getBytes());
+//        BASE64Encoder encoder = new BASE64Encoder();
+//        String str = encoder.encode(outBuff);
+        PutObjectResponse putObjectResponse = awsFileService.upload(request.getBucketName(), fileName + "text.pdf", outBuff);
 
         WordToPDFDTO dto = new WordToPDFDTO();
         if(null != putObjectResponse){
@@ -457,9 +453,9 @@ public class S3FileController {
             return baseResponse;
         }
 
-        String str = awsFileService.shareDownloadFile(response, request);
-        if(!StringUtils.isEmpty(str)){
-            log.info("--下载接口返回的文件数据大小--", str.length());
+        byte[] bytes = awsFileService.shareDownloadFile(response, request);
+        if(null != bytes){
+            log.info("--下载接口返回的文件数据大小--", bytes.length);
             try {
                 //1下载文件流
                 OutputStream outputStream = response.getOutputStream();
@@ -467,8 +463,6 @@ public class S3FileController {
                 response.setHeader("Content-Disposition", "attachment;fileName="+request.getFileId());
                 response.setCharacterEncoding("UTF-8");
 
-                BASE64Decoder decoder = new BASE64Decoder();
-                byte[] bytes = decoder.decodeBuffer(str);
                 outputStream.write(bytes);
                 outputStream.flush();
                 outputStream.close();

@@ -158,4 +158,40 @@ public class S3FolderController {
             return baseResponse;
         }
     }
+
+    /**
+     * 目录移动
+     * @param request
+     * @return
+     */
+    @PostMapping("/move")
+    public BaseResponse<String> moveFolder(@RequestBody CopyFileRequest request) {
+        log.info("--copyFolder 文件复制--request:{}", request);
+        BaseResponse<String> baseResponse = new BaseResponse<>();
+
+        //入参校验
+        List<String> validations = new ArrayList<>();
+        if(StringUtils.isBlank(request.getSourceBucket())){
+            validations.add("sourceBucket不能为空！");
+        }
+        if(StringUtils.isBlank(request.getSourceKey())){
+            validations.add("sourceKey不能为空！");
+        }
+        if(StringUtils.isBlank(request.getDestBucket())){
+            validations.add("destBucket不能为空！");
+        }
+        if(StringUtils.isBlank(request.getDestKey())){
+            validations.add("destKey不能为空！");
+        }
+        //入参校验不通过
+        if(!CollectionUtils.isEmpty(validations)){
+            baseResponse.setSuccess(false);
+            baseResponse.setValidations(validations);
+            return baseResponse;
+        }
+
+        boolean moveFlag = folderService.moveFolder(request);
+        baseResponse.setSuccess(moveFlag);
+        return baseResponse;
+    }
 }

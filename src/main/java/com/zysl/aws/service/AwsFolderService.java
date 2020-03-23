@@ -30,4 +30,11 @@ public interface AwsFolderService {
      * @return
      */
     CopyObjectResponse copyFolder(CopyFileRequest request);
+
+    /**
+     * 目录移动
+     * @param request
+     */
+    boolean moveFolder(CopyFileRequest request);
+
 }

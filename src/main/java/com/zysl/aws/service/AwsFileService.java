@@ -26,12 +26,12 @@ public interface AwsFileService {
     /**
      * 下载文件
      */
-    String downloadFile(DownloadFileRequest request);
+    byte[] downloadFile(DownloadFileRequest request);
 
     /**
      * 分享文件下载
      */
-    String shareDownloadFile(HttpServletResponse response, DownloadFileRequest request);
+    byte[] shareDownloadFile(HttpServletResponse response, DownloadFileRequest request);
 
     /**
      * 查询文件大小
@@ -54,7 +54,7 @@ public interface AwsFileService {
      * @param key
      * @return
      */
-    String getS3FileInfo(String bucketName, String key, String versionId);
+    byte[] getS3FileInfo(String bucketName, String key, String versionId);
 
     /**
      * 调用s3接口查询服务器文件大小
