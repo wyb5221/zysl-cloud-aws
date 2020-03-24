@@ -1,4 +1,4 @@
-package com.zysl.aws;
+package com.zysl.aws.web;
 
 import com.zysl.aws.web.model.*;
 import com.zysl.aws.web.service.AwsFileService;
@@ -11,8 +11,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(SpringRunner.class)
@@ -71,7 +71,7 @@ public class AwsFileServiceTest {
     @Test
     public void getFileVersion(){
         List<FileVersionResponse> result = fileService.getS3FileVersion
-                ("test-yy08","test01/test01-02");
+                ("test-yy08","www001.txt");
         System.out.println("result:"+result);
     }
     @Test
@@ -104,8 +104,52 @@ public class AwsFileServiceTest {
     }
 
     @Test
+    public void getS3ToFileInfo(){
+        FileInfoRequest a = fileService.getS3ToFileInfo(
+                "test-yy08",
+                "www001.txt", "8hxGS5G.1xIDbIosjfNqM7j9aeOA28lf");
+        System.out.println("a:"+a);
+    }
+
+    @Test
+    public void updateFileTage(){
+        UpdateFileTageRequest request = new UpdateFileTageRequest();
+        request.setBucket("test-yy08");
+        request.setKey("www001.txt");
+        request.setVersionId("8hxGS5G.1xIDbIosjfNqM7j9aeOA28lf");
+        List<TageDTO> tageList = new ArrayList<>();
+        TageDTO tage1 = new TageDTO();
+        tage1.setKey("create");
+        tage1.setValue("wyb");
+        tageList.add(tage1);
+        TageDTO tage = new TageDTO();
+        tage.setKey("maxAmount");
+        tage.setValue("10");
+        tageList.add(tage);
+        TageDTO tage2 = new TageDTO();
+        tage2.setKey("validityTime");
+        tage2.setValue("2020-04-01");
+        tageList.add(tage2);
+        request.setTageList(tageList);
+
+        System.out.println("a:"+fileService.updateFileTage(request));
+    }
+
+    @Test
+    public void uploadFile(){
+        UploadFileRequest request = new UploadFileRequest();
+        request.setBucketName("test-yy08");
+        request.setFileId("www002.txt");
+        request.setData("5rmW5Y2X6ZW/5rKZ77yM5aW955qE5ZOI5ZOI6L+Y5aW9DQp3d+mXrumXrg0K5L2g55qEDQpieXRl\n" +
+                "DQoNCg0KMQ0KMg==");
+        fileService.uploadFile(request);
+
+
+    }
+
+    @Test
     public void abortMultipartUpload() throws IOException {
-        String filePath = "D:\\tmp\\testFile\\www001.txt";
+        String filePath = "D:\\tmp\\testFile\\www003.txt";
         File file = new File(filePath);
         FileInputStream inputStream = new FileInputStream(file);
 

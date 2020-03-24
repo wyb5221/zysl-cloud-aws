@@ -236,6 +236,41 @@ public class S3FileController {
     }
 
     /**
+     * 获取文件信息
+     * @param bucketName
+     * @param fileName
+     */
+    @GetMapping("/getFileInfo")
+    public BaseResponse<FileInfoRequest> getFileInfo(String bucketName, String fileName, String versionId){
+        log.info("--开始getFileInfo调用获取文件信息--bucketName:{},fileName:{},versionId:{}", bucketName, fileName, versionId);
+        BaseResponse<FileInfoRequest> baseResponse = new BaseResponse<>();
+        List<String> validations = new ArrayList<>();
+        if(StringUtils.isBlank(bucketName)){
+            validations.add("bucketName不能为空！");
+        }
+        if(StringUtils.isBlank(fileName)){
+            validations.add("fileName不能为空！");
+        }
+        //入参校验不通过
+        if(!CollectionUtils.isEmpty(validations)){
+            baseResponse.setSuccess(false);
+            baseResponse.setValidations(validations);
+            return baseResponse;
+        }
+
+        FileInfoRequest fileInfoRequest = awsFileService.getS3ToFileInfo(bucketName, fileName, versionId);
+        if(null != fileInfoRequest){
+            baseResponse.setSuccess(true);
+            baseResponse.setMsg("文件信息查询成功");
+            baseResponse.setModel(fileInfoRequest);
+        }else{
+            baseResponse.setSuccess(false);
+            baseResponse.setMsg("文件信息查询失败");
+        }
+        return baseResponse;
+    }
+
+    /**
      * 获取视频文件信息
      * @param response
      * @param bucketName
@@ -497,6 +532,37 @@ public class S3FileController {
     }
 
     /**
+     * 设置文件标签信息
+     * @return
+     */
+    @PostMapping("/setTag")
+    public BaseResponse<String> setObjectTag(@RequestBody UpdateFileTageRequest request){
+        log.info("--setObjectTag设置文件标签信息request--:{}", request);
+        BaseResponse<String> baseResponse = new BaseResponse<>();
+        //入参校验
+        List<String> validations = new ArrayList<>();
+        if(StringUtils.isBlank(request.getBucket())){
+            validations.add("bucket不能为空！");
+        }
+        if(StringUtils.isBlank(request.getKey())){
+            validations.add("key不能为空！");
+        }
+        if(StringUtils.isBlank(request.getVersionId())){
+            validations.add("versionId不能为空！");
+        }
+        //入参校验不通过
+        if(!CollectionUtils.isEmpty(validations)){
+            baseResponse.setSuccess(false);
+            baseResponse.setValidations(validations);
+            return baseResponse;
+        }
+
+        boolean flag = awsFileService.updateFileTage(request);
+        baseResponse.setSuccess(flag);
+        return baseResponse;
+    }
+
+    /**
      * 删除文件
      * @param request
      * @return
@@ -607,5 +673,7 @@ public class S3FileController {
             return baseResponse;
         }
     }
+
+
 
 }

@@ -3,6 +3,7 @@ package com.zysl.aws.web.service;
 import com.zysl.aws.web.model.*;
 import software.amazon.awssdk.services.s3.model.CopyObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.model.Tag;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -65,6 +66,14 @@ public interface AwsFileService {
     Long getS3FileSize(String bucketName, String key, String versionId);
 
     /**
+     * 调用s3接口查询服务器文件信息
+     * @param bucketName
+     * @param key
+     * @param versionId
+     * @return
+     */
+    FileInfoRequest getS3ToFileInfo(String bucketName, String key, String versionId);
+    /**
      * 调用s3接口上传文件
      * @param bucketName
      * @param fileId
@@ -86,6 +95,18 @@ public interface AwsFileService {
     boolean deleteFile(DelObjectRequest request);
 
     /**
+     * 设置文件的tage
+     * @param request
+     * @return
+     */
+    boolean updateFileTage(UpdateFileTageRequest request);
+
+    /**
+     * 查询文件标签tag信息
+     */
+    List<Tag> getObjectTagging(String bucket, String key, String versionId);
+
+    /**
      * 文件复制
      * @param request
      */
@@ -98,13 +119,11 @@ public interface AwsFileService {
      */
     boolean moveFile(CopyFileRequest request);
 
-
     /**
      * 还原已删除对象
      * @param request
      */
     void restoreObject(ResObjectRequest request);
-
 
     void abortMultipartUpload(byte[] bytes);
 

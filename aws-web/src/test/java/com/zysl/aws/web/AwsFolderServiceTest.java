@@ -1,4 +1,4 @@
-package com.zysl.aws;
+package com.zysl.aws.web;
 
 import com.zysl.aws.web.model.*;
 import com.zysl.aws.web.service.AwsFolderService;
