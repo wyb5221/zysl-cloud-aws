@@ -2,7 +2,6 @@ package com.zysl.cloud.aws.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.zysl.cloud.aws.biz.constant.BizConstants;
-import com.zysl.cloud.aws.biz.service.IS3BucketService;
 import com.zysl.cloud.aws.biz.service.IS3FactoryService;
 import com.zysl.cloud.aws.config.S3ServerConfig;
 import com.zysl.cloud.aws.prop.S3ServerProp;
@@ -23,13 +22,11 @@ import software.amazon.awssdk.core.internal.http.loader.DefaultSdkHttpClientBuil
 import software.amazon.awssdk.http.SdkHttpConfigurationOption;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.Bucket;
-import software.amazon.awssdk.services.s3.model.PutObjectTaggingRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectTaggingResponse;
+import software.amazon.awssdk.services.s3.model.ListBucketsRequest;
+import software.amazon.awssdk.services.s3.model.ListBucketsResponse;
 import software.amazon.awssdk.services.s3.model.S3Request;
 import software.amazon.awssdk.services.s3.model.S3Response;
 import software.amazon.awssdk.utils.AttributeMap;
-import springfox.documentation.spring.web.json.Json;
 
 @Slf4j
 @Service
@@ -37,8 +34,6 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 
 	@Autowired
 	S3ServerConfig s3ServerConfig;
-	@Autowired
-	IS3BucketService s3BucketService;
 
 
 	@Override
@@ -145,11 +140,16 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 	 **/
 	private void amazonS3BucketInit(){
 		log.info("=amazonS3BucketInit.start=");
+
+		ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
+
 		if(!BizConstants.S3_SERVER_CLIENT_MAP.isEmpty()){
 			for(String serverNo:BizConstants.S3_SERVER_CLIENT_MAP.keySet()){
-				List<Bucket> list = s3BucketService.getBucketList(BizConstants.S3_SERVER_CLIENT_MAP.get(serverNo));
-				if(!CollectionUtils.isEmpty(list)){
-					list.forEach(bucket -> {
+				S3Client s3Client = BizConstants.S3_SERVER_CLIENT_MAP.get(serverNo);
+				ListBucketsResponse response = s3Client.listBuckets(listBucketsRequest);
+
+				if(response != null && !CollectionUtils.isEmpty(response.buckets())){
+					response.buckets().forEach(bucket -> {
 						BizConstants.S3_BUCKET_SERVER_MAP.put(bucket.name(),serverNo);
 						log.info("=amazonS3BucketInit.found.bucket:{}=", bucket.name());
 					});
