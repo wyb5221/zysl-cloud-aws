@@ -57,7 +57,7 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 	@Override
 	public <T extends S3Response,R extends S3Request>T callS3Method(R r,S3Client s3Client,String methodName)
 		throws AppLogicException{
-		log.info("=putObjectTagging.param:{}=", JSON.toJSONString(r));
+		log.info("=callS3Method:service_name:{},methodName:{},param:{}=",S3Client.SERVICE_NAME,methodName, JSON.toJSONString(r));
 		T response;
 		try{
 			Method method = S3Client.class.getMethod(methodName, r.getClass());
@@ -121,7 +121,7 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 									.build();
 				BizConstants.S3_SERVER_CLIENT_MAP.put(props.getServerNo(),s3Client);
 
-				log.info("=amazonS3ClientInit.success:{}=",props.getEndpoint());
+				log.info("=amazonS3ClientInit.success:serverNo:{}-->{}=",props.getServerNo(),props.getEndpoint());
 			}
 		}else{
 			log.info("=amazonS3ClientInit.warn:no server found.=");

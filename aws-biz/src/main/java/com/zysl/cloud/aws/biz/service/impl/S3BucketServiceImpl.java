@@ -1,11 +1,14 @@
 package com.zysl.cloud.aws.biz.service.impl;
 
 
+import com.alibaba.fastjson.JSON;
+import com.zysl.cloud.aws.biz.constant.BizConstants;
 import com.zysl.cloud.aws.biz.constant.S3Method;
 import com.zysl.cloud.aws.biz.service.IS3BucketService;
 import com.zysl.cloud.aws.biz.service.IS3FactoryService;
 import com.zysl.cloud.utils.common.AppLogicException;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,14 +27,12 @@ public class S3BucketServiceImpl implements IS3BucketService {
 	@Override
 	public List<Bucket> getBucketList(S3Client s3){
 		log.info("=getBucketList=");
-		ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
-		ListBucketsResponse response = s3.listBuckets(listBucketsRequest);
+		ListBucketsRequest request = ListBucketsRequest.builder().build();
+		ListBucketsResponse response = s3FactoryService.callS3Method(request,s3,S3Method.LIST_BUCKETS);
 
-		if(response == null){
-			log.error("getBucketList.no.ressponse");
-			throw new AppLogicException("getBucketList.no.ressponse");
-		}
 		return response.buckets();
 	}
+
+
 
 }
