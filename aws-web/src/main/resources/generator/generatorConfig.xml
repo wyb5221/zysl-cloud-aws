@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+    <properties resource="application.properties"/>
+
+    <!--targetRuntime=“MyBatis3“可以生成带条件的增删改查，
+        targetRuntime=“MyBatis3Simple“可以生成基本的增删改查-->
+    <context id="Mysql" targetRuntime="MyBatis3" defaultModelType="flat">
+        <!--处理sql中的`符号-->
+        <property name="beginningDelimiter" value="`"/>
+        <property name="endingDelimiter" value="`"/>
+
+        <!-- 生成的java文件编码-->
+        <property name = "javaFileEncoding" value="UTF-8"/>
+        <!-- 格式化java代码-->
+        <property name = "javaFormatter" value="org.mybatis.generator.api.dom.DefaultJavaFormatter"/>
+        <!-- 格式化xml代码-->
+        <property name = "xmlFormatter" value="org.mybatis.generator.api.dom.DefaultXmlFormatter"/>
+        <plugin type="org.mybatis.generator.plugins.ToStringPlugin"/>
+
+        <!--添加自定义的继承接口-->
+        <!--  <plugin type="tk.mybatis.mapper.generator.MapperPlugin">
+              <property name="mappers" value="com.mos.quote.common.MyMapper"/>
+          </plugin>-->
+        <plugin type="org.mybatis.generator.plugins.RenameExampleClassPlugin">
+            <property name="searchString" value="Example$"/>
+            <property name="replaceString" value="Criteria"/>
+        </plugin>
+
+        <!--数据源配置-->
+        <jdbcConnection driverClass="${spring.datasource.driver-class-name}"
+                        connectionURL="${spring.datasource.url}"
+                        userId="${spring.datasource.username}"
+                        password="${spring.datasource.password}">
+        </jdbcConnection>
+
+        <!--model包路径-->
+        <javaModelGenerator targetPackage="com.zysl.aws.web.model.db" targetProject="src/main/java"/>
+        <!--mapper.xml包路径-->
+        <sqlMapGenerator targetPackage="mapper" targetProject="src/main/resources"/>
+        <!--mapper包路径-->
+        <javaClientGenerator targetPackage="com.zysl.aws.web.mapper" targetProject="src/main/java"
+                             type="XMLMAPPER"/>
+
+        <!--表配置，tableName支持%，表示全部生成-->
+        <table tableName="s3_file" domainObjectName="S3File">
+            <!--mysql 配置-->
+            <generatedKey column="id" sqlStatement="Mysql" identity="true"/>
+        </table>
+        <table tableName="s3_folder" domainObjectName="S3Folder">
+            <!--mysql 配置-->
+            <generatedKey column="id" sqlStatement="Mysql" identity="true"/>
+        </table>
+        <table tableName="s3_service" domainObjectName="S3Service">
+            <!--mysql 配置-->
+            <generatedKey column="id" sqlStatement="Mysql" identity="true"/>
+        </table>
+    </context>
+</generatorConfiguration>
