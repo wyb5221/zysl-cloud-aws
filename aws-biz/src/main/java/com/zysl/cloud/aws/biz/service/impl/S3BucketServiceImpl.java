@@ -13,6 +13,7 @@ import com.zysl.cloud.aws.biz.service.IS3FactoryService;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.utils.BeanCopyUtil;
 import com.zysl.cloud.utils.common.AppLogicException;
+import com.zysl.cloud.utils.common.MyPage;
 import com.zysl.cloud.utils.enums.RespCodeEnum;
 import java.util.ArrayList;
 import java.util.Date;
@@ -93,8 +94,8 @@ public class S3BucketServiceImpl implements IS3BucketService {
 	}
 
 	@Override
-	public List<S3ObjectBO> getFilesByBucket(BucketFileRequest request) {
-
+	public List<S3ObjectBO> getFilesByBucket(BucketFileRequest request, MyPage myPage) {
+//TODO
 //		PageHelper.startPage(request.getPageIndex(), request.getPageSize());
 //		//数据库返回信息
 //		List<S3File> fileList = fileService.queryFileBybucket(request);

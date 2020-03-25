@@ -3,6 +3,7 @@ package com.zysl.cloud.aws.biz.service;
 import com.zysl.cloud.aws.api.req.BucketFileRequest;
 import com.zysl.cloud.aws.api.req.SetFileVersionRequest;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
+import com.zysl.cloud.utils.common.MyPage;
 import java.util.List;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.Bucket;
@@ -47,7 +48,7 @@ public interface IS3BucketService {
 	 * @param [request]
 	 * @return java.util.List<com.zysl.aws.web.model.FileInfo>
 	 **/
-	List<S3ObjectBO> getFilesByBucket(BucketFileRequest request);
+	List<S3ObjectBO> getFilesByBucket(BucketFileRequest request, MyPage myPage);
 
 	/**
 	 * 设置bucket版本控制
