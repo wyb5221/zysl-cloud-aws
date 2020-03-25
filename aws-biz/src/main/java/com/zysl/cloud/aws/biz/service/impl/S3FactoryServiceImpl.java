@@ -91,22 +91,22 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 			response = (T)method.invoke(s3Client,r);
 			if(response == null || response.sdkHttpResponse() == null ){
 				log.error("callS3Method.invoke({})->no.response",methodName);
-				throw new AppLogicException("callS3Method.no.ressponse:" + methodName);
+				throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_NO_RESPONSE.getCode());
 			}else if(response.sdkHttpResponse().statusCode() != RespCodeEnum.SUCCESS.getCode().intValue()){
 				log.error("callS3Method.invoke({})->response.status.error:{}",methodName,response.sdkHttpResponse().statusCode());
-				throw new AppLogicException("callS3Method.no.ressponse:" + methodName);
+				throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_RESPONSE_STATUS_ERROR.getCode());
 			}else{
 				log.info("callS3Method.invoke({}).success:{}",methodName, JSON.toJSONString(response));
 			}
 		}catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e){
 			log.error("callS3Method.invoke({}).error:",methodName,e);
-			throw new AppLogicException("callS3Method.exception:" + methodName);
+			throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_INVOKE_ERROR.getCode());
 		}catch (NoSuchMethodException e){
 			log.error("callS3Method.invoke({})->noSuchMethod:",methodName);
-			throw new AppLogicException("callS3Method.noSuchMethod:" + methodName);
+			throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_NO_SUCH.getCode());
 		}catch (Exception e){
 			log.error("callS3Method.error({}):",methodName,e);
-			throw new AppLogicException("callS3Method.error:" + methodName);
+			throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_ERROR.getCode());
 		}
 		return response;
 	}
