@@ -127,4 +127,7 @@ public interface AwsFileService {
 
     void abortMultipartUpload(byte[] bytes);
 
+    void shareFileNew(ShareFileRequest request);
+
+    void shareDownFile(DownloadFileRequest request);
 }

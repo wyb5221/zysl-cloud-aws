@@ -208,7 +208,7 @@ public class AwsFolderServiceImpl extends BaseService implements AwsFolderServic
                     FileInfo fileInfo = new FileInfo();
                     fileInfo.setKey(obj.key());
                     fileInfo.setFileSize(obj.size());
-                    fileInfo.setUploadTime(Date.from(obj.lastModified()));
+                    fileInfo.setUploadTime(obj.lastModified());
                     resultList.add(fileInfo);
                 });
 
@@ -257,7 +257,7 @@ public class AwsFolderServiceImpl extends BaseService implements AwsFolderServic
                 FileInfo fileInfo = new FileInfo();
                 fileInfo.setKey(obj.key());
                 fileInfo.setFileSize(obj.size());
-                fileInfo.setUploadTime(Date.from(obj.lastModified()));
+                fileInfo.setUploadTime(obj.lastModified());
                 resultList.add(fileInfo);
             });
 
@@ -301,7 +301,7 @@ public class AwsFolderServiceImpl extends BaseService implements AwsFolderServic
         list.stream().forEach(obj -> {
             FileInfo fileInfo = new FileInfo();
             fileInfo.setKey(obj.key());
-            fileInfo.setUploadTime(Date.from(obj.lastModified()));
+            fileInfo.setUploadTime(obj.lastModified());
             fileInfo.setFileSize(obj.size());
             fileList.add(fileInfo);
         });

@@ -6,6 +6,7 @@ import com.zysl.aws.web.model.*;
 import com.zysl.aws.web.model.db.S3File;
 import com.zysl.aws.web.service.AwsFileService;
 import com.zysl.aws.web.service.FileService;
+import com.zysl.aws.web.utils.BizUtil;
 import com.zysl.aws.web.utils.DateUtil;
 import com.zysl.aws.web.utils.MD5Utils;
 import com.zysl.cloud.utils.common.AppLogicException;
@@ -840,4 +841,65 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         new Random().nextBytes(b);
         return ByteBuffer.wrap(b);
     }
+
+    @Override
+    public void shareFileNew(ShareFileRequest request) {
+        S3Client s3 = getS3Client(getServiceNo(request.getBucketName()));
+
+       //获取分享文件名称
+        String shareFileName = BizUtil.getLinkFileNameWithoutSuffix(request.getFileName());
+        //分享上传一个空文件，将新文件指向源文件
+        RequestBody body = RequestBody.empty();
+
+        //设置文件tag标签
+        List<Tag> tagSet = new ArrayList<>();
+        if(!StringUtils.isEmpty(request.getMaxDownloadAmout())){
+            Tag tag1 = Tag.builder().key("downloadAmout").value(String.valueOf(request.getMaxDownloadAmout())).build();
+            tagSet.add(tag1);
+        }
+        if(!StringUtils.isEmpty(request.getMaxHours())){
+            Tag tag2 = Tag.builder().key("validity").value(request.getMaxHours()+"").build();
+            tagSet.add(tag2);
+        }
+        Tagging tagging = Tagging.builder().tagSet(tagSet).build();
+
+        //设置元数据
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("redirect-location", request.getFileName());
+        metadata.put("downloadAmout", request.getMaxDownloadAmout()+"");
+        metadata.put("validity", request.getMaxHours()+"");
+
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(request.getBucketName())
+                .key("share/"+shareFileName)
+                .metadata(metadata)
+                .tagging(tagging)
+                .build();
+        log.info("---putObjectRequest:{}", putObjectRequest);
+        PutObjectResponse putObjectResponse = s3.putObject(putObjectRequest, body);
+        log.info("--上传文件--putObjectResponse:{}", putObjectResponse);
+
+    }
+
+    @Override
+    public void shareDownFile(DownloadFileRequest request) {
+
+        FileInfoRequest fileInfoRequest = getS3ToFileInfo(request.getBucketName(), request.getFileId(), request.getVersionId());
+
+        Map<String, String> metadata = fileInfoRequest.getMetadata();
+        //原文件key
+        Date uploadTime = fileInfoRequest.getLastModified();
+        String key = metadata.get("redirect-location");
+
+        List<TageDTO> tageList = fileInfoRequest.getTageList();
+
+
+        byte[] bytes = getS3FileInfo(request.getBucketName(), key, request.getVersionId());
+        log.info("--文件下载--bytes:{}", bytes.length);
+
+
+
+    }
+
+
 }
