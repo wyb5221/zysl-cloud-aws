@@ -38,6 +38,26 @@ public interface IS3FactoryService {
 	S3Client getS3ClientByBucket(String bucketName);
 
 	/**
+	 * 是否存在bucketName
+	 * @description
+	 * @author miaomingming
+	 * @date 10:17 2020/3/25
+	 * @param [bucketName]
+	 * @return java.lang.Boolean
+	 **/
+	Boolean isExistBucket(String bucketName);
+
+	/**
+	 * 添加bucket
+	 * @description
+	 * @author miaomingming
+	 * @date 10:18 2020/3/25
+	 * @param [bucketName, serverNo]
+	 * @return java.lang.Boolean
+	 **/
+	void addBucket(String bucketName,String serverNo);
+
+	/**
 	 * 统一调用s3方法
 	 * @description
 	 * @author miaomingming

@@ -12,7 +12,6 @@ public class KeyRequestV implements IValidator {
 
 
 	@NotBlank
-	@EnumValue(target = {"test"})
 	public String name;
 
 

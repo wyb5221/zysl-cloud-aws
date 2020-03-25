@@ -106,18 +106,12 @@
       <artifactId>commons-collections</artifactId>
       <version>3.2.2</version>
     </dependency>
-    <dependency>
+    <!--<dependency>
       <groupId>com.github.pagehelper</groupId>
       <artifactId>pagehelper-spring-boot-starter</artifactId>
       <version>1.2.5</version>
-    </dependency>
-    <dependency>
-      <groupId>com.aspose</groupId>
-      <artifactId>aspose-words</artifactId>
-      <version>16.8.0</version>
-      <scope>system</scope>
-      <systemPath>D:/develop/java-project/date/repo/com/aspose/aspose-words/16.8.0-jdk16/aspose-words-16.8.0-jdk16.jar</systemPath>
-    </dependency>
+    </dependency>-->
+
     <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
