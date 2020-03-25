@@ -18,13 +18,16 @@ public class QueryObjectsRequest extends BaseReqeust {
     private String key;
     //0默认全部，1仅目录2仅文件
     private Integer keyType;
+    //文件标签
+    private String userId;
 
     @Override
     public String toString() {
         return "QueryObjectsRequest{" +
                 "bucketName='" + bucketName + '\'' +
                 ", key='" + key + '\'' +
-                ", keyType='" + keyType + '\'' +
+                ", keyType=" + keyType +
+                ", userId='" + userId + '\'' +
                 '}';
     }
 }

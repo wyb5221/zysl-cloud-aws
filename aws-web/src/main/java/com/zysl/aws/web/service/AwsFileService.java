@@ -55,7 +55,7 @@ public interface AwsFileService {
      * @param key
      * @return
      */
-    byte[] getS3FileInfo(String bucketName, String key, String versionId);
+    byte[] getS3FileInfo(String bucketName, String key, String versionId, String userId);
 
     /**
      * 调用s3接口查询服务器文件大小
@@ -105,6 +105,14 @@ public interface AwsFileService {
      * 查询文件标签tag信息
      */
     List<Tag> getObjectTagging(String bucket, String key, String versionId);
+
+    /**
+     * 判断是否有标签权限
+     * @param tageDto
+     * @return
+     */
+    boolean isTageExist(TageExistDTO tageDto);
+    boolean isTageExist(String userId, String bucket, String key, String versionId);
 
     /**
      * 文件复制

@@ -1,11 +1,12 @@
 package com.zysl.aws.web.model;
 
-import com.zysl.cloud.utils.Constants.SwaggerConstants;
+import com.zysl.cloud.utils.constants.SwaggerConstants;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.io.Serializable;
 
 @Setter
 @Getter

@@ -16,18 +16,16 @@ public class UpdateFileTageRequest implements Serializable {
     private static final long serialVersionUID = -7591314280634497629L;
     //服务器bucket名称
     private String bucket;
-    //文件名称
-    private String key;
-    //文件版本
-    private String versionId;
+    //文件集合
+    private List<KeyVersionDTO> keyList;
+    //标签集合
     private List<TageDTO> tageList;
 
     @Override
     public String toString() {
         return "UpdateFileTageRequest{" +
                 "bucket='" + bucket + '\'' +
-                ", key='" + key + '\'' +
-                ", versionId='" + versionId + '\'' +
+                ", keyList=" + keyList +
                 ", tageList=" + tageList +
                 '}';
     }
