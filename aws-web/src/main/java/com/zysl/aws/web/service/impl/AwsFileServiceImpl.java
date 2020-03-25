@@ -1,5 +1,6 @@
 package com.zysl.aws.web.service.impl;
 
+import com.zysl.aws.web.config.BizConfig;
 import com.zysl.aws.web.enums.DeleteStoreEnum;
 import com.zysl.aws.web.model.*;
 import com.zysl.aws.web.model.db.S3File;
@@ -7,7 +8,6 @@ import com.zysl.aws.web.service.AwsFileService;
 import com.zysl.aws.web.service.FileService;
 import com.zysl.aws.web.utils.DateUtil;
 import com.zysl.aws.web.utils.MD5Utils;
-import com.zysl.cloud.utils.BeanCopyUtil;
 import com.zysl.cloud.utils.common.AppLogicException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.time.Instant;
 import java.util.*;
 
 /**
@@ -38,6 +37,8 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
 
     @Autowired
     private FileService fileService;
+    @Autowired
+    private BizConfig bizConfig;
 
     @Override
     public UploadFieResponse uploadFile(UploadFileRequest request) {
@@ -286,7 +287,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
             GetObjectResponse objectResponse = objectAsBytes.response();
 
             Date date1 = Date.from(objectResponse.lastModified());
-            Date date2 = DateUtil.createDate("2020-03-21 22:00:00");
+            Date date2 = DateUtil.createDate(bizConfig.DOWNLOAD_TIME);
 
             byte[] bytes = objectAsBytes.asByteArray();
             log.info("--asByteArray结束时间--:{}", System.currentTimeMillis());
