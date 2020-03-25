@@ -1,5 +1,6 @@
 package com.zysl.aws.web.service.impl;
 
+import com.zysl.aws.web.config.BizConfig;
 import com.zysl.aws.web.enums.DeleteStoreEnum;
 import com.zysl.aws.web.model.*;
 import com.zysl.aws.web.model.db.S3File;
@@ -36,6 +37,8 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
 
     @Autowired
     private FileService fileService;
+    @Autowired
+    private BizConfig bizConfig;
 
     @Override
     public UploadFieResponse uploadFile(UploadFileRequest request) {
@@ -102,7 +105,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
 
         //上传文件
         PutObjectResponse putObjectResponse = upload(bucketName, fileId, bytes);
-
+        log.info("---上传文件返回-putObjectResponse:{}", putObjectResponse);
         UploadFieResponse response = new UploadFieResponse();
         if(null != putObjectResponse){
             //修改文件信息
@@ -284,7 +287,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
             GetObjectResponse objectResponse = objectAsBytes.response();
 
             Date date1 = Date.from(objectResponse.lastModified());
-            Date date2 = DateUtil.createDate("2020-03-21 22:00:00");
+            Date date2 = DateUtil.createDate(bizConfig.DOWNLOAD_TIME);
 
             byte[] bytes = objectAsBytes.asByteArray();
             log.info("--asByteArray结束时间--:{}", System.currentTimeMillis());
@@ -342,8 +345,15 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
      */
     @Override
     public Long getS3FileSize(String bucketName, String key, String versionId){
-        S3Client s3 = getS3Client(getServiceNo(bucketName));
-        try {
+
+        FileInfoRequest fileInfoRequest = this.getS3ToFileInfo(bucketName, key, versionId);
+        if(null != fileInfoRequest){
+            return fileInfoRequest.getContentLength();
+        }else{
+            log.error("--调用s3接口查询服务器文件大小异常：--{}");
+            return -1L;
+        }
+       /* try {
             HeadObjectRequest headObjectRequest = null;
             if(StringUtils.isEmpty(versionId)){
                 headObjectRequest = HeadObjectRequest.builder().bucket(bucketName).key(key).build();
@@ -357,7 +367,69 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         }catch (Exception e) {
             log.error("--调用s3接口查询服务器文件大小异常：--{}", e.getMessage());
             return -1L;
+        }*/
+    }
+
+    @Override
+    public FileInfoRequest getS3ToFileInfo(String bucketName, String key, String versionId) {
+        S3Client s3 = getS3Client(getServiceNo(bucketName));
+
+        try {
+            HeadObjectRequest headObjectRequest = null;
+            if(StringUtils.isEmpty(versionId)){
+                headObjectRequest = HeadObjectRequest.builder().bucket(bucketName).key(key).build();
+            }else{
+                headObjectRequest = HeadObjectRequest.builder().bucket(bucketName).key(key).versionId(versionId).build();
+            }
+            log.info("--headObject-s3下载接口入参--headObjectRequest:{}", headObjectRequest);
+            HeadObjectResponse headObjectResponse = s3.headObject(headObjectRequest);
+
+            Long a = Date.from(headObjectResponse.lastModified()).getTime();
+
+            FileInfoRequest fileInfoRequest = new FileInfoRequest();
+            fileInfoRequest = transformation(fileInfoRequest, headObjectResponse);
+
+            List<TageDTO> tageList = new ArrayList<>();
+            //查询文件标签信息
+            List<Tag> tages = this.getObjectTagging(bucketName, key, versionId);
+            tages.forEach(obj ->{
+                TageDTO tageDTO = new TageDTO();
+                tageDTO.setValue(obj.value());
+                tageDTO.setKey(obj.key());
+                tageList.add(tageDTO);
+            });
+            fileInfoRequest.setTageList(tageList);
+            return fileInfoRequest;
+        }catch (Exception e) {
+            log.error("--getS3ToFileInfo调用s3接口查询服务器文件信息异常：--{}", e);
+            return null;
         }
+    }
+
+    public FileInfoRequest transformation(FileInfoRequest fileInfoRequest, HeadObjectResponse headObjectResponse){
+        fileInfoRequest.setDeleteMarker(headObjectResponse.deleteMarker());
+        fileInfoRequest.setAcceptRanges(headObjectResponse.acceptRanges());
+        fileInfoRequest.setExpiration(headObjectResponse.expiration());
+        fileInfoRequest.setRestore(headObjectResponse.restore());
+        fileInfoRequest.setLastModified(null == headObjectResponse.lastModified() ? null : Date.from(headObjectResponse.lastModified()));
+        fileInfoRequest.setContentLength(headObjectResponse.contentLength());
+        fileInfoRequest.setETag(headObjectResponse.eTag());
+        fileInfoRequest.setMissingMeta(headObjectResponse.missingMeta());
+        fileInfoRequest.setVersionId(headObjectResponse.versionId());
+        fileInfoRequest.setCacheControl(headObjectResponse.cacheControl());
+        fileInfoRequest.setContentDisposition(headObjectResponse.contentDisposition());
+        fileInfoRequest.setContentEncoding(headObjectResponse.contentEncoding());
+        fileInfoRequest.setContentLanguage(headObjectResponse.contentLanguage());
+        fileInfoRequest.setContentType(headObjectResponse.contentType());
+        fileInfoRequest.setExpires(null == headObjectResponse.expires() ? null : Date.from(headObjectResponse.expires()));
+        fileInfoRequest.setWebsiteRedirectLocation(headObjectResponse.websiteRedirectLocation());
+        fileInfoRequest.setMetadata(headObjectResponse.metadata());
+        fileInfoRequest.setSseCustomerAlgorithm(headObjectResponse.sseCustomerAlgorithm());
+        fileInfoRequest.setSseCustomerKeyMD5(headObjectResponse.sseCustomerKeyMD5());
+        fileInfoRequest.setSsekmsKeyId(headObjectResponse.ssekmsKeyId());
+        fileInfoRequest.setPartsCount(headObjectResponse.partsCount());
+        fileInfoRequest.setObjectLockRetainUntilDate(null == headObjectResponse.objectLockRetainUntilDate() ? null : Date.from(headObjectResponse.objectLockRetainUntilDate()));
+        return fileInfoRequest;
     }
 
     @Override
@@ -566,9 +638,59 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
             log.info("deleteObjectsResponse.errors():"+deleteObjectsResponse.errors());
             return CollectionUtils.isEmpty(deleteObjectsResponse.errors());
         }catch (Exception e){
-            log.info("--deleteFile文件删除异常：{}--", e);
+            log.error("--deleteFile文件删除异常：{}--", e);
             throw new AppLogicException("文件删除失败");
         }
+    }
+
+    @Override
+    public boolean updateFileTage(UpdateFileTageRequest request) {
+
+        //获取s3连接对象
+        S3Client s3 = getS3Client(getServiceNo(request.getBucket()));
+
+        List<TageDTO> tageList = request.getTageList();
+        //文件tage设置参数
+        List<Tag> tagSet = new ArrayList<>();
+        tageList.forEach(obj -> {
+            tagSet.add(Tag.builder().key(obj.getKey()).value(obj.getValue()).build());
+        });
+        Tagging tagging = Tagging.builder().tagSet(tagSet).build();
+        PutObjectTaggingRequest putObjectTaggingRequest = PutObjectTaggingRequest.builder()
+                    .bucket(request.getBucket())
+                    .key(request.getKey())
+                    .versionId(request.getVersionId())
+                    .tagging(tagging)
+                    .build();
+        try {
+            log.info("--调用s3接口putObjectTagging入参--putObjectTaggingRequest:{}", putObjectTaggingRequest);
+            PutObjectTaggingResponse putObjectTaggingResponse = s3.putObjectTagging(putObjectTaggingRequest);
+            log.info("--调用s3接口putObjectTagging入参--putObjectTaggingResponse:{}", putObjectTaggingResponse);
+            if(null != putObjectTaggingResponse){
+                return true;
+            }else{
+                return false;
+            }
+        }catch (Exception e){
+            log.error("--调用putObjectTagging接口设置标签异常--：{}",e);
+            throw new AppLogicException("调用putObjectTagging接口设置标签异常：{}", e);
+        }
+    }
+
+    @Override
+    public List<Tag> getObjectTagging(String bucket, String key, String versionId) {
+        //获取s3连接对象
+        S3Client s3 = getS3Client(getServiceNo(bucket));
+
+        GetObjectTaggingRequest tagging = GetObjectTaggingRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .versionId(versionId)
+                .build();
+        log.info("--调用s3接口getObjectTagging查询标签入参--tagging:{}", tagging);
+        GetObjectTaggingResponse tagResponse = s3.getObjectTagging(tagging);
+        List<Tag> tagList = tagResponse.tagSet();
+        return tagList;
     }
 
     @Override
@@ -671,7 +793,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
 
 //        AbortMultipartUploadRequest request = AbortMultipartUploadRequest.builder().build();
 
-        /*CreateMultipartUploadRequest createRequest = CreateMultipartUploadRequest.builder()
+        CreateMultipartUploadRequest createRequest = CreateMultipartUploadRequest.builder()
                 .bucket("test-yy10")
                 .key("multi.txt")
                 .build();
@@ -682,6 +804,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
                 .bucket("test-yy10")
                 .key("multi.txt")
                 .uploadId(uploadId)
+                .partNumber(1)
                 .build();
         RequestBody requestBody = RequestBody.fromBytes(bytes);
         UploadPartResponse uploadPartResponse = s3.uploadPart(uploadPartRequest,requestBody);
@@ -691,8 +814,12 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
                 .partNumber(1)
                 .eTag(eTag).build();
 
+
+        List<CompletedPart> completedParts = new ArrayList<>();
+        completedParts.add(part1);
+
         CompletedMultipartUpload completedMultipartUpload = CompletedMultipartUpload.builder()
-                .parts(part1).build();
+                .parts(completedParts).build();
         CompleteMultipartUploadRequest completeMultipartUploadRequest =
                 CompleteMultipartUploadRequest.builder()
                         .bucket("test-yy10")
@@ -700,8 +827,9 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
                         .uploadId(uploadId)
                         .multipartUpload(completedMultipartUpload)
                         .build();
-        s3.completeMultipartUpload(completeMultipartUploadRequest);
-*/
+        CompleteMultipartUploadResponse completeMultipartUploadResponse = s3.completeMultipartUpload(completeMultipartUploadRequest);
+
+        log.info("完成多部分上载completeMultipartUploadResponse:{}",completeMultipartUploadResponse);
         //中止分段上传， 提供上传 ID、存储桶名称和键名
                 //s3.abortMultipartUpload()
 

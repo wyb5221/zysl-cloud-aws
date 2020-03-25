@@ -4,7 +4,6 @@ import com.zysl.cloud.aws.api.req.KeyPageRequest;
 import com.zysl.cloud.aws.api.req.KeyRequest;
 import com.zysl.cloud.utils.common.BasePaginationResponse;
 import com.zysl.cloud.utils.common.BaseResponse;
-import java.util.Date;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -21,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public interface S3FileServ {
 
 	@GetMapping("/test")
-	BaseResponse<Date> test(KeyRequest request);
+	BaseResponse<String> test(KeyRequest request);
 
 
 	@GetMapping("/test2")
