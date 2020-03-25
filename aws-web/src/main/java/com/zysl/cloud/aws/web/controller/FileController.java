@@ -2,12 +2,13 @@ package com.zysl.cloud.aws.web.controller;
 
 import com.zysl.cloud.aws.api.req.KeyPageRequest;
 import com.zysl.cloud.aws.api.req.KeyRequest;
-import com.zysl.cloud.aws.api.srv.S3FileServ;
+import com.zysl.cloud.aws.api.srv.FileSrv;
 import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.utils.common.BaseController;
 import com.zysl.cloud.utils.common.BasePaginationResponse;
 import com.zysl.cloud.utils.common.BaseResponse;
 import com.zysl.cloud.utils.service.provider.ServiceProvider;
+import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,7 +19,7 @@ import com.zysl.cloud.aws.web.validator.KeyRequestV;
 @Slf4j
 @CrossOrigin
 @RestController
-public class FileController extends BaseController implements S3FileServ {
+public class FileController extends BaseController implements FileSrv {
 
 	@Autowired
 	IFileService fileService;
@@ -26,7 +27,7 @@ public class FileController extends BaseController implements S3FileServ {
 	@Override
 	public BaseResponse<String> test(KeyRequest request){
 		return ServiceProvider.call(request,KeyRequestV.class,String.class,req->{
-			return fileService.test(req.getName());
+			return "test11";
 		});
 	}
 
