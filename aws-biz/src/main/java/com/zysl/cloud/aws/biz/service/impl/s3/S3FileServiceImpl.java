@@ -1,20 +1,30 @@
 package com.zysl.cloud.aws.biz.service.impl.s3;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import com.zysl.cloud.aws.biz.constant.S3Method;
+import com.zysl.cloud.aws.biz.enums.DeleteStoreEnum;
 import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.aws.biz.service.IS3FactoryService;
+import com.zysl.cloud.aws.config.BizConfig;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
+import com.zysl.cloud.aws.utils.DateUtil;
 import com.zysl.cloud.aws.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
+import sun.misc.BASE64Decoder;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -23,6 +33,8 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 
 	@Autowired
 	private IS3FactoryService s3FactoryService;
+	@Autowired
+	private BizConfig bizConfig;
 
 
 	@Override
@@ -44,7 +56,103 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 	}
 	@Override
 	public void delete(S3ObjectBO t){
+		//获取s3初始化对象
+		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
+		DeleteObjectsRequest deleteObjectsRequest = null;
+		if(DeleteStoreEnum.COVER.getCode().equals(t.getDeleteStore())){
+			if(StringUtils.isEmpty(t.getVersionId())){
+				//删除整个文件信息, 先查询文件的版本信息
+				List<S3ObjectBO> objectList = getVersions(t);
+
+				List<ObjectIdentifier> objects = new ArrayList<>();
+				//查询文件的版本信息
+				objectList.forEach(obj -> {
+					ObjectIdentifier objectIdentifier = ObjectIdentifier.builder()
+							.key(obj.getPath() + obj.getFileName())
+							.versionId(obj.getVersionId()).build();
+					objects.add(objectIdentifier);
+				});
+				//删除列表
+				Delete delete = Delete.builder().objects(objects).build();
+				//逻辑删除
+				deleteObjectsRequest = DeleteObjectsRequest.builder()
+						.bucket(t.getBucketName())
+						.delete(delete)
+						.build();
+			}else{
+				//删除文件指定版本信息
+				ObjectIdentifier objectIdentifier = ObjectIdentifier.builder()
+						.key(t.getPath() + t.getFileName())
+						.versionId(t.getVersionId()).build();
+				List<ObjectIdentifier> objects = new ArrayList<>();
+				objects.add(objectIdentifier);
+				Delete delete = Delete.builder().objects(objects).build();
+
+				//逻辑删除
+				deleteObjectsRequest = DeleteObjectsRequest.builder()
+						.bucket(t.getBucketName())
+						.delete(delete)
+						.build();
+			}
+		}else{
+			ObjectIdentifier objectIdentifier = ObjectIdentifier.builder()
+					.key(t.getPath() + t.getFileName()).build();
+			List<ObjectIdentifier> objects = new ArrayList<>();
+			objects.add(objectIdentifier);
+			Delete delete = Delete.builder().objects(objects).build();
+
+			//逻辑删除
+			deleteObjectsRequest = DeleteObjectsRequest.builder()
+					.bucket(t.getBucketName())
+					.delete(delete)
+					.build();
+		}
+		//文件删除
+		CopyObjectResponse response = s3FactoryService.callS3Method(deleteObjectsRequest, s3, S3Method.DELETE_OBJECTS);
+		log.info("--delete文件删除返回；{}--", response);
+	}
+
+	@Override
+	public S3ObjectBO download(S3ObjectBO t) {
+		//获取s3初始化对象
+		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
+
+		//获取下载对象
+		GetObjectRequest request = null;
+		if(StringUtils.isEmpty(t.getVersionId())){
+			request = GetObjectRequest.builder().
+					bucket(t.getBucketName()).key(t.getPath() + t.getFileName()).build();
+		}else {
+			request = GetObjectRequest.builder().
+					bucket(t.getBucketName()).key(t.getPath() + t.getFileName()).
+					versionId(t.getVersionId()).build();
+		}
+
+		ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(request,
+				ResponseTransformer.toBytes());
+		GetObjectResponse objectResponse = objectAsBytes.response();
+
+		Date date1 = Date.from(objectResponse.lastModified());
+		Date date2 = DateUtil.createDate(bizConfig.DOWNLOAD_TIME);
+
+		byte[] bytes = objectAsBytes.asByteArray();
+		log.info("--asByteArray结束时间--:{}", System.currentTimeMillis());
+		if(DateUtil.doCompareDate(date1, date2) < 0){
+			//进行解码
+			BASE64Decoder decoder = new BASE64Decoder();
+			byte[] fileContent = new byte[0];
+			try {
+				fileContent = decoder.decodeBuffer(new String(bytes));
+			} catch (IOException e) {
+				log.error("--download文件流转换异常：{}--", e);
+			}
+			t.setBodys(fileContent);
+			return t;
+		}else {
+			t.setBodys(bytes);
+			return t;
+		}
 	}
 
 	@Override
@@ -126,6 +234,26 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 
 	@Override
 	public List<S3ObjectBO> getVersions(S3ObjectBO t){
-		return null;
+		log.info("s3file.getVersions.param:{}", JSON.toJSONString(t));
+		//获取s3初始化对象
+		S3Client s3Client = s3FactoryService.getS3ClientByBucket(t.getBucketName());
+
+		ListObjectVersionsRequest request = ListObjectVersionsRequest.builder().
+				bucket(t.getBucketName()).
+				prefix(t.getPath() + t.getFileName()).
+				build();
+
+		ListObjectVersionsResponse response = s3FactoryService.callS3Method(request,s3Client, S3Method.LIST_OBJECT_VERSIONS);
+
+		List<ObjectVersion> list = response.versions();
+		List<S3ObjectBO> versionList = Lists.newArrayList();
+		list.forEach(obj -> {
+			S3ObjectBO s3Object = new S3ObjectBO();
+			s3Object.setVersionId(obj.versionId());
+			s3Object.setContentLength(Long.valueOf(obj.size()));
+			s3Object.setLastModified(Date.from(obj.lastModified()));
+			versionList.add(s3Object);
+		});
+		return versionList;
 	}
 }

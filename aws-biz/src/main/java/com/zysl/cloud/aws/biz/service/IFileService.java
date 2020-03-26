@@ -35,6 +35,13 @@ public interface IFileService<T> {
 	void delete(T t);
 
 	/**
+	 * 文件下载
+	 * @param t
+	 * @return
+	 */
+	T download(T t);
+
+	/**
 	 * 重命名文件
 	 * @description
 	 * @author miaomingming

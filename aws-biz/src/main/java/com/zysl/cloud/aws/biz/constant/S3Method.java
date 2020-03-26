@@ -7,5 +7,7 @@ public interface S3Method {
 	public static final String PUT_BUCKET_VERSIONING = "putBucketVersioning";
 	public static final String PUT_OBJECT = "putObject";
 	public static final String COPY_OBJECT = "copyObject";
+	public static final String DELETE_OBJECTS = "deleteObjects";
+	public static final String LIST_OBJECT_VERSIONS = "listObjectVersions";
 
 }
