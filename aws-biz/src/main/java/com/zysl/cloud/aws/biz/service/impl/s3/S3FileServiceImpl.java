@@ -180,6 +180,21 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 
 		CopyObjectResponse response = s3FactoryService.callS3Method(request,s3,S3Method.COPY_OBJECT);
 		dest.setVersionId(response.versionId());
+
+		//设置标签
+		if(!CollectionUtils.isEmpty(tagSet)){
+			Tagging tagging = Tagging.builder().tagSet(tagSet).build();
+
+			PutObjectTaggingRequest tagRequest = PutObjectTaggingRequest.builder()
+					.bucket(dest.getBucketName())
+					.key(dest.getPath() + dest.getFileName())
+					.tagging(tagging).build();
+
+			//给目标文件设置标签
+			s3FactoryService.callS3Method(tagRequest, s3, S3Method.PUT_OBJECT_TAGGING);
+		}
+
+
 		return dest;
 	}
 
@@ -257,7 +272,7 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 	@Override
 	public S3ObjectBO getInfoAndBody(S3ObjectBO t){
 		//查询文件基础信息
-		getBaseInfo(t);
+		getDetailInfo(t);
 
 		//查询文件内容
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
@@ -315,9 +330,13 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 		List<S3ObjectBO> versionList = Lists.newArrayList();
 		list.forEach(obj -> {
 			S3ObjectBO s3Object = new S3ObjectBO();
+			//版本信息
 			s3Object.setVersionId(obj.versionId());
 			s3Object.setContentLength(Long.valueOf(obj.size()));
 			s3Object.setLastModified(Date.from(obj.lastModified()));
+			//文件信息
+			s3Object.setBucketName(response.name());
+			s3Object.setFileName(response.prefix());
 			versionList.add(s3Object);
 		});
 		return versionList;

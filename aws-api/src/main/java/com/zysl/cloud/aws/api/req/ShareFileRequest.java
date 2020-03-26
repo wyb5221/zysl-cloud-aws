@@ -1,5 +1,6 @@
 package com.zysl.cloud.aws.api.req;
 
+import com.zysl.cloud.utils.common.BaseReqeust;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,7 +8,7 @@ import java.io.Serializable;
 
 @Setter
 @Getter
-public class ShareFileRequest implements Serializable {
+public class ShareFileRequest extends BaseReqeust {
   //文件夹名称
   private String bucketName;
   //文件名

@@ -10,6 +10,7 @@ import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.aws.biz.service.IS3BucketService;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.aws.domain.bo.TagsBO;
+import com.zysl.cloud.aws.utils.DateUtils;
 import com.zysl.cloud.aws.web.validator.*;
 import com.zysl.cloud.utils.BeanCopyUtil;
 import com.zysl.cloud.utils.StringUtils;
@@ -20,9 +21,11 @@ import com.zysl.cloud.utils.enums.RespCodeEnum;
 import com.zysl.cloud.utils.service.provider.ServiceProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
 import javax.servlet.ServletOutputStream;
@@ -31,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLEncoder;
+import java.util.Date;
 import java.util.List;
 
 
@@ -56,6 +60,33 @@ public class FileController extends BaseController implements FileSrv {
 		return ServiceProvider.callList(request,KeyRequestV.class,String.class,(req,myPage)->{
 //			myPage.setTotalRecords(xx);//其他方法查询列查询；或者mybatis分页插件
 			return bucketService.getS3Buckets(request.getName());
+		});
+	}
+
+	@Override
+	public BaseResponse<UploadFieDTO> uploadFile(UploadFileRequest request) {
+		return ServiceProvider.call(request, UploadFileRequestV.class, UploadFieDTO.class, req -> {
+			S3ObjectBO t = new S3ObjectBO();
+			t.setBucketName(req.getBucketName());
+			setPathAndFileName(t, req.getFileId());
+			//进行解密
+			BASE64Decoder decoder = new BASE64Decoder();
+			byte[] bytes = null;
+			try {
+				bytes = decoder.decodeBuffer(request.getData());
+			} catch (IOException e) {
+				log.info("---uploadFile流转换异常：{}--", e);
+			}
+			t.setBodys(bytes);
+
+			S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.create(t);
+
+			//设置返回参数
+			UploadFieDTO uploadFieDTO = new UploadFieDTO();
+			uploadFieDTO.setFolderName(s3ObjectBO.getBucketName());
+			uploadFieDTO.setFileName(s3ObjectBO.getPath() + s3ObjectBO.getFileName());
+			uploadFieDTO.setVersionId(s3ObjectBO.getVersionId());
+			return uploadFieDTO;
 		});
 	}
 
@@ -98,6 +129,23 @@ public class FileController extends BaseController implements FileSrv {
 			t.setVersionId(req.getVersionId());
 
 			S3ObjectBO s3ObjectBO = (S3ObjectBO) fileService.getInfoAndBody(t);
+			List<TagsBO> tagList = s3ObjectBO.getTagList();
+			boolean tagFlag = false;
+			if(!StringUtils.isEmpty(req.getUserId())){
+				//需要校验权限
+				for (TagsBO tag : tagList) {
+					//判断标签可以是否是owner
+					if(BizConstants.TAG_OWNER.equals(tag.getKey()) &&
+							req.getUserId().equals(tag.getValue())){
+						//在判断标签value
+						tagFlag = true;
+					}
+				}
+			}
+			if(!StringUtils.isEmpty(req.getUserId()) && !tagFlag){
+				//userid不为空是，需要校验权限
+				return null;
+			}
 
 			byte[] bytes = s3ObjectBO.getBodys();
 			log.info("--下载接口返回的文件数据大小--", bytes.length);
@@ -136,6 +184,65 @@ public class FileController extends BaseController implements FileSrv {
 			}
 		});
 		return null;
+	}
+
+	@Override
+	public void shareDownloadFile(HttpServletResponse response, DownloadFileRequest request) {
+		ServiceProvider.call(request, DownloadFileRequestV.class, null, req ->{
+			S3ObjectBO t = new S3ObjectBO();
+			t.setBucketName(req.getBucketName());
+			setPathAndFileName(t, req.getFileId());
+			t.setVersionId(req.getVersionId());
+
+			S3ObjectBO s3ObjectBO = (S3ObjectBO) fileService.getInfoAndBody(t);
+			List<TagsBO> tagList = s3ObjectBO.getTagList();
+			List<TagsBO> newTagList = Lists.newArrayList();
+			for (TagsBO tag : tagList) {
+
+				//判断下载次数
+				if(BizConstants.TAG_DOWNLOAD_AMOUT.equals(tag.getKey()) &&
+						Integer.parseInt(tag.getValue()) < 1){
+					//下载次数已下完
+					log.info("--shareDownloadFile文件载次数已下完：--");
+					return null;
+				}
+				//判断是否在有效期内
+				if(BizConstants.TAG_VALIDITY.equals(tag.getKey()) &&
+						DateUtils.doCompareDate(new Date(), DateUtils.getStringToDate(tag.getValue())) > 0){
+					//已过有效期
+					log.info("--shareDownloadFile文件已过有效期：--");
+					return null;
+				}
+				if(BizConstants.TAG_DOWNLOAD_AMOUT.equals(tag.getKey())){
+					int amout = Integer.parseInt(tag.getValue()) - 1;
+					tag.setValue(String.valueOf(amout));
+					newTagList.add(tag);
+				}else{
+					newTagList.add(tag);
+				}
+			}
+
+			//权限校验完成，可以下载
+			byte[] bytes = s3ObjectBO.getBodys();
+			try {
+				//1下载文件流
+				OutputStream outputStream = response.getOutputStream();
+				response.setContentType("application/octet-stream");//告诉浏览器输出内容为流
+				response.setHeader("Content-Disposition", "attachment;fileName="+request.getFileId());
+				response.setCharacterEncoding("UTF-8");
+
+				outputStream.write(bytes);
+				outputStream.flush();
+				outputStream.close();
+			} catch (IOException e) {
+				log.info("--文件下载异常：--", e);
+				throw new AppLogicException("文件流处理异常");
+			}
+			//在重新设置文件标签
+			t.setTagList(newTagList);
+			fileService.modify(t);
+			return null;
+		});
 	}
 
 	@Override

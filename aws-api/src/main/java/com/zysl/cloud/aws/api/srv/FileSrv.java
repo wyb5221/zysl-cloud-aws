@@ -34,6 +34,13 @@ public interface FileSrv {
 	@GetMapping("/test2")
 	BasePaginationResponse<String> test2(KeyPageRequest request);
 
+	/**
+	 * base64进制String上传文件
+	 * @param request
+	 * @returnuploadFile
+	 */
+	@PostMapping("/uploadFile")
+	BaseResponse<UploadFieDTO> uploadFile(@RequestBody UploadFileRequest request);
 
 	/**
 	 * 文件流上传
@@ -51,6 +58,14 @@ public interface FileSrv {
 	 */
 	@GetMapping("/downloadFile")
 	BaseResponse<DownloadFileDTO> downloadFile(HttpServletRequest request, HttpServletResponse response, DownloadFileRequest downRequest);
+
+	/**
+	 * 分享文件下载
+	 * @param response
+	 * @param downRequest
+	 */
+	@GetMapping("/shareDownloadFile")
+	void shareDownloadFile(HttpServletResponse response, DownloadFileRequest request);
 
 	/**
 	 * 删除文件
