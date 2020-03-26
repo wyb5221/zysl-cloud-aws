@@ -1,6 +1,7 @@
 package com.zysl.cloud.aws.biz.service;
 
 import com.zysl.cloud.aws.domain.bo.BaseFileBO;
+import com.zysl.cloud.aws.api.req.CopyObjectsRequest;
 import com.zysl.cloud.aws.domain.bo.FileDetailBO;
 import com.zysl.cloud.aws.domain.bo.S3BaseBO;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
@@ -48,6 +49,12 @@ public interface IFileService<T> {
 	 * @return
 	 */
 	UploadFieBO shareFile(ShareFileRequest request);
+
+	/**
+	 * 文件复制
+	 * @param request
+	 */
+	boolean copyFile(CopyObjectsRequest request);
 
 
 
