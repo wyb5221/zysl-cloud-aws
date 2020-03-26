@@ -3,6 +3,7 @@ package com.zysl.cloud.aws.biz.service.impl;
 import com.aspose.words.Document;
 import com.aspose.words.License;
 import com.aspose.words.SaveFormat;
+import com.zysl.cloud.aws.biz.enums.ErrCodeEnum;
 import com.zysl.cloud.aws.biz.service.IPDFService;
 import com.zysl.cloud.aws.biz.service.IWordService;
 import com.zysl.cloud.aws.config.BizConfig;
@@ -62,10 +63,10 @@ public class AposeWordServiceImpl implements IWordService {
             return FileUtils.fileToByte(outFname);
         }catch (Exception e){
             log.error("转换pdf时office异常:{}",e);
+            throw new AppLogicException(ErrCodeEnum.WORD_FILE_TO_PDF_ERROR.getCode());
         }finally {
             FileUtils.deleteFile(outFname);
         }
-        return null;
     }
 
     @Override
