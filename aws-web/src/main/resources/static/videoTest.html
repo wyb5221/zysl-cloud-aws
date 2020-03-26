@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+<div >
+    服务器地址：<input type="text" id="host" value="" placeholder="http://127.0.0.1:38081">
+    文件夹名称：<input type="text" id="name" value="">
+    文件名称：<input type="text" id="key" value="">
+    <button id="send_mm" style="margin-left:150px" onclick="isPlay()">确定</button>
+</div>
+
+<br/>
+
+<video id="vv" width="100%" height="200" rel="preload" x5-video-player-type="h5" playsinline="true" webkit-playsinline="true" controls="controls">
+    <source id="intefacev" src="" type="video/mp4">
+</video>
+
+<script>
+    function isPlay(){
+        var host = document.getElementById("host").value;
+        var name = document.getElementById("name").value;
+        var key = document.getElementById("key").value;
+        var str = host+"/aws/file/getVideo?bucketName="+name+"&fileId="+key;
+        document.getElementById("vv").src=str;
+    }
+
+</script>
+
+</body>
+</html>
