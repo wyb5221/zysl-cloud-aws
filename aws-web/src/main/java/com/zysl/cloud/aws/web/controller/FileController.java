@@ -16,17 +16,15 @@ import com.zysl.cloud.aws.web.validator.CopyObjectsRequestV;
 import com.zysl.cloud.aws.web.validator.KeyRequestV;
 import com.zysl.cloud.aws.web.validator.ShareFileRequestV;
 import com.zysl.cloud.utils.StringUtils;
-import com.zysl.cloud.utils.common.BaseController;
 import com.zysl.cloud.utils.common.BasePaginationResponse;
 import com.zysl.cloud.utils.common.BaseResponse;
 import com.zysl.cloud.utils.enums.RespCodeEnum;
 import com.zysl.cloud.utils.service.provider.ServiceProvider;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 
 @Slf4j
@@ -60,11 +58,12 @@ public class FileController extends BaseController implements FileSrv {
 			//复制源文件信息
 			S3ObjectBO src = new S3ObjectBO();
 			src.setBucketName(req.getSourceBucket());
-			src.setFileName(req.getSourceKey());
+			setPathAndFileName(src,req.getSourceKey());
 			//复制后的目标文件信息
 			S3ObjectBO dest = new S3ObjectBO();
 			dest.setBucketName(req.getDestBucket());
-			dest.setFileName(req.getDestKey());
+			setPathAndFileName(dest,req.getDestKey());
+
 			fileService.copy(src, dest);
 			return RespCodeEnum.SUCCESS.getDesc();
 		});

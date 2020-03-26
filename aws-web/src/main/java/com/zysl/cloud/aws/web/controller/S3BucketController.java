@@ -9,7 +9,6 @@ import com.zysl.cloud.aws.biz.service.IS3BucketService;
 import com.zysl.cloud.aws.web.validator.CreateBucketRequestV;
 import com.zysl.cloud.aws.web.validator.GetBucketsRequestV;
 import com.zysl.cloud.aws.web.validator.SetFileVersionRequestV;
-import com.zysl.cloud.utils.common.BaseController;
 import com.zysl.cloud.utils.common.BasePaginationResponse;
 import com.zysl.cloud.utils.common.BaseResponse;
 import com.zysl.cloud.utils.enums.RespCodeEnum;

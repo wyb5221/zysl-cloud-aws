@@ -9,7 +9,6 @@ import com.zysl.cloud.aws.biz.service.IWordService;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.aws.utils.BizUtil;
 import com.zysl.cloud.utils.StringUtils;
-import com.zysl.cloud.utils.common.BaseController;
 import com.zysl.cloud.utils.common.BaseResponse;
 import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
