@@ -10,7 +10,11 @@ public class S3ObjectBO extends BaseFileBO implements Serializable {
 
 	private static final long serialVersionUID = 930239064897318736L;
 
+	private String bucketName;
 
 
-
+	//元素 List
+	//标签 List
+	//子目录 List
+	//子文件 List
 }

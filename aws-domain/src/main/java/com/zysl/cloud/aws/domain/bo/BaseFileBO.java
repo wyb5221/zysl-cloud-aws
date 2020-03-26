@@ -33,6 +33,8 @@ public class BaseFileBO implements Serializable {
 	//数据主体
 	private byte[] bodys;
 
+	private String versionId;
+
 	@Override
 	public String toString() {
 		return "BaseFileBO{" +

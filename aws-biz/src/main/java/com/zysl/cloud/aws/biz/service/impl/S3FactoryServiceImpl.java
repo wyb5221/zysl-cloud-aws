@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +38,10 @@ import software.amazon.awssdk.utils.AttributeMap;
 public class S3FactoryServiceImpl implements IS3FactoryService {
 
 	//s3服务器连接信息 key为SERVER_NO
-	private Map<String, S3Client> S3_SERVER_CLIENT_MAP = new HashMap<>();
+	private Map<String, S3Client> S3_SERVER_CLIENT_MAP = new ConcurrentHashMap<>();
 
 	//s3服务器的bucket--serverNo
-	private Map<String, String> S3_BUCKET_SERVER_MAP = new HashMap<>();
+	private Map<String, String> S3_BUCKET_SERVER_MAP = new ConcurrentHashMap<>();
 
 	@Autowired
 	S3ServerConfig s3ServerConfig;

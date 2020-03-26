@@ -1,14 +1,5 @@
 package com.zysl.cloud.aws.biz.service;
 
-import com.zysl.cloud.aws.domain.bo.BaseFileBO;
-import com.zysl.cloud.aws.api.req.CopyObjectsRequest;
-import com.zysl.cloud.aws.domain.bo.FileDetailBO;
-import com.zysl.cloud.aws.domain.bo.S3BaseBO;
-import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
-
-import com.zysl.cloud.aws.api.req.ShareFileRequest;
-import com.zysl.cloud.aws.domain.bo.UploadFieBO;
-
 import java.util.List;
 
 /**
@@ -29,7 +20,7 @@ public interface IFileService<T> {
 	 * @param t
 	 * @return T
 	 **/
-	 void create(T t);
+	T create(T t);
 
 	/**
 	 * 删除文件
@@ -41,25 +32,41 @@ public interface IFileService<T> {
 	 **/
 	void delete(T t);
 
+	/**
+	 * 重命名文件
+	 * @description
+	 * @author miaomingming
+	 * @date 13:10 2020/3/26
+	 * @param src
+	 * @param dest
+	 * @return void
+	 **/
+	void rename(T src,T dest);
+
+	/**
+	 * 复制文件
+	 * @description
+	 * @author miaomingming
+	 * @date 13:10 2020/3/26
+	 * @param src
+	 * @param dest
+	 * @return void
+	 **/
+	void copy(T src,T dest);
+
+	/**
+	 * 移动文件
+	 * @description
+	 * @author miaomingming
+	 * @date 13:10 2020/3/26
+	 * @param src
+	 * @param dest
+	 * @return void
+	 **/
+	void move(T src,T dest);
 
 	/**
 	 * 修改文件
-	 * 分享文件
-	 * @param request
-	 * @return
-	 */
-	UploadFieBO shareFile(ShareFileRequest request);
-
-	/**
-	 * 文件复制
-	 * @param request
-	 */
-	boolean copyFile(CopyObjectsRequest request);
-
-
-
-	/**
-	 * 新增文件
 	 * @description
 	 * @author miaomingming
 	 * @date 11:52 2020/3/26
@@ -98,6 +105,14 @@ public interface IFileService<T> {
 	 **/
 	 T getInfoAndBody(T t);
 
-
+	/**
+	 * 查询版本列表信息
+	 * @description
+	 * @author miaomingming
+	 * @date 13:35 2020/3/26
+	 * @param t
+	 * @return java.util.List<T>
+	 **/
+	List<T> getVersions(T t);
 
 }
