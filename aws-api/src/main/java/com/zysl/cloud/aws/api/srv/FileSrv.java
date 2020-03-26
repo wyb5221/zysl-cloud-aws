@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @return
  **/
 
-@RequestMapping("/test")
-public interface S3FileServ {
+@RequestMapping("/file")
+public interface FileSrv {
 
 	@GetMapping("/test")
 	BaseResponse<String> test(KeyRequest request);

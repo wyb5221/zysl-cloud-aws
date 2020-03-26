@@ -1,16 +1,19 @@
 package com.zysl.cloud.aws.biz.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.zysl.cloud.aws.biz.constant.BizConstants;
+import com.zysl.cloud.aws.biz.enums.ErrCodeEnum;
 import com.zysl.cloud.aws.biz.service.IS3FactoryService;
 import com.zysl.cloud.aws.config.S3ServerConfig;
 import com.zysl.cloud.aws.prop.S3ServerProp;
 import com.zysl.cloud.utils.common.AppLogicException;
+import com.zysl.cloud.utils.enums.RespCodeEnum;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,25 +35,49 @@ import software.amazon.awssdk.utils.AttributeMap;
 @Service
 public class S3FactoryServiceImpl implements IS3FactoryService {
 
+	//s3服务器连接信息 key为SERVER_NO
+	private Map<String, S3Client> S3_SERVER_CLIENT_MAP = new HashMap<>();
+
+	//s3服务器的bucket--serverNo
+	private Map<String, String> S3_BUCKET_SERVER_MAP = new HashMap<>();
+
 	@Autowired
 	S3ServerConfig s3ServerConfig;
 
 
 	@Override
 	public String getServerNo(String bucketName){
-		return BizConstants.S3_BUCKET_SERVER_MAP.get(bucketName);
+		if(!this.S3_BUCKET_SERVER_MAP.containsKey(bucketName)){
+			log.error("not.exist.bucketName:{}",bucketName);
+			throw new AppLogicException(ErrCodeEnum.S3_BUCKET_NOT_EXIST.getCode());
+		}
+		return this.S3_BUCKET_SERVER_MAP.get(bucketName);
 	}
 
 
 	@Override
 	public S3Client getS3ClientByServerNo(String serverNo){
-		return BizConstants.S3_SERVER_CLIENT_MAP.get(serverNo);
+		if(!this.S3_SERVER_CLIENT_MAP.containsKey(serverNo)){
+			log.error("not.exist.serverNo:{}",serverNo);
+			throw new AppLogicException(ErrCodeEnum.S3_SERVER_NO_NOT_EXIST.getCode());
+		}
+		return this.S3_SERVER_CLIENT_MAP.get(serverNo);
 	}
 
 
 	@Override
 	public S3Client getS3ClientByBucket(String bucketName){
 		return getS3ClientByServerNo(getServerNo(bucketName));
+	}
+
+	@Override
+	public Boolean isExistBucket(String bucketName){
+		return this.S3_BUCKET_SERVER_MAP.containsKey(bucketName);
+	}
+
+	@Override
+	public void addBucket(String bucketName,String serverNo){
+		this.S3_BUCKET_SERVER_MAP.put(bucketName,serverNo);
 	}
 
 
@@ -62,21 +89,24 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 		try{
 			Method method = S3Client.class.getMethod(methodName, r.getClass());
 			response = (T)method.invoke(s3Client,r);
-			if(response == null){
+			if(response == null || response.sdkHttpResponse() == null ){
 				log.error("callS3Method.invoke({})->no.response",methodName);
-				throw new AppLogicException("callS3Method.no.ressponse:" + methodName);
+				throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_NO_RESPONSE.getCode());
+			}else if(response.sdkHttpResponse().statusCode() != RespCodeEnum.SUCCESS.getCode().intValue()){
+				log.error("callS3Method.invoke({})->response.status.error:{}",methodName,response.sdkHttpResponse().statusCode());
+				throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_RESPONSE_STATUS_ERROR.getCode());
 			}else{
 				log.info("callS3Method.invoke({}).success:{}",methodName, JSON.toJSONString(response));
 			}
 		}catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e){
 			log.error("callS3Method.invoke({}).error:",methodName,e);
-			throw new AppLogicException("callS3Method.exception:" + methodName);
+			throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_INVOKE_ERROR.getCode());
 		}catch (NoSuchMethodException e){
 			log.error("callS3Method.invoke({})->noSuchMethod:",methodName);
-			throw new AppLogicException("callS3Method.noSuchMethod:" + methodName);
+			throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_NO_SUCH.getCode());
 		}catch (Exception e){
 			log.error("callS3Method.error({}):",methodName,e);
-			throw new AppLogicException("callS3Method.error:" + methodName);
+			throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_ERROR.getCode());
 		}
 		return response;
 	}
@@ -119,7 +149,7 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 									.endpointOverride(URI.create(props.getEndpoint()))
 									.region(Region.US_EAST_1)
 									.build();
-				BizConstants.S3_SERVER_CLIENT_MAP.put(props.getServerNo(),s3Client);
+				this.S3_SERVER_CLIENT_MAP.put(props.getServerNo(),s3Client);
 
 				log.info("=amazonS3ClientInit.success:serverNo:{}-->{}=",props.getServerNo(),props.getEndpoint());
 			}
@@ -143,14 +173,14 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 
 		ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
 
-		if(!BizConstants.S3_SERVER_CLIENT_MAP.isEmpty()){
-			for(String serverNo:BizConstants.S3_SERVER_CLIENT_MAP.keySet()){
-				S3Client s3Client = BizConstants.S3_SERVER_CLIENT_MAP.get(serverNo);
+		if(!this.S3_SERVER_CLIENT_MAP.isEmpty()){
+			for(String serverNo:this.S3_SERVER_CLIENT_MAP.keySet()){
+				S3Client s3Client = this.S3_SERVER_CLIENT_MAP.get(serverNo);
 				ListBucketsResponse response = s3Client.listBuckets(listBucketsRequest);
 
 				if(response != null && !CollectionUtils.isEmpty(response.buckets())){
 					response.buckets().forEach(bucket -> {
-						BizConstants.S3_BUCKET_SERVER_MAP.put(bucket.name(),serverNo);
+						this.S3_BUCKET_SERVER_MAP.put(bucket.name(),serverNo);
 						log.info("=amazonS3BucketInit.found.bucket:{}=", bucket.name());
 					});
 				}

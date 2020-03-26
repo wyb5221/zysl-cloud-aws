@@ -137,7 +137,16 @@
     </dependencies>
 
     <dependencyManagement>
+
+
         <dependencies>
+          <dependency>
+            <groupId>com.aspose</groupId>
+            <artifactId>aspose-words</artifactId>
+            <version>16.8.0</version>
+            <scope>system</scope>
+            <systemPath>D:/data/libs/aspose-words-16.8.0-jdk16.jar</systemPath>
+          </dependency>
 
           <dependency>
             <groupId>org.eclipse.persistence</groupId>
