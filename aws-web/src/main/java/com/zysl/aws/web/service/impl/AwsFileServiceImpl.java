@@ -1,15 +1,13 @@
 package com.zysl.aws.web.service.impl;
 
-import com.zysl.aws.web.config.BizConfig;
 import com.zysl.aws.web.config.BizConstants;
 import com.zysl.aws.web.enums.DeleteStoreEnum;
 import com.zysl.aws.web.model.*;
 import com.zysl.aws.web.model.db.S3File;
 import com.zysl.aws.web.service.AwsFileService;
-import com.zysl.aws.web.service.FileService;
-import com.zysl.aws.web.utils.BizUtil;
-import com.zysl.aws.web.utils.DateUtil;
-import com.zysl.aws.web.utils.MD5Utils;
+import com.zysl.cloud.aws.config.BizConfig;
+import com.zysl.cloud.aws.utils.DateUtil;
+import com.zysl.cloud.aws.utils.MD5Utils;
 import com.zysl.cloud.utils.common.AppLogicException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +35,6 @@ import java.util.*;
 @Slf4j
 public class AwsFileServiceImpl extends BaseService implements AwsFileService {
 
-    @Autowired
-    private FileService fileService;
     @Autowired
     private BizConfig bizConfig;
 
@@ -146,7 +142,8 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
     @Override
     public byte[] downloadFile(DownloadFileRequest request) {
         log.info("--downloadFile下载文件开始时间--:{}", System.currentTimeMillis());
-        S3File s3File = fileService.getFileInfo(request.getBucketName(), request.getFileId());
+        S3File s3File = null;
+// fileService.getFileInfo(request.getBucketName(), request.getFileId());
         log.info("--downloadFile下载文件查询数据库结束时间--:{}", System.currentTimeMillis());
         if(null == s3File){
             log.info("--数据库记录不存在--");
@@ -173,7 +170,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         // 判断是否源文件
         if (s3File != null && s3File.getSourceFileId() != null && s3File.getSourceFileId() > 0) {
             log.info("--downloadFile下载文件查询源文件开始时间--:{}", System.currentTimeMillis());
-            s3File = fileService.getFileInfo(s3File.getSourceFileId());
+//            s3File = fileService.getFileInfo(s3File.getSourceFileId());
             log.info("--downloadFile下载文件查询源文件结束时间--:{}", System.currentTimeMillis());
             bucketName = s3File.getFolderName();
             key = s3File.getFileName();
@@ -187,7 +184,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
             //下载成功后修改最大下载次数
             if(!StringUtils.isEmpty(maxAmount)){
                 log.info("--修改文件下载次数--可用次数maxAmount:{}", maxAmount);
-                fileService.updateFileAmount(--maxAmount, fileKey);
+//                fileService.updateFileAmount(--maxAmount, fileKey);
                 log.info("--updateFileAmount修改文件下载次数结束时间--:{}", System.currentTimeMillis());
             }
             return bytes;
@@ -253,14 +250,8 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
 
     @Override
     public byte[] shareDownloadFile(HttpServletResponse response, DownloadFileRequest request) {
-        //查询文件信息
-        S3File s3File = fileService.getFileInfo(request.getBucketName(), request.getFileId());
-        if(null != s3File && !StringUtils.isEmpty(s3File.getSourceFileId())){
-            return this.downloadFile(request);
-        }else{
-            log.info("--不是分享文件，不能下载--");
-            return null;
-        }
+        byte[] bytes = getS3FileInfo(request.getBucketName(), request.getFileId(), request.getVersionId(), "");
+        return bytes;
     }
 
     /**
@@ -443,6 +434,8 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
 
     @Override
     public UploadFieResponse shareFile(ShareFileRequest request){
+        return null;
+        /*
         //查询是否存在db，不存在则先记录
         S3File s3File = fileService.getFileInfo(request.getBucketName(),request.getFileName());
         if(s3File == null){
@@ -487,7 +480,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         UploadFieResponse response = new UploadFieResponse();
         response.setFileName(shareFileName);
         response.setFolderName(request.getBucketName());
-        return response;
+        return response;*/
     }
 
     @Override
@@ -536,32 +529,6 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         }
     }
 
-    /**
-     * 添加文件信息
-     * @param bucketName
-     * @param fileName
-     * @return
-     */
-    private Long addNewFile(String bucketName,String fileName){
-        //获取文件大小
-//        Long fileSize = getFileSize(bucketName,fileName);
-        S3File s3FileDB = new S3File();
-        s3FileDB.setServiceNo(getServiceNo(bucketName));
-        s3FileDB.setFolderName(bucketName);
-        s3FileDB.setFileName(fileName);
-//        s3FileDB.setFileSize();
-        s3FileDB.setCreateTime(new Date());
-
-        //文件内容md5码
-        S3Client s3Client = getS3Client(s3FileDB.getServiceNo());
-        ResponseBytes<GetObjectResponse> objectAsBytes = s3Client.getObject(b -> b.bucket(bucketName).key(fileName),
-                ResponseTransformer.toBytes());
-        byte[] bytes = objectAsBytes.asByteArray();
-        String md5 = MD5Utils.encode(new String(bytes));
-        s3FileDB.setContentMd5(md5);
-
-        return fileService.addFileInfo(s3FileDB);
-    }
 
     /**
      * 判断服务器上文件是否存在
@@ -955,9 +922,9 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
     @Override
     public void shareFileNew(ShareFileRequest request) {
         S3Client s3 = getS3Client(getServiceNo(request.getBucketName()));
-
+//        BizUtil.getLinkFileNameWithoutSuffix(request.getFileName())
        //获取分享文件名称
-        String shareFileName = BizUtil.getLinkFileNameWithoutSuffix(request.getFileName());
+        String shareFileName = "";
         //分享上传一个空文件，将新文件指向源文件
         RequestBody body = RequestBody.empty();
 

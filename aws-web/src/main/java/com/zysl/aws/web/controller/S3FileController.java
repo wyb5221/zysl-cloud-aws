@@ -4,11 +4,7 @@ import com.zysl.aws.web.enums.DownTypeEnum;
 import com.zysl.aws.web.model.*;
 import com.zysl.aws.web.model.db.S3File;
 import com.zysl.aws.web.service.AwsFileService;
-import com.zysl.aws.web.service.FileService;
-import com.zysl.aws.web.service.IPDFService;
-import com.zysl.aws.web.service.IWordService;
-import com.zysl.aws.web.utils.BizUtil;
-import com.zysl.aws.web.utils.MD5Utils;
+import com.zysl.cloud.aws.utils.MD5Utils;
 import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.common.AppLogicException;
 import com.zysl.cloud.utils.common.BasePaginationResponse;
@@ -18,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.services.s3.model.CopyObjectResponse;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import sun.misc.BASE64Encoder;
 
 import javax.servlet.ServletOutputStream;
@@ -40,12 +35,6 @@ import java.util.List;
 @Slf4j
 public class S3FileController {
 
-    @Autowired
-    private FileService fileService;
-    @Autowired
-    private IWordService wordService;
-    @Autowired
-    private IPDFService pdfService;
     @Autowired
     private AwsFileService awsFileService;
 
@@ -317,7 +306,7 @@ public class S3FileController {
      * @param [request]
      * @return com.zysl.cloud.utils.common.BaseResponse<com.zysl.aws.web.model.WordToPDFDTO>
      **/
-    @PostMapping("/word2pdf")
+    /*@PostMapping("/word2pdf")
     public BaseResponse<WordToPDFDTO> changeWordToPdf(@RequestBody WordToPDFRequest request){
         log.info("===changeWordToPdf.param:{}===",request);
         BaseResponse<WordToPDFDTO> baseResponse = new BaseResponse<>();
@@ -391,7 +380,7 @@ public class S3FileController {
         baseResponse.setModel(dto);
         baseResponse.setSuccess(true);
         return baseResponse;
-    }
+    }*/
 
     /**
      * 获取文件对象

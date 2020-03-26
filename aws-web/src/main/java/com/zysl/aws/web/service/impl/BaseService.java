@@ -1,7 +1,6 @@
 package com.zysl.aws.web.service.impl;
 
 import com.zysl.aws.web.model.db.S3Folder;
-import com.zysl.aws.web.service.FileService;
 import com.zysl.aws.web.utils.S3ClientFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,8 +13,6 @@ public class BaseService {
 
     @Autowired
     private S3ClientFactory s3ClientFactory;
-    @Autowired
-    private FileService fileService;
 
     /**
      * 根据bucketName获取serviceNo
@@ -41,12 +38,7 @@ public class BaseService {
      * @return
      */
     public S3Folder doesBucketExist(String bucketName ){
-        List<S3Folder> folderList = fileService.queryS3FolderInfo();
-        for (S3Folder obj : folderList) {
-            if(bucketName.equals(obj.getFolderName())){
-                return obj;
-            }
-        }
+
         return null;
     }
 }
