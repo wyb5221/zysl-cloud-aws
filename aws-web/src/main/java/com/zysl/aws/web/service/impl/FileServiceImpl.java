@@ -1,3 +1,4 @@
+/*
 package com.zysl.aws.web.service.impl;
 
 import com.zysl.aws.web.mapper.S3FileMapper;
@@ -199,3 +200,4 @@ public class FileServiceImpl implements FileService {
         return fileList;
     }
 }
+*/

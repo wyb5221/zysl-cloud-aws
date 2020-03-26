@@ -1,7 +1,5 @@
 package com.zysl.aws.web.service.impl;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.zysl.aws.web.config.BizConfig;
 import com.zysl.aws.web.model.BucketFileRequest;
 import com.zysl.aws.web.model.FileInfo;
@@ -109,7 +107,7 @@ public class AwsBucketServiceImpl extends BaseService implements AwsBucketServic
     @Override
     public List<FileInfo> getFilesByBucket(BucketFileRequest request) {
 
-        PageHelper.startPage(request.getPageIndex(), request.getPageSize());
+//        PageHelper.startPage(request.getPageIndex(), request.getPageSize());
         //数据库返回信息
         List<S3File> fileList = fileService.queryFileBybucket(request);
         List<FileInfo> fileInfoList = new ArrayList<>();
@@ -118,7 +116,7 @@ public class AwsBucketServiceImpl extends BaseService implements AwsBucketServic
             fileInfoList.add(fileInfo);
         });
 
-        PageInfo<FileInfo> pageInfo = new PageInfo<>(fileInfoList);
+//        PageInfo<FileInfo> pageInfo = new PageInfo<>(fileInfoList);
         log.info("-----objectList.contents().fileInfoList：{}", fileInfoList.size());
 
         return fileInfoList;

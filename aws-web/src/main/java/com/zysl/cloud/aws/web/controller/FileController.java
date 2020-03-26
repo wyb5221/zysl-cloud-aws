@@ -1,7 +1,9 @@
 package com.zysl.cloud.aws.web.controller;
 
+import com.zysl.cloud.aws.api.dto.UploadFieDTO;
 import com.zysl.cloud.aws.api.req.KeyPageRequest;
 import com.zysl.cloud.aws.api.req.KeyRequest;
+import com.zysl.cloud.aws.api.req.ShareFileRequest;
 import com.zysl.cloud.aws.api.srv.FileSrv;
 import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.utils.common.BaseController;
@@ -37,5 +39,10 @@ public class FileController extends BaseController implements FileSrv {
 //			myPage.setTotalRecords(xx);//其他方法查询列查询；或者mybatis分页插件
 			return fileService.getBuckets(req.getName());
 		});
+	}
+
+	@Override
+	public BaseResponse<UploadFieDTO> shareFile(ShareFileRequest request) {
+		return null;
 	}
 }

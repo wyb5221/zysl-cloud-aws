@@ -38,7 +38,7 @@ public class S3ClientFactory {
      * @return
      * @throws Exception
      */
-    @PostConstruct
+//    @PostConstruct
     public void amazonS3ClientInit() {
         DefaultSdkHttpClientBuilder defaultSdkHttpClientBuilder = new DefaultSdkHttpClientBuilder();
         AttributeMap attributeMap = AttributeMap.builder()

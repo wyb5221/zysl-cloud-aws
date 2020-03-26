@@ -3,6 +3,9 @@ package com.zysl.cloud.aws.biz.service;
 import com.zysl.cloud.aws.domain.bo.FileDetailBO;
 import com.zysl.cloud.aws.domain.bo.S3BaseBO;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
+import com.zysl.cloud.aws.api.req.ShareFileRequest;
+import com.zysl.cloud.aws.domain.bo.UploadFieBO;
+
 import java.util.List;
 
 public interface IFileService {
@@ -18,6 +21,15 @@ public interface IFileService {
 	List<String> getBuckets(String serviceNo);
 
 	String test(String name);
+
+	/**
+	 * 分享文件
+	 * @param request
+	 * @return
+	 */
+	UploadFieBO shareFile(ShareFileRequest request);
+
+
 
 	/**
 	 * 新增文件

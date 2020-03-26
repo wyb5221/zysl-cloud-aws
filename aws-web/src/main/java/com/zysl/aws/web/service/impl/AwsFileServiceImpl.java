@@ -1003,11 +1003,8 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
 
         List<TageDTO> tageList = fileInfoRequest.getTageList();
 
-
-        byte[] bytes = getS3FileInfo(request.getBucketName(), key, request.getVersionId());
+        byte[] bytes = getS3FileInfo(request.getBucketName(), key, request.getVersionId(),"");
         log.info("--文件下载--bytes:{}", bytes.length);
-
-
 
     }
 
