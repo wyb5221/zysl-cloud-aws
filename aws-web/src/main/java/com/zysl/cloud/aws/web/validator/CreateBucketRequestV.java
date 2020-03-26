@@ -3,6 +3,7 @@ package com.zysl.cloud.aws.web.validator;
 import com.zysl.cloud.utils.common.BaseReqeust;
 import com.zysl.cloud.utils.constants.SwaggerConstants;
 import com.zysl.cloud.utils.validator.IValidator;
+import com.zysl.cloud.utils.validator.impl.LengthChar;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
@@ -19,14 +20,12 @@ import lombok.Setter;
 public class CreateBucketRequestV implements IValidator {
 
 
-	@Min(1)
-	@Max(32)
+	@LengthChar(min = 1, max = 32)
 	@NotBlank
 	private String serverNo;
 
 
-	@Min(3)
-	@Max(63)
+	@LengthChar(min = 3, max = 63)
 	@NotBlank
 	private String bucketName;
 

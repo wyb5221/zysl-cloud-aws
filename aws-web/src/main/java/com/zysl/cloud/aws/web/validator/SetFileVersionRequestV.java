@@ -3,6 +3,7 @@ package com.zysl.cloud.aws.web.validator;
 import com.zysl.cloud.utils.common.BaseReqeust;
 import com.zysl.cloud.utils.validator.IValidator;
 import com.zysl.cloud.utils.validator.impl.EnumValue;
+import com.zysl.cloud.utils.validator.impl.LengthChar;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.validation.constraints.Max;
@@ -19,8 +20,7 @@ import lombok.Setter;
 public class SetFileVersionRequestV implements IValidator {
 
 
-    @Min(3)
-    @Max(63)
+    @LengthChar(min = 3, max = 63)
     @NotBlank
     private String bucketName;
 
