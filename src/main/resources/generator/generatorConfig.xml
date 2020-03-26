@@ -38,23 +38,19 @@
         </jdbcConnection>
 
         <!--model包路径-->
-        <javaModelGenerator targetPackage="com.zysl.aws.model.db" targetProject="src/main/java"/>
+        <javaModelGenerator targetPackage="com.zysl.consum.dao" targetProject="src/main/java"/>
         <!--mapper.xml包路径-->
-        <sqlMapGenerator targetPackage="mapper" targetProject="src/main/resources"/>
+        <sqlMapGenerator targetPackage="mapper.consum" targetProject="src/main/resources"/>
         <!--mapper包路径-->
-        <javaClientGenerator targetPackage="com.zysl.aws.mapper" targetProject="src/main/java"
+        <javaClientGenerator targetPackage="com.zysl.consum.mapper" targetProject="src/main/java"
                              type="XMLMAPPER"/>
 
         <!--表配置，tableName支持%，表示全部生成-->
-        <table tableName="s3_file" domainObjectName="S3File">
+        <table tableName="order_info" domainObjectName="OrderInfo">
             <!--mysql 配置-->
             <generatedKey column="id" sqlStatement="Mysql" identity="true"/>
         </table>
-        <table tableName="s3_folder" domainObjectName="S3Folder">
-            <!--mysql 配置-->
-            <generatedKey column="id" sqlStatement="Mysql" identity="true"/>
-        </table>
-        <table tableName="s3_service" domainObjectName="S3Service">
+        <table tableName="product" domainObjectName="Product">
             <!--mysql 配置-->
             <generatedKey column="id" sqlStatement="Mysql" identity="true"/>
         </table>

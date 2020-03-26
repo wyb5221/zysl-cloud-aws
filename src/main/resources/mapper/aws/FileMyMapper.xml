@@ -8,6 +8,7 @@
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
   </resultMap>
 
+
   <resultMap id="FileBaseResultMap" type="com.zysl.aws.model.db.S3File">
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="service_no" jdbcType="VARCHAR" property="serviceNo" />
@@ -65,5 +66,53 @@
       #{item.uploadTime},#{item.createTime},#{item.sourceFileId})
     </foreach>
   </insert>
+
+  <select id="queryPageFileInfo" parameterType="java.lang.Integer" resultMap="FileBaseResultMap">
+    select * from s3_file_temp  order by id
+    limit #{currPage} , #{pageSize}
+  </select>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.zysl.aws.model.db.S3File">
+    update s3_file_temp
+    <set>
+      <if test="serviceNo != null">
+        service_no = #{serviceNo,jdbcType=VARCHAR},
+      </if>
+      <if test="fileName != null">
+        file_name = #{fileName,jdbcType=VARCHAR},
+      </if>
+      <if test="contentMd5 != null">
+        content_md5 = #{contentMd5,jdbcType=VARCHAR},
+      </if>
+      <if test="folderName != null">
+        folder_name = #{folderName,jdbcType=VARCHAR},
+      </if>
+      <if test="downUrl != null">
+        down_url = #{downUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="fileSize != null">
+        file_size = #{fileSize,jdbcType=BIGINT},
+      </if>
+      <if test="maxAmount != null">
+        max_amount = #{maxAmount,jdbcType=INTEGER},
+      </if>
+      <if test="downAmount != null">
+        down_amount = #{downAmount,jdbcType=INTEGER},
+      </if>
+      <if test="validityTime != null">
+        validity_time = #{validityTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="uploadTime != null">
+        upload_time = #{uploadTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="sourceFileId != null">
+        source_file_id = #{sourceFileId,jdbcType=BIGINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
 
 </mapper>

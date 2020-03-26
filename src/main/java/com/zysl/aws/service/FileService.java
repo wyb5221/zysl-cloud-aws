@@ -120,4 +120,19 @@ public interface FileService {
      * @return
      */
     int updateFileInfo(S3File s3File);
+
+    /**
+     * 分页查询文件信息
+     * @param currPage
+     * @param pageSize
+     * @return
+     */
+    S3File queryPageFileInfo(int currPage, int pageSize);
+
+    /**
+     * 修改文件信息
+     * @param s3File
+     * @return
+     */
+    int updateTempFileInfo(S3File s3File);
 }
