@@ -23,6 +23,7 @@ import org.springframework.util.CollectionUtils;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.internal.http.loader.DefaultSdkHttpClientBuilder;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.http.SdkHttpConfigurationOption;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -91,11 +92,22 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 	@Override
 	public <T extends S3Response,R extends S3Request>T callS3Method(R r,S3Client s3Client,String methodName)
 		throws AppLogicException{
+		return callS3MethodWithBody(r,null,s3Client,methodName);
+	}
+
+	@Override
+	public <T extends S3Response,R extends S3Request>T callS3MethodWithBody(R r, RequestBody requestBody,S3Client s3Client,String methodName) throws AppLogicException{
 		log.info("=callS3Method:service_name:{},methodName:{},param:{}=",S3Client.SERVICE_NAME,methodName, JSON.toJSONString(r));
 		T response;
 		try{
-			Method method = S3Client.class.getMethod(methodName, r.getClass());
-			response = (T)method.invoke(s3Client,r);
+			if(requestBody == null){
+				Method method = S3Client.class.getMethod(methodName, r.getClass());
+				response = (T)method.invoke(s3Client,r);
+			}else{
+				Method method = S3Client.class.getMethod(methodName, r.getClass(),RequestBody.class);
+				response = (T)method.invoke(s3Client,r,requestBody);
+			}
+
 			if(response == null || response.sdkHttpResponse() == null ){
 				log.error("callS3Method.invoke({})->no.response",methodName);
 				throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_NO_RESPONSE.getCode());
@@ -119,12 +131,14 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 	}
 
 
+
+
 	@Override
 	public <T extends S3Response,R extends S3Request>T callS3Method(R r,S3Client s3Client,String methodName,Boolean throwLogicException){
 		log.info("=callS3Method:service_name:{},methodName:{},param:{}=",S3Client.SERVICE_NAME,methodName, JSON.toJSONString(r));
 		T response = null;
 		try{
-			response = callS3Method(r,s3Client,methodName);
+			response = callS3MethodWithBody(r,null,s3Client,methodName);
 		}catch (NoSuchKeyException e){
 			log.error("callS3Method.invoke({})->NoSuchKeyException:",methodName);
 			if(throwLogicException){
