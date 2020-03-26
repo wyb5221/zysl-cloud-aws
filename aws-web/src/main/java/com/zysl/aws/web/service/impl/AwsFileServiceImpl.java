@@ -1,13 +1,13 @@
 package com.zysl.aws.web.service.impl;
 
-import com.zysl.aws.web.config.BizConfig;
+import com.zysl.aws.web.config.BizConstants;
 import com.zysl.aws.web.enums.DeleteStoreEnum;
 import com.zysl.aws.web.model.*;
 import com.zysl.aws.web.model.db.S3File;
 import com.zysl.aws.web.service.AwsFileService;
-import com.zysl.aws.web.service.FileService;
-import com.zysl.aws.web.utils.DateUtil;
-import com.zysl.aws.web.utils.MD5Utils;
+import com.zysl.cloud.aws.config.BizConfig;
+import com.zysl.cloud.aws.utils.DateUtil;
+import com.zysl.cloud.aws.utils.MD5Utils;
 import com.zysl.cloud.utils.common.AppLogicException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +35,6 @@ import java.util.*;
 @Slf4j
 public class AwsFileServiceImpl extends BaseService implements AwsFileService {
 
-    @Autowired
-    private FileService fileService;
     @Autowired
     private BizConfig bizConfig;
 
@@ -144,11 +142,12 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
     @Override
     public byte[] downloadFile(DownloadFileRequest request) {
         log.info("--downloadFile下载文件开始时间--:{}", System.currentTimeMillis());
-        S3File s3File = fileService.getFileInfo(request.getBucketName(), request.getFileId());
+        S3File s3File = null;
+// fileService.getFileInfo(request.getBucketName(), request.getFileId());
         log.info("--downloadFile下载文件查询数据库结束时间--:{}", System.currentTimeMillis());
         if(null == s3File){
             log.info("--数据库记录不存在--");
-            byte[] bytes = getS3FileInfo(request.getBucketName(), request.getFileId(), request.getVersionId());
+            byte[] bytes = getS3FileInfo(request.getBucketName(), request.getFileId(), request.getVersionId(), "");
             return bytes;
         }
         Long fileKey = s3File.getId();
@@ -171,7 +170,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         // 判断是否源文件
         if (s3File != null && s3File.getSourceFileId() != null && s3File.getSourceFileId() > 0) {
             log.info("--downloadFile下载文件查询源文件开始时间--:{}", System.currentTimeMillis());
-            s3File = fileService.getFileInfo(s3File.getSourceFileId());
+//            s3File = fileService.getFileInfo(s3File.getSourceFileId());
             log.info("--downloadFile下载文件查询源文件结束时间--:{}", System.currentTimeMillis());
             bucketName = s3File.getFolderName();
             key = s3File.getFileName();
@@ -180,12 +179,12 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         if(null != doesBucketExist(bucketName)){
             log.info("--文件夹存在--");
 
-            byte[] bytes = getS3FileInfo(bucketName, key, request.getVersionId());
+            byte[] bytes = getS3FileInfo(bucketName, key, request.getVersionId(), "");
 
             //下载成功后修改最大下载次数
             if(!StringUtils.isEmpty(maxAmount)){
                 log.info("--修改文件下载次数--可用次数maxAmount:{}", maxAmount);
-                fileService.updateFileAmount(--maxAmount, fileKey);
+//                fileService.updateFileAmount(--maxAmount, fileKey);
                 log.info("--updateFileAmount修改文件下载次数结束时间--:{}", System.currentTimeMillis());
             }
             return bytes;
@@ -251,14 +250,8 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
 
     @Override
     public byte[] shareDownloadFile(HttpServletResponse response, DownloadFileRequest request) {
-        //查询文件信息
-        S3File s3File = fileService.getFileInfo(request.getBucketName(), request.getFileId());
-        if(null != s3File && !StringUtils.isEmpty(s3File.getSourceFileId())){
-            return this.downloadFile(request);
-        }else{
-            log.info("--不是分享文件，不能下载--");
-            return null;
-        }
+        byte[] bytes = getS3FileInfo(request.getBucketName(), request.getFileId(), request.getVersionId(), "");
+        return bytes;
     }
 
     /**
@@ -268,13 +261,20 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
      * @return
      */
     @Override
-    public byte[] getS3FileInfo(String bucketName, String key, String versionId){
+    public byte[] getS3FileInfo(String bucketName, String key, String versionId, String userId){
         log.info("--调用s3接口下载文件内容入参-bucketName:{},-key:{},versionId:{}", bucketName, key, versionId);
         log.info("--getS3FileInfo下载文件开始时间--:{}", System.currentTimeMillis());
 
         S3Client s3 = getS3Client(getServiceNo(bucketName));
         log.info("--getS3Client获取初始化对象结束时间--:{}", System.currentTimeMillis());
         try {
+            //如果userid不为空，则判断标签是否有权限
+            if(!StringUtils.isEmpty(userId)){
+                if(!isTageExist(userId, bucketName, key, versionId)){
+                    throw new AppLogicException("没有查询权限");
+                }
+            }
+
             GetObjectRequest.Builder request = null;
             if(StringUtils.isEmpty(versionId)){
                 request = GetObjectRequest.builder().bucket(bucketName).key(key);
@@ -434,6 +434,8 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
 
     @Override
     public UploadFieResponse shareFile(ShareFileRequest request){
+        return null;
+        /*
         //查询是否存在db，不存在则先记录
         S3File s3File = fileService.getFileInfo(request.getBucketName(),request.getFileName());
         if(s3File == null){
@@ -478,7 +480,7 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         UploadFieResponse response = new UploadFieResponse();
         response.setFileName(shareFileName);
         response.setFolderName(request.getBucketName());
-        return response;
+        return response;*/
     }
 
     @Override
@@ -527,32 +529,6 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         }
     }
 
-    /**
-     * 添加文件信息
-     * @param bucketName
-     * @param fileName
-     * @return
-     */
-    private Long addNewFile(String bucketName,String fileName){
-        //获取文件大小
-//        Long fileSize = getFileSize(bucketName,fileName);
-        S3File s3FileDB = new S3File();
-        s3FileDB.setServiceNo(getServiceNo(bucketName));
-        s3FileDB.setFolderName(bucketName);
-        s3FileDB.setFileName(fileName);
-//        s3FileDB.setFileSize();
-        s3FileDB.setCreateTime(new Date());
-
-        //文件内容md5码
-        S3Client s3Client = getS3Client(s3FileDB.getServiceNo());
-        ResponseBytes<GetObjectResponse> objectAsBytes = s3Client.getObject(b -> b.bucket(bucketName).key(fileName),
-                ResponseTransformer.toBytes());
-        byte[] bytes = objectAsBytes.asByteArray();
-        String md5 = MD5Utils.encode(new String(bytes));
-        s3FileDB.setContentMd5(md5);
-
-        return fileService.addFileInfo(s3FileDB);
-    }
 
     /**
      * 判断服务器上文件是否存在
@@ -656,25 +632,38 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
             tagSet.add(Tag.builder().key(obj.getKey()).value(obj.getValue()).build());
         });
         Tagging tagging = Tagging.builder().tagSet(tagSet).build();
-        PutObjectTaggingRequest putObjectTaggingRequest = PutObjectTaggingRequest.builder()
-                    .bucket(request.getBucket())
-                    .key(request.getKey())
-                    .versionId(request.getVersionId())
-                    .tagging(tagging)
-                    .build();
-        try {
-            log.info("--调用s3接口putObjectTagging入参--putObjectTaggingRequest:{}", putObjectTaggingRequest);
-            PutObjectTaggingResponse putObjectTaggingResponse = s3.putObjectTagging(putObjectTaggingRequest);
-            log.info("--调用s3接口putObjectTagging入参--putObjectTaggingResponse:{}", putObjectTaggingResponse);
-            if(null != putObjectTaggingResponse){
-                return true;
+
+        //设置标签入参
+        PutObjectTaggingRequest putObjectTaggingRequest = null;
+        //循环处理key
+        List<KeyVersionDTO> keyList = request.getKeyList();
+        for (KeyVersionDTO obj : keyList) {
+            if(!StringUtils.isEmpty(obj.getVersionId())){
+                putObjectTaggingRequest = PutObjectTaggingRequest.builder()
+                        .bucket(request.getBucket())
+                        .key(obj.getKey())
+                        .versionId(obj.getVersionId())
+                        .tagging(tagging)
+                        .build();
             }else{
-                return false;
+                putObjectTaggingRequest = PutObjectTaggingRequest.builder()
+                        .bucket(request.getBucket())
+                        .key(obj.getKey())
+                        .tagging(tagging)
+                        .build();
             }
-        }catch (Exception e){
-            log.error("--调用putObjectTagging接口设置标签异常--：{}",e);
-            throw new AppLogicException("调用putObjectTagging接口设置标签异常：{}", e);
+
+            try {
+                log.info("--调用s3接口putObjectTagging入参--putObjectTaggingRequest:{}", putObjectTaggingRequest);
+                PutObjectTaggingResponse putObjectTaggingResponse = s3.putObjectTagging(putObjectTaggingRequest);
+                log.info("--调用s3接口putObjectTagging入参--putObjectTaggingResponse:{}", putObjectTaggingResponse);
+            }catch (Exception e){
+                log.error("--调用putObjectTagging接口设置标签异常--：{}",e);
+                throw new AppLogicException("调用putObjectTagging接口设置标签异常：{}", e);
+            }
         }
+
+        return true;
     }
 
     @Override
@@ -682,15 +671,104 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         //获取s3连接对象
         S3Client s3 = getS3Client(getServiceNo(bucket));
 
-        GetObjectTaggingRequest tagging = GetObjectTaggingRequest.builder()
-                .bucket(bucket)
-                .key(key)
-                .versionId(versionId)
-                .build();
+        GetObjectTaggingRequest tagging = null;
+        if(StringUtils.isEmpty(versionId)){
+            tagging = GetObjectTaggingRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .build();
+        }else{
+            tagging = GetObjectTaggingRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .versionId(versionId)
+                    .build();
+        }
+
         log.info("--调用s3接口getObjectTagging查询标签入参--tagging:{}", tagging);
         GetObjectTaggingResponse tagResponse = s3.getObjectTagging(tagging);
         List<Tag> tagList = tagResponse.tagSet();
         return tagList;
+    }
+
+    @Override
+    public boolean isTageExist(TageExistDTO tageDto) {
+        log.info("--isTageExist判断标签权限--tageDto:{}", tageDto);
+        //获取s3连接对象
+        S3Client s3 = getS3Client(getServiceNo(tageDto.getBucket()));
+
+        GetObjectTaggingRequest tagging = null;
+        if(!StringUtils.isEmpty(tageDto.getVersionId())){
+            tagging = GetObjectTaggingRequest.builder()
+                    .bucket(tageDto.getBucket())
+                    .key(tageDto.getKey())
+                    .versionId(tageDto.getVersionId())
+                    .build();
+        }else{
+            tagging = GetObjectTaggingRequest.builder()
+                    .bucket(tageDto.getBucket())
+                    .key(tageDto.getKey())
+                    .build();
+        }
+
+        try {
+            log.info("--调用s3接口getObjectTagging查询标签入参--tagging:{}", tagging);
+            GetObjectTaggingResponse tagResponse = s3.getObjectTagging(tagging);
+            List<Tag> tagList = tagResponse.tagSet();
+            log.info("--调用s3接口getObjectTagging查询标签返回--tagList:{}", tagList);
+            for (Tag tag : tagList) {
+                //判断标签可以是否是owner
+                if(BizConstants.TAG_OWNER.equals(tag.key()) &&
+                        tageDto.getUserId().equals(tag.value())){
+                    //在判断标签value
+                    return true;
+                }
+            }
+        }catch (Exception e){
+            log.error("--查询标签异常：{}--", e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isTageExist(String userId, String bucket, String key, String versionId) {
+        log.info("--isTageExist判断标签权限--userId:{}，bucket：{},key:{},versionId:{}",
+                userId, bucket, key, versionId);
+        //获取s3连接对象
+        S3Client s3 = getS3Client(getServiceNo(bucket));
+
+        GetObjectTaggingRequest tagging = null;
+        if(!StringUtils.isEmpty(versionId)){
+            tagging = GetObjectTaggingRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .versionId(versionId)
+                    .build();
+        }else{
+            tagging = GetObjectTaggingRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .build();
+        }
+
+        try {
+            log.info("--调用s3接口getObjectTagging查询标签入参--tagging:{}", tagging);
+            GetObjectTaggingResponse tagResponse = s3.getObjectTagging(tagging);
+            List<Tag> tagList = tagResponse.tagSet();
+            log.info("--调用s3接口getObjectTagging查询标签返回--tagList:{}", tagList);
+            for (Tag tag : tagList) {
+                //判断标签可以是否是owner
+                if(BizConstants.TAG_OWNER.equals(tag.key()) &&
+                        userId.equals(tag.value())){
+                    //在判断标签value
+                    return true;
+                }
+            }
+        }catch (Exception e){
+            log.error("--查询标签异常：{}--", e);
+        }
+
+        return false;
     }
 
     @Override
@@ -840,4 +918,62 @@ public class AwsFileServiceImpl extends BaseService implements AwsFileService {
         new Random().nextBytes(b);
         return ByteBuffer.wrap(b);
     }
+
+    @Override
+    public void shareFileNew(ShareFileRequest request) {
+        S3Client s3 = getS3Client(getServiceNo(request.getBucketName()));
+//        BizUtil.getLinkFileNameWithoutSuffix(request.getFileName())
+       //获取分享文件名称
+        String shareFileName = "";
+        //分享上传一个空文件，将新文件指向源文件
+        RequestBody body = RequestBody.empty();
+
+        //设置文件tag标签
+        List<Tag> tagSet = new ArrayList<>();
+        if(!StringUtils.isEmpty(request.getMaxDownloadAmout())){
+            Tag tag1 = Tag.builder().key("downloadAmout").value(String.valueOf(request.getMaxDownloadAmout())).build();
+            tagSet.add(tag1);
+        }
+        if(!StringUtils.isEmpty(request.getMaxHours())){
+            Tag tag2 = Tag.builder().key("validity").value(request.getMaxHours()+"").build();
+            tagSet.add(tag2);
+        }
+        Tagging tagging = Tagging.builder().tagSet(tagSet).build();
+
+        //设置元数据
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("redirect-location", request.getFileName());
+        metadata.put("downloadAmout", request.getMaxDownloadAmout()+"");
+        metadata.put("validity", request.getMaxHours()+"");
+
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(request.getBucketName())
+                .key("share/"+shareFileName)
+                .metadata(metadata)
+                .tagging(tagging)
+                .build();
+        log.info("---putObjectRequest:{}", putObjectRequest);
+        PutObjectResponse putObjectResponse = s3.putObject(putObjectRequest, body);
+        log.info("--上传文件--putObjectResponse:{}", putObjectResponse);
+
+    }
+
+    @Override
+    public void shareDownFile(DownloadFileRequest request) {
+
+        FileInfoRequest fileInfoRequest = getS3ToFileInfo(request.getBucketName(), request.getFileId(), request.getVersionId());
+
+        Map<String, String> metadata = fileInfoRequest.getMetadata();
+        //原文件key
+        Date uploadTime = fileInfoRequest.getLastModified();
+        String key = metadata.get("redirect-location");
+
+        List<TageDTO> tageList = fileInfoRequest.getTageList();
+
+        byte[] bytes = getS3FileInfo(request.getBucketName(), key, request.getVersionId(),"");
+        log.info("--文件下载--bytes:{}", bytes.length);
+
+    }
+
+
 }

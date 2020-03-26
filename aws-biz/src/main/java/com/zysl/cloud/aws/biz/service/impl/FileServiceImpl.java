@@ -1,5 +1,6 @@
 package com.zysl.cloud.aws.biz.service.impl;
 
+import com.zysl.cloud.aws.api.req.ShareFileRequest;
 import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.aws.biz.service.IS3BucketService;
 import com.zysl.cloud.aws.domain.bo.FileDetailBO;
@@ -7,6 +8,8 @@ import com.zysl.cloud.aws.domain.bo.S3BaseBO;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.zysl.cloud.aws.domain.bo.UploadFieBO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,6 +56,13 @@ public class FileServiceImpl implements IFileService {
 
 	@Override
 	public FileDetailBO getS3ObjectAllInfo(S3BaseBO queryBO){
+		return null;
+	}
+
+	@Override
+	public UploadFieBO shareFile(ShareFileRequest request) {
+
+
 		return null;
 	}
 }

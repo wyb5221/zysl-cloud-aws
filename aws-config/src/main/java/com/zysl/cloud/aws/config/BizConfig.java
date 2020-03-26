@@ -18,6 +18,6 @@ public class BizConfig {
     @Value("${spring.pdf.BUCKET_NAME}")
     public String WORD_TO_PDF_BUCKET_NAME;
 
-    @Value("${psring.download.date}")
+    @Value("${spring.download.date}")
     public String DOWNLOAD_TIME;
 }

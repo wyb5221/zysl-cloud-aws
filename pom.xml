@@ -59,7 +59,7 @@
         <artifactId>itext-asian</artifactId>
         <version>5.2.0</version>
       </dependency>
-      <dependency>
+      <!--<dependency>
         <groupId>org.csource</groupId>
         <artifactId>fastdfs-client-java</artifactId>
         <version>1.27-SNAPSHOT</version>
@@ -69,7 +69,7 @@
             <groupId>org.slf4j</groupId>
           </exclusion>
         </exclusions>
-      </dependency>
+      </dependency>-->
         <!--amazonS3依赖jar-->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>

@@ -5,6 +5,11 @@ import com.zysl.cloud.aws.domain.bo.FileDetailBO;
 import com.zysl.cloud.aws.domain.bo.S3BaseBO;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 
+import com.zysl.cloud.aws.api.req.ShareFileRequest;
+import com.zysl.cloud.aws.domain.bo.UploadFieBO;
+
+import java.util.List;
+
 /**
  * 所有文件存储的接口
  * @description
@@ -38,6 +43,16 @@ public interface IFileService<T> {
 
 	/**
 	 * 修改文件
+	 * 分享文件
+	 * @param request
+	 * @return
+	 */
+	UploadFieBO shareFile(ShareFileRequest request);
+
+
+
+	/**
+	 * 新增文件
 	 * @description
 	 * @author miaomingming
 	 * @date 11:52 2020/3/26

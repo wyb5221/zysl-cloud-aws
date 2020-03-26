@@ -4,11 +4,7 @@ import com.zysl.aws.web.enums.DownTypeEnum;
 import com.zysl.aws.web.model.*;
 import com.zysl.aws.web.model.db.S3File;
 import com.zysl.aws.web.service.AwsFileService;
-import com.zysl.aws.web.service.FileService;
-import com.zysl.aws.web.service.IPDFService;
-import com.zysl.aws.web.service.IWordService;
-import com.zysl.aws.web.utils.BizUtil;
-import com.zysl.aws.web.utils.MD5Utils;
+import com.zysl.cloud.aws.utils.MD5Utils;
 import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.common.AppLogicException;
 import com.zysl.cloud.utils.common.BasePaginationResponse;
@@ -18,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.services.s3.model.CopyObjectResponse;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import sun.misc.BASE64Encoder;
 
 import javax.servlet.ServletOutputStream;
@@ -40,12 +35,6 @@ import java.util.List;
 @Slf4j
 public class S3FileController {
 
-    @Autowired
-    private FileService fileService;
-    @Autowired
-    private IWordService wordService;
-    @Autowired
-    private IPDFService pdfService;
     @Autowired
     private AwsFileService awsFileService;
 
@@ -125,8 +114,8 @@ public class S3FileController {
      * @return
      */
     @GetMapping("/downloadFile")
-    public BaseResponse<DownloadFileResponse> downloadFile(HttpServletRequest request, HttpServletResponse response, String bucketName, String fileId, String type, String versionId){
-        log.info("--开始调用downloadFile下载文件接口--bucketName:{},fileId：{}，versionId:{} ", bucketName, fileId, versionId);
+    public BaseResponse<DownloadFileResponse> downloadFile(HttpServletRequest request, HttpServletResponse response, String bucketName, String fileId, String type, String versionId, String userId){
+        log.info("--开始调用downloadFile下载文件接口--bucketName:{},fileId：{}，versionId:{},userId:{} ", bucketName, fileId, versionId, userId);
         BaseResponse<DownloadFileResponse> baseResponse = new BaseResponse<>();
         List<String> validations = new ArrayList<>();
         if(StringUtils.isBlank(bucketName)){
@@ -144,7 +133,7 @@ public class S3FileController {
 
         Long startTime = System.currentTimeMillis();
 //        String str = awsFileService.downloadFile(response, request);
-        byte[] str = awsFileService.getS3FileInfo(bucketName, fileId, versionId);
+        byte[] str = awsFileService.getS3FileInfo(bucketName, fileId, versionId, userId);
         if(null != str){
             log.info("--下载接口返回的文件数据大小--", str.length);
             if(DownTypeEnum.COVER.getCode().equals(type)){
@@ -284,7 +273,7 @@ public class S3FileController {
         request.setFileId(fileId);
 
         try {
-            byte[] bytes = awsFileService.getS3FileInfo(bucketName, fileId, versionId);
+            byte[] bytes = awsFileService.getS3FileInfo(bucketName, fileId, versionId, "");
             response.reset();
             //设置头部类型
             response.setContentType("video/mp4;charset=UTF-8");
@@ -317,7 +306,7 @@ public class S3FileController {
      * @param [request]
      * @return com.zysl.cloud.utils.common.BaseResponse<com.zysl.aws.web.model.WordToPDFDTO>
      **/
-    @PostMapping("/word2pdf")
+    /*@PostMapping("/word2pdf")
     public BaseResponse<WordToPDFDTO> changeWordToPdf(@RequestBody WordToPDFRequest request){
         log.info("===changeWordToPdf.param:{}===",request);
         BaseResponse<WordToPDFDTO> baseResponse = new BaseResponse<>();
@@ -336,7 +325,7 @@ public class S3FileController {
         }
         //step 2.读取源文件--
         //调用s3接口下载文件内容
-        byte[] inBuff = awsFileService.getS3FileInfo(request.getBucketName(),request.getFileName(), request.getVersionId());
+        byte[] inBuff = awsFileService.getS3FileInfo(request.getBucketName(),request.getFileName(), request.getVersionId(), "");
         if(null == inBuff){
             log.info("===文件不存在:{}===",request.getFileName());
             baseResponse.setMsg("文件不存在.");
@@ -391,7 +380,7 @@ public class S3FileController {
         baseResponse.setModel(dto);
         baseResponse.setSuccess(true);
         return baseResponse;
-    }
+    }*/
 
     /**
      * 获取文件对象
@@ -543,12 +532,6 @@ public class S3FileController {
         List<String> validations = new ArrayList<>();
         if(StringUtils.isBlank(request.getBucket())){
             validations.add("bucket不能为空！");
-        }
-        if(StringUtils.isBlank(request.getKey())){
-            validations.add("key不能为空！");
-        }
-        if(StringUtils.isBlank(request.getVersionId())){
-            validations.add("versionId不能为空！");
         }
         //入参校验不通过
         if(!CollectionUtils.isEmpty(validations)){

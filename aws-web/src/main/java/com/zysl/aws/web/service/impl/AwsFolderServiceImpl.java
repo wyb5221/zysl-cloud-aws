@@ -208,7 +208,7 @@ public class AwsFolderServiceImpl extends BaseService implements AwsFolderServic
                     FileInfo fileInfo = new FileInfo();
                     fileInfo.setKey(obj.key());
                     fileInfo.setFileSize(obj.size());
-                    fileInfo.setUploadTime(Date.from(obj.lastModified()));
+                    fileInfo.setUploadTime(obj.lastModified());
                     resultList.add(fileInfo);
                 });
 
@@ -257,7 +257,7 @@ public class AwsFolderServiceImpl extends BaseService implements AwsFolderServic
                 FileInfo fileInfo = new FileInfo();
                 fileInfo.setKey(obj.key());
                 fileInfo.setFileSize(obj.size());
-                fileInfo.setUploadTime(Date.from(obj.lastModified()));
+                fileInfo.setUploadTime(obj.lastModified());
                 resultList.add(fileInfo);
             });
 
@@ -265,8 +265,24 @@ public class AwsFolderServiceImpl extends BaseService implements AwsFolderServic
             fileList.addAll(resultList);
         }
 
-        List<FileInfo> resultList = fileList.stream().filter(obj -> !obj.getKey().equals(request.getKey()+"/")).collect(Collectors.toList());
-        return resultList;
+
+        if(!StringUtils.isEmpty(request.getUserId())){
+            TageExistDTO tageDto = new TageExistDTO();
+            tageDto.setBucket(request.getBucketName());
+            tageDto.setUserId(request.getUserId());
+
+            List<FileInfo> resultList = fileList.stream().filter(obj ->
+                !obj.getKey().equals(request.getKey()+"/") &&
+                        awsFileService.isTageExist(request.getUserId(), request.getBucketName(), obj.getKey(), "")
+            ).collect(Collectors.toList());
+            return resultList;
+        }else{
+            List<FileInfo> resultList = fileList.stream().filter(obj ->
+                    !obj.getKey().equals(request.getKey()+"/"))
+                    .collect(Collectors.toList());
+            return resultList;
+        }
+
     }
 
     @Override
@@ -301,7 +317,7 @@ public class AwsFolderServiceImpl extends BaseService implements AwsFolderServic
         list.stream().forEach(obj -> {
             FileInfo fileInfo = new FileInfo();
             fileInfo.setKey(obj.key());
-            fileInfo.setUploadTime(Date.from(obj.lastModified()));
+            fileInfo.setUploadTime(obj.lastModified());
             fileInfo.setFileSize(obj.size());
             fileList.add(fileInfo);
         });
