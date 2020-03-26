@@ -6,12 +6,12 @@ import com.zysl.cloud.aws.api.srv.WordSrv;
 import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.aws.biz.service.IPDFService;
 import com.zysl.cloud.aws.biz.service.IWordService;
-import com.zysl.cloud.aws.domain.bo.S3BaseBO;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.aws.utils.BizUtil;
 import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.common.BaseController;
 import com.zysl.cloud.utils.common.BaseResponse;
+import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -27,7 +27,7 @@ public class WordController extends BaseController implements WordSrv {
 	private IWordService wordService;
 	@Autowired
 	private IPDFService pdfService;
-	@Autowired
+	@Resource(name="s3FileService")
 	private IFileService fileService;
 
 
@@ -50,11 +50,11 @@ public class WordController extends BaseController implements WordSrv {
 		}
 		//step 2.读取源文件--
 		//调用s3接口下载文件内容
-		S3BaseBO queryBO = new S3BaseBO();
+		S3ObjectBO queryBO = new S3ObjectBO();
 		queryBO.setBucketName(request.getBucketName());
-		queryBO.setKey(request.getFileName());
+		queryBO.setFileName(request.getFileName());
 		queryBO.setVersionId(request.getVersionId());
-		S3ObjectBO s3ObjectBO = fileService.getS3ObjectInfo(queryBO);
+		S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.getInfoAndBody(queryBO);
 
 		if(s3ObjectBO == null || s3ObjectBO.getBodys() == null || s3ObjectBO.getBodys().length == 0){
 			log.info("===未查询到数据文件:{}===",request.getFileName());
@@ -101,11 +101,11 @@ public class WordController extends BaseController implements WordSrv {
 //        String str = encoder.encode(outBuff);
 		S3ObjectBO addRequestBO = new S3ObjectBO();
 		addRequestBO.setBucketName(request.getBucketName());
-		addRequestBO.setKey(fileName + "text.pdf");
+		addRequestBO.setFileName(fileName + "text.pdf");
 		addRequestBO.setVersionId(request.getVersionId());
 		addRequestBO.setBodys(outBuff);
 
-		S3ObjectBO addFileRst = fileService.addS3Object(addRequestBO);
+		S3ObjectBO addFileRst = (S3ObjectBO)fileService.create(addRequestBO);
 
 		WordToPDFDTO dto = new WordToPDFDTO();
 		if(null != addFileRst){
