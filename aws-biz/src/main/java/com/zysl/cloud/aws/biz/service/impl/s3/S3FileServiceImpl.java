@@ -1,24 +1,21 @@
 package com.zysl.cloud.aws.biz.service.impl.s3;
 
 import com.alibaba.fastjson.JSON;
-import com.zysl.cloud.aws.api.req.CopyObjectsRequest;
-import com.zysl.cloud.aws.api.req.ShareFileRequest;
 import com.zysl.cloud.aws.biz.constant.S3Method;
 import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.aws.biz.service.IS3FactoryService;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
-import com.zysl.cloud.aws.domain.bo.UploadFieBO;
 import com.zysl.cloud.aws.utils.DateUtils;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.model.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service("s3FileService")
@@ -26,6 +23,7 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 
 	@Autowired
 	private IS3FactoryService s3FactoryService;
+
 
 	@Override
 	public S3ObjectBO create(S3ObjectBO t){
@@ -61,7 +59,26 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 
 	@Override
 	public void copy(S3ObjectBO src,S3ObjectBO dest){
+		//获取s3初始化对象
+		S3Client s3 = s3FactoryService.getS3ClientByServerNo(src.getBucketName());
 
+		//获取标签内容
+		List<Tag> tagSet = new ArrayList<>();
+		if(!CollectionUtils.isEmpty(dest.getTagList())){
+			dest.getTagList().forEach(obj -> {
+				tagSet.add(Tag.builder().key(obj.getKey()).value(obj.getValue()).build());
+			});
+		}
+		Tagging tagging = Tagging.builder().tagSet(tagSet).build();
+
+		//查询复制接口入参
+		CopyObjectRequest request = CopyObjectRequest.builder()
+				.copySource("")
+				.bucket(dest.getBucketName()).key(dest.getFileName())
+				.tagging(tagging)
+				.build();
+
+		ListBucketsResponse response = s3FactoryService.callS3Method(request,s3,S3Method.COPY_OBJECT);
 	}
 
 	@Override
