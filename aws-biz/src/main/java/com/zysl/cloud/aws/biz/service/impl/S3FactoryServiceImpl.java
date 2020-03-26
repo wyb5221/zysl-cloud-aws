@@ -81,6 +81,11 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 		this.S3_BUCKET_SERVER_MAP.put(bucketName,serverNo);
 	}
 
+	@Override
+	public Map<String, String> getBucketServerNoMap(){
+		return this.S3_BUCKET_SERVER_MAP;
+	}
+
 
 	@Override
 	public <T extends S3Response,R extends S3Request>T callS3Method(R r,S3Client s3Client,String methodName)

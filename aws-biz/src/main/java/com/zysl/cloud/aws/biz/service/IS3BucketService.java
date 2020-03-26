@@ -15,17 +15,17 @@ public interface IS3BucketService {
 	 * @description
 	 * @author miaomingming
 	 * @date 21:29 2020/3/22
-	 * @param [serviceNo]
+	 * @param s3
 	 * @return java.util.List<software.amazon.awssdk.services.s3.model.Bucket>
 	 **/
 	List<Bucket> getBucketList(S3Client s3);
 
 	/**
-	 * 查询s3服务器的bucket列表
+	 * 查询s3服务器的bucket列表，没有传入serviceNo则查询所有
 	 * @description
 	 * @author miaomingming
 	 * @date 10:26 2020/3/25
-	 * @param [serviceNo]
+	 * @param serviceNo
 	 * @return java.util.List<java.lang.String>
 	 **/
 	List<String> getS3Buckets(String serviceNo);
@@ -35,7 +35,7 @@ public interface IS3BucketService {
 	 * @description
 	 * @author miaomingming
 	 * @date 9:38 2020/3/25
-	 * @param [bucketName, serviceNo]
+	 * @param bucketName, serviceNo
 	 * @return java.lang.Boolean
 	 **/
 	Boolean createBucket(String bucketName, String serviceNo);
@@ -45,7 +45,7 @@ public interface IS3BucketService {
 	 * @description
 	 * @author miaomingming
 	 * @date 9:38 2020/3/25
-	 * @param [request]
+	 * @param request
 	 * @return java.util.List<com.zysl.aws.web.model.FileInfo>
 	 **/
 	List<S3ObjectBO> getFilesByBucket(BucketFileRequest request, MyPage myPage);
@@ -55,7 +55,7 @@ public interface IS3BucketService {
 	 * @description
 	 * @author miaomingming
 	 * @date 11:01 2020/3/25
-	 * @param [request]
+	 * @param request
 	 * @return java.lang.Boolean
 	 **/
 	Boolean setBucketVersion(SetFileVersionRequest request);

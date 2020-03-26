@@ -1,28 +1,48 @@
 package com.zysl.cloud.aws.biz.service;
 
+import com.zysl.cloud.aws.domain.bo.BaseFileBO;
 import com.zysl.cloud.aws.domain.bo.FileDetailBO;
 import com.zysl.cloud.aws.domain.bo.S3BaseBO;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
+
 import com.zysl.cloud.aws.api.req.ShareFileRequest;
 import com.zysl.cloud.aws.domain.bo.UploadFieBO;
 
 import java.util.List;
 
-public interface IFileService {
+/**
+ * 所有文件存储的接口
+ * @description
+ * @author miaomingming
+ * @date 11:26 2020/3/26
+ * @return
+ **/
+public interface IFileService<T> {
+
 
 	/**
-	 * 查询bucket列表，如果没有传入serviceNo则查所有服务器
+	 * 新增文件
 	 * @description
 	 * @author miaomingming
-	 * @date 22:29 2020/3/22
-	 * @param [serviceNo]
-	 * @return java.util.List<java.lang.String>
+	 * @date 11:52 2020/3/26
+	 * @param t
+	 * @return T
 	 **/
-	List<String> getBuckets(String serviceNo);
-
-	String test(String name);
+	 void create(T t);
 
 	/**
+	 * 删除文件
+	 * @description
+	 * @author miaomingming
+	 * @date 11:52 2020/3/26
+	 * @param t
+	 * @return T
+	 **/
+	void delete(T t);
+
+
+	/**
+	 * 修改文件
 	 * 分享文件
 	 * @param request
 	 * @return
@@ -35,30 +55,42 @@ public interface IFileService {
 	 * 新增文件
 	 * @description
 	 * @author miaomingming
-	 * @date 10:10 2020/3/26
-	 * @param s3ObjectBO
-	 * @return com.zysl.cloud.aws.domain.bo.S3ObjectBO
+	 * @date 11:52 2020/3/26
+	 * @param t
+	 * @return T
 	 **/
-	S3ObjectBO addS3Object(S3ObjectBO s3ObjectBO);
+	 void modify(T t);
 
 	/**
-	 * 查询文件信息
+	 * 查询文件基础信息
 	 * @description
 	 * @author miaomingming
-	 * @date 10:01 2020/3/26
-	 * @param queryBO
-	 * @return com.zysl.cloud.aws.domain.bo.S3ObjectBO
+	 * @date 11:52 2020/3/26
+	 * @param t
+	 * @return T
 	 **/
-	S3ObjectBO getS3ObjectInfo(S3BaseBO queryBO);
+	 T getBaseInfo(T t);
 
 	/**
 	 * 查询文件所有信息，包括权限信息
 	 * @description
 	 * @author miaomingming
-	 * @date 10:01 2020/3/26
-	 * @param queryBO
-	 * @return com.zysl.cloud.aws.domain.bo.FileDetailBO
+	 * @date 11:52 2020/3/26
+	 * @param t
+	 * @return T
 	 **/
-	FileDetailBO getS3ObjectAllInfo(S3BaseBO queryBO);
+	 T getDetailInfo(T t);
+
+	/**
+	 * 查询文件信息及内容
+	 * @description
+	 * @author miaomingming
+	 * @date 11:52 2020/3/26
+	 * @param t
+	 * @return T
+	 **/
+	 T getInfoAndBody(T t);
+
+
 
 }
