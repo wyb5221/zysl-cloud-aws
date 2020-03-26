@@ -94,6 +94,13 @@ public interface FileSrv {
 	@GetMapping("/getFileSize")
 	BaseResponse<Long> getFileSize(GetFileRequest request);
 
+    /**
+     * 设置文件标签信息
+     * @return
+     */
+    @PostMapping("/setTag")
+    BaseResponse<String> setObjectTag(@RequestBody SetFileTagRequest request);
+
 	/**
 	 * 文件复制
 	 * @param request

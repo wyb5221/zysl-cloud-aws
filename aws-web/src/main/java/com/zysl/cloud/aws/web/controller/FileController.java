@@ -233,7 +233,28 @@ public class FileController extends BaseController implements FileSrv {
 		});
 	}
 
-	@Override
+    @Override
+    public BaseResponse<String> setObjectTag(SetFileTagRequest request) {
+
+        return ServiceProvider.call(request, SetFileTagRequestV.class, String.class, req ->{
+            S3ObjectBO t = new S3ObjectBO();
+            t.setBucketName(req.getBucket());
+            List<TageDTO> tageList = req.getTageList();
+            List<TagsBO> tags = BeanCopyUtil.copyList(tageList, TagsBO.class);
+            t.setTagList(tags);
+            //同时修改多个文件的标签
+            List<KeyVersionDTO> keyList = req.getKeyList();
+            for (KeyVersionDTO obj : keyList) {
+                t.setVersionId(obj.getVersionId());
+                setPathAndFileName(t,obj.getKey());
+
+                fileService.modify(t);
+            }
+            return RespCodeEnum.SUCCESS.getDesc();
+        });
+    }
+
+    @Override
 	public BaseResponse<String> copyFile(CopyObjectsRequest request) {
 		return ServiceProvider.call(request, CopyObjectsRequestV.class, String.class, req -> {
 			//复制源文件信息
