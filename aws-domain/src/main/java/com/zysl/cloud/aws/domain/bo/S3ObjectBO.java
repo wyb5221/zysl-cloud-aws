@@ -1,6 +1,7 @@
 package com.zysl.cloud.aws.domain.bo;
 
 import java.io.Serializable;
+import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +13,7 @@ public class S3ObjectBO extends BaseFileBO implements Serializable {
 
 	private String bucketName;
 
+	private Date lastModified;
 
 	//元素 List
 	//标签 List
