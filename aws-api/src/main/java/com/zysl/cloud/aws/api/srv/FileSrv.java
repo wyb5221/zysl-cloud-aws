@@ -1,6 +1,7 @@
 package com.zysl.cloud.aws.api.srv;
 
 import com.zysl.cloud.aws.api.dto.DownloadFileDTO;
+import com.zysl.cloud.aws.api.dto.FileInfoDTO;
 import com.zysl.cloud.aws.api.dto.ObjectVersionDTO;
 import com.zysl.cloud.aws.api.dto.UploadFieDTO;
 import com.zysl.cloud.aws.api.req.*;
@@ -58,6 +59,23 @@ public interface FileSrv {
 	 */
 	@PostMapping("/delete")
 	BaseResponse<String> deleteFile(@RequestBody DelObjectRequest request);
+
+	/**
+	 * 获取文件信息
+	 * @param bucketName
+	 * @param fileName
+	 */
+	@GetMapping("/getFileInfo")
+	BaseResponse<FileInfoDTO> getFileInfo(GetFileRequest request);
+
+	/**
+	 * 获取视频文件信息
+	 * @param response
+	 * @param bucketName
+	 * @param fileId
+	 */
+	@GetMapping("/getVideo")
+	void getVideo(HttpServletResponse response, GetVideoRequest request);
 
 	/**
 	 * 获取文件版本信息

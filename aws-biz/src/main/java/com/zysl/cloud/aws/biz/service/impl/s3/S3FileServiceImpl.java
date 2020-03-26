@@ -8,6 +8,7 @@ import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.aws.biz.service.IS3FactoryService;
 import com.zysl.cloud.aws.config.BizConfig;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
+import com.zysl.cloud.aws.domain.bo.TagsBO;
 import com.zysl.cloud.aws.utils.DateUtil;
 import com.zysl.cloud.aws.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -109,55 +110,38 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 					.build();
 		}
 		//文件删除
-		CopyObjectResponse response = s3FactoryService.callS3Method(deleteObjectsRequest, s3, S3Method.DELETE_OBJECTS);
+		DeleteObjectsResponse response = s3FactoryService.callS3Method(deleteObjectsRequest, s3, S3Method.DELETE_OBJECTS);
 		log.info("--delete文件删除返回；{}--", response);
 	}
 
 	@Override
-	public S3ObjectBO download(S3ObjectBO t) {
+	public void modify(S3ObjectBO t){
+		//目前修改文件标签信息
 		//获取s3初始化对象
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
-		//获取下载对象
-		GetObjectRequest request = null;
-		if(StringUtils.isEmpty(t.getVersionId())){
-			request = GetObjectRequest.builder().
-					bucket(t.getBucketName()).key(t.getPath() + t.getFileName()).build();
-		}else {
-			request = GetObjectRequest.builder().
-					bucket(t.getBucketName()).key(t.getPath() + t.getFileName()).
-					versionId(t.getVersionId()).build();
+		//设置标签入参
+		List<TagsBO> tageList = t.getTagList();
+		//文件tage设置参数
+		PutObjectTaggingRequest.Builder request = PutObjectTaggingRequest.builder()
+				.bucket(t.getBucketName())
+				.key(t.getPath() + t.getFileName());
+
+		List<Tag> tagSet = new ArrayList<>();
+		if(!CollectionUtils.isEmpty(tageList)){
+			tageList.forEach(obj -> {
+				tagSet.add(Tag.builder().key(obj.getKey()).value(obj.getValue()).build());
+			});
+			Tagging tagging = Tagging.builder().tagSet(tagSet).build();
+			//设置标签信息
+			request.tagging(tagging);
+		}
+		//设置版本
+		if(!StringUtils.isEmpty(t.getVersionId())){
+			request.versionId(t.getVersionId());
 		}
 
-		ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(request,
-				ResponseTransformer.toBytes());
-		GetObjectResponse objectResponse = objectAsBytes.response();
-
-		Date date1 = Date.from(objectResponse.lastModified());
-		Date date2 = DateUtil.createDate(bizConfig.DOWNLOAD_TIME);
-
-		byte[] bytes = objectAsBytes.asByteArray();
-		log.info("--asByteArray结束时间--:{}", System.currentTimeMillis());
-		if(DateUtil.doCompareDate(date1, date2) < 0){
-			//进行解码
-			BASE64Decoder decoder = new BASE64Decoder();
-			byte[] fileContent = new byte[0];
-			try {
-				fileContent = decoder.decodeBuffer(new String(bytes));
-			} catch (IOException e) {
-				log.error("--download文件流转换异常：{}--", e);
-			}
-			t.setBodys(fileContent);
-			return t;
-		}else {
-			t.setBodys(bytes);
-			return t;
-		}
-	}
-
-	@Override
-	public void modify(S3ObjectBO t){
-
+		PutObjectTaggingResponse response = s3FactoryService.callS3Method(request.build(),s3,S3Method.PUT_OBJECT_TAGGING);
 	}
 
 	@Override
@@ -201,35 +185,117 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 
 	@Override
 	public void move(S3ObjectBO src,S3ObjectBO dest){
-
+		//先复制文件
+		this.copy(src, dest);
+		//在删除文件
+		this.delete(src);
 	}
+
 	@Override
 	public S3ObjectBO getBaseInfo(S3ObjectBO t){
 		log.info("s3file.getBaseInfo.param:{}", JSON.toJSONString(t));
 		S3Client s3Client = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
-		GetObjectRequest request = GetObjectRequest.builder()
-									   .bucket(t.getBucketName())
-									   .key(t.getPath() + t.getFileName())
-									   .versionId(t.getVersionId() == null ? null : t.getVersionId())
-									   .build();
+		HeadObjectRequest request = null;
+		if(StringUtils.isEmpty(t.getVersionId())){
+			request = HeadObjectRequest.builder()
+					.bucket(t.getBucketName())
+					.key(t.getPath() + t.getFileName()).build();
+		}else{
+			request = HeadObjectRequest.builder()
+					.bucket(t.getBucketName())
+					.key(t.getPath() + t.getFileName())
+					.versionId(t.getVersionId()).build();
+		}
 
-		GetObjectResponse response = s3FactoryService.callS3Method(request,s3Client, S3Method.PUT_OBJECT);
+		HeadObjectResponse response = s3FactoryService.callS3Method(request, s3Client, S3Method.HEAD_OBJECT);
 
 		t.setVersionId(response.versionId());
 		t.setContentLength(response.contentLength());
 		t.setExpires(DateUtils.from(response.expires()));
 		t.setLastModified(DateUtils.from(response.lastModified()));
+		t.setContentEncoding(response.contentEncoding());
+		t.setContentLanguage(response.contentLanguage());
+		t.setContentType(response.contentType());
+		t.setContentMD5(response.sseCustomerKeyMD5());
 		return t;
 	}
+
 	@Override
 	public S3ObjectBO getDetailInfo(S3ObjectBO t){
-		return null;
+		//查询文件基础信息
+		getBaseInfo(t);
+
+		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
+		//查询文件的标签信息
+		GetObjectTaggingRequest request = null;
+		if(StringUtils.isEmpty(t.getVersionId())){
+			request = GetObjectTaggingRequest.builder()
+					.bucket(t.getBucketName())
+					.key(t.getPath() + t.getFileName())
+					.build();
+		}else{
+			request = GetObjectTaggingRequest.builder()
+					.bucket(t.getBucketName())
+					.key(t.getPath() + t.getFileName())
+					.versionId(t.getVersionId())
+					.build();
+		}
+		GetObjectTaggingResponse response = s3FactoryService.callS3Method(request, s3, S3Method.GET_OBJECT_TAGGING);
+		List<Tag> list = response.tagSet();
+		List<TagsBO> tagList = Lists.newArrayList();
+		list.forEach(obj -> {
+			TagsBO tag = new TagsBO();
+			tag.setKey(obj.key());
+			tag.setValue(obj.value());
+			tagList.add(tag);
+		});
+		t.setTagList(tagList);
+		return t;
 	}
 
 	@Override
 	public S3ObjectBO getInfoAndBody(S3ObjectBO t){
-		return null;
+		//查询文件基础信息
+		getBaseInfo(t);
+
+		//查询文件内容
+		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
+		//获取下载对象
+		GetObjectRequest request = null;
+		if(StringUtils.isEmpty(t.getVersionId())){
+			request = GetObjectRequest.builder().
+					bucket(t.getBucketName()).key(t.getPath() + t.getFileName()).build();
+		}else {
+			request = GetObjectRequest.builder().
+					bucket(t.getBucketName()).key(t.getPath() + t.getFileName()).
+					versionId(t.getVersionId()).build();
+		}
+
+		ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(request,
+				ResponseTransformer.toBytes());
+		GetObjectResponse objectResponse = objectAsBytes.response();
+
+		Date date1 = Date.from(objectResponse.lastModified());
+		Date date2 = DateUtil.createDate(bizConfig.DOWNLOAD_TIME);
+
+		byte[] bytes = objectAsBytes.asByteArray();
+		log.info("--asByteArray结束时间--:{}", System.currentTimeMillis());
+		if(DateUtil.doCompareDate(date1, date2) < 0){
+			//进行解码
+			BASE64Decoder decoder = new BASE64Decoder();
+			byte[] fileContent = new byte[0];
+			try {
+				fileContent = decoder.decodeBuffer(new String(bytes));
+			} catch (IOException e) {
+				log.error("--download文件流转换异常：{}--", e);
+			}
+			t.setBodys(fileContent);
+			return t;
+		}else {
+			t.setBodys(bytes);
+			return t;
+		}
 	}
 
 	@Override

@@ -31,7 +31,7 @@ import java.util.List;
  */
 @CrossOrigin
 @RestController
-@RequestMapping("/aws/file")
+//@RequestMapping("/aws/file")
 @Slf4j
 public class S3FileController {
 
@@ -43,7 +43,7 @@ public class S3FileController {
      * @param request
      * @returnuploadFile
      */
-    @PostMapping("/uploadFile")
+//    @PostMapping("/uploadFile")
     public BaseResponse<UploadFieResponse> uploadFile(@RequestBody UploadFileRequest request){
         log.info("--开始调用uploadFile上传文件接口request：{}--", request);
         BaseResponse<UploadFieResponse> baseResponse = new BaseResponse<>();
@@ -78,7 +78,7 @@ public class S3FileController {
      * @param request
      * @returnuploadFile
      */
-    @PostMapping("/uploadFileInfo")
+//    @PostMapping("/uploadFileInfo")
     public BaseResponse<UploadFieResponse> uploadFileInfo(HttpServletRequest request) throws IOException {
         log.info("--开始调用uploadFile上传文件接口request：{}--", request.toString());
         BaseResponse<UploadFieResponse> baseResponse = new BaseResponse<>();
@@ -524,7 +524,7 @@ public class S3FileController {
      * 设置文件标签信息
      * @return
      */
-    @PostMapping("/setTag")
+//    @PostMapping("/setTag")
     public BaseResponse<String> setObjectTag(@RequestBody UpdateFileTageRequest request){
         log.info("--setObjectTag设置文件标签信息request--:{}", request);
         BaseResponse<String> baseResponse = new BaseResponse<>();
@@ -550,7 +550,7 @@ public class S3FileController {
      * @param request
      * @return
      */
-    @PostMapping("/delete")
+//    @PostMapping("/delete")
     public BaseResponse<String> deleteFile(@RequestBody DelObjectRequest request){
         log.info("--开始调用deleteFile删除文件接口--request:{} ", request);
         BaseResponse<String> baseResponse = new BaseResponse<>();
@@ -621,7 +621,7 @@ public class S3FileController {
      * @param request
      * @return
      */
-    @PostMapping("/move")
+//    @PostMapping("/move")
     public BaseResponse<String> moveFile(@RequestBody CopyFileRequest request){
         log.info("--moveFile 文件移动--request:{}", request);
         BaseResponse<String> baseResponse = new BaseResponse<>();

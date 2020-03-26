@@ -35,13 +35,6 @@ public interface IFileService<T> {
 	void delete(T t);
 
 	/**
-	 * 文件下载
-	 * @param t
-	 * @return
-	 */
-	T download(T t);
-
-	/**
 	 * 重命名文件
 	 * @description
 	 * @author miaomingming
@@ -75,7 +68,7 @@ public interface IFileService<T> {
 	void move(T src,T dest);
 
 	/**
-	 * 新增文件
+	 * 修改文件
 	 * @description
 	 * @author miaomingming
 	 * @date 11:52 2020/3/26
