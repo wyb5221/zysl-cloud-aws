@@ -1,6 +1,7 @@
 package com.zysl.cloud.aws.biz.service;
 
 import com.zysl.cloud.utils.common.AppLogicException;
+import java.util.Map;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.S3Request;
 import software.amazon.awssdk.services.s3.model.S3Response;
@@ -56,6 +57,17 @@ public interface IS3FactoryService {
 	 * @return java.lang.Boolean
 	 **/
 	void addBucket(String bucketName,String serverNo);
+
+
+	/**
+	 * 查询bucket和serverNo的map
+	 * @description
+	 * @author miaomingming
+	 * @date 11:16 2020/3/26
+	 * @param
+	 * @return java.util.Map<java.lang.String,java.lang.String>
+	 **/
+	Map<String, String> getBucketServerNoMap();
 
 	/**
 	 * 统一调用s3方法

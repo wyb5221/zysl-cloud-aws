@@ -13,7 +13,7 @@ import lombok.Setter;
  **/
 @Setter
 @Getter
-public class S3BaseBO implements Serializable {
+public class S3BaseBO extends BaseFileBO{
 
 	private String bucketName;
 

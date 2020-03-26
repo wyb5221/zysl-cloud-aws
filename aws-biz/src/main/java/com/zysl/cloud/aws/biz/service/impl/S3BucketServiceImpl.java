@@ -5,37 +5,27 @@ import com.alibaba.fastjson.JSON;
 import com.zysl.cloud.aws.api.enums.BucketVerStatusEnum;
 import com.zysl.cloud.aws.api.req.BucketFileRequest;
 import com.zysl.cloud.aws.api.req.SetFileVersionRequest;
-import com.zysl.cloud.aws.biz.constant.BizConstants;
 import com.zysl.cloud.aws.biz.constant.S3Method;
 import com.zysl.cloud.aws.biz.enums.ErrCodeEnum;
 import com.zysl.cloud.aws.biz.service.IS3BucketService;
 import com.zysl.cloud.aws.biz.service.IS3FactoryService;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
-import com.zysl.cloud.utils.BeanCopyUtil;
+import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.common.AppLogicException;
 import com.zysl.cloud.utils.common.MyPage;
-import com.zysl.cloud.utils.enums.RespCodeEnum;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import javax.annotation.PostConstruct;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.Bucket;
-import software.amazon.awssdk.services.s3.model.BucketVersioningStatus;
-import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
-import software.amazon.awssdk.services.s3.model.CopyObjectResponse;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.CreateBucketResponse;
 import software.amazon.awssdk.services.s3.model.ListBucketsRequest;
 import software.amazon.awssdk.services.s3.model.ListBucketsResponse;
-import software.amazon.awssdk.services.s3.model.PutBucketReplicationRequest;
 import software.amazon.awssdk.services.s3.model.PutBucketVersioningRequest;
-import software.amazon.awssdk.services.s3.model.PutBucketVersioningResponse;
 import software.amazon.awssdk.services.s3.model.VersioningConfiguration;
 
 @Service
@@ -56,15 +46,18 @@ public class S3BucketServiceImpl implements IS3BucketService {
 
 	@Override
 	public List<String> getS3Buckets(String serviceNo){
-		S3Client s3 = s3FactoryService.getS3ClientByServerNo(serviceNo);
-		List<Bucket> bucketList = getBucketList(s3);
-
-		List<String> buskets = new ArrayList<>();
-		if(!CollectionUtils.isEmpty(buskets)){
-			bucketList.forEach(obj -> buskets.add(obj.name()));
+		List<String> list = new ArrayList<>();
+		Map<String, String> map = s3FactoryService.getBucketServerNoMap();
+		if(map != null && map.size() > 0){
+			for(String key:map.keySet()){
+				if (StringUtils.isBlank(serviceNo) || map.get(key).equals(serviceNo)) {
+				  list.add(key);
+				}
+			}
 		}
-		log.info("---buskets:{}", buskets.size());
-		return buskets;
+
+		log.info("---buskets:{}", list.size());
+		return list;
 	}
 
 	@Override
