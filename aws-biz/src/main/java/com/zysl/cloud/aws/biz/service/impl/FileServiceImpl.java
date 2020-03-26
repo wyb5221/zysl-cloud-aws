@@ -2,6 +2,9 @@ package com.zysl.cloud.aws.biz.service.impl;
 
 import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.aws.biz.service.IS3BucketService;
+import com.zysl.cloud.aws.domain.bo.FileDetailBO;
+import com.zysl.cloud.aws.domain.bo.S3BaseBO;
+import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -35,5 +38,21 @@ public class FileServiceImpl implements IFileService {
 	@Override
 	public String test(String name){
 		return "success:" + name;
+	}
+
+
+	@Override
+	public S3ObjectBO addS3Object(S3ObjectBO s3ObjectBO){
+		return null;
+	}
+
+	@Override
+	public S3ObjectBO getS3ObjectInfo(S3BaseBO queryBO){
+		return null;
+	}
+
+	@Override
+	public FileDetailBO getS3ObjectAllInfo(S3BaseBO queryBO){
+		return null;
 	}
 }

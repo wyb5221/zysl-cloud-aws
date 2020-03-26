@@ -66,4 +66,18 @@ public interface IS3FactoryService {
 	 * @return T
 	 **/
 	<T extends S3Response,R extends S3Request>T callS3Method(R r,S3Client s3Client,String methodName) throws AppLogicException;
+
+
+	/**
+	 * 统一调用s3方法
+	 * @description
+	 * @author miaomingming
+	 * @date 9:24 2020/3/26
+	 * @param  * @param r
+	 * @param s3Client
+	 * @param methodName
+	 * @param throwLogicException 是否抛出逻辑异常
+	 * @return T
+	 **/
+	<T extends S3Response,R extends S3Request>T callS3Method(R r,S3Client s3Client,String methodName,Boolean throwLogicException);
 }

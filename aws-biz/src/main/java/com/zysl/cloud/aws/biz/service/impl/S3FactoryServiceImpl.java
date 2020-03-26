@@ -27,6 +27,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ListBucketsRequest;
 import software.amazon.awssdk.services.s3.model.ListBucketsResponse;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.S3Request;
 import software.amazon.awssdk.services.s3.model.S3Response;
 import software.amazon.awssdk.utils.AttributeMap;
@@ -110,6 +111,28 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 		}
 		return response;
 	}
+
+
+	@Override
+	public <T extends S3Response,R extends S3Request>T callS3Method(R r,S3Client s3Client,String methodName,Boolean throwLogicException){
+		log.info("=callS3Method:service_name:{},methodName:{},param:{}=",S3Client.SERVICE_NAME,methodName, JSON.toJSONString(r));
+		T response = null;
+		try{
+			response = callS3Method(r,s3Client,methodName);
+		}catch (NoSuchKeyException e){
+			log.error("callS3Method.invoke({})->NoSuchKeyException:",methodName);
+			if(throwLogicException){
+				throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_NO_SUCH_KEY.getCode());
+			}
+		}catch (Exception e){
+			log.error("callS3Method.error({}):",methodName,e);
+			throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_ERROR.getCode());
+		}
+		return response;
+	}
+
+
+
 
 	@PostConstruct
 	private void awsS3Init(){
