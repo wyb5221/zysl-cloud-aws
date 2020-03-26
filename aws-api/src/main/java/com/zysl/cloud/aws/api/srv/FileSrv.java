@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @return
  **/
 
-@RequestMapping("/file")
+@RequestMapping("/aws/file")
 public interface FileSrv {
 
 	@GetMapping("/test")

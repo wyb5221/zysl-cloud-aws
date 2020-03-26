@@ -58,9 +58,9 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 	}
 
 	@Override
-	public void copy(S3ObjectBO src,S3ObjectBO dest){
+	public S3ObjectBO copy(S3ObjectBO src,S3ObjectBO dest){
 		//获取s3初始化对象
-		S3Client s3 = s3FactoryService.getS3ClientByServerNo(src.getBucketName());
+		S3Client s3 = s3FactoryService.getS3ClientByBucket(src.getBucketName());
 
 		//获取标签内容
 		List<Tag> tagSet = new ArrayList<>();
@@ -69,16 +69,26 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 				tagSet.add(Tag.builder().key(obj.getKey()).value(obj.getValue()).build());
 			});
 		}
-		Tagging tagging = Tagging.builder().tagSet(tagSet).build();
 
 		//查询复制接口入参
-		CopyObjectRequest request = CopyObjectRequest.builder()
-				.copySource("")
-				.bucket(dest.getBucketName()).key(dest.getFileName())
-				.tagging(tagging)
-				.build();
+		CopyObjectRequest request = null;
+		if(CollectionUtils.isEmpty(tagSet)){
+			request = CopyObjectRequest.builder()
+					.copySource(src.getBucketName() + "/" + src.getPath() + src.getFileName())
+					.bucket(dest.getBucketName()).key(dest.getPath() + dest.getFileName())
+					.build();
+		}else{
+			Tagging tagging = Tagging.builder().tagSet(tagSet).build();
+			request = CopyObjectRequest.builder()
+					.copySource(src.getBucketName() + "/" + src.getPath() + src.getFileName())
+					.bucket(dest.getBucketName()).key(dest.getPath() + dest.getFileName())
+					.tagging(tagging)
+					.build();
+		}
 
-		ListBucketsResponse response = s3FactoryService.callS3Method(request,s3,S3Method.COPY_OBJECT);
+		CopyObjectResponse response = s3FactoryService.callS3Method(request,s3,S3Method.COPY_OBJECT);
+		dest.setVersionId(response.versionId());
+		return dest;
 	}
 
 	@Override

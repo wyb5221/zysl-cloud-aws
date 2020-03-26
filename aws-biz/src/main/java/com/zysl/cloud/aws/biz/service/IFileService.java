@@ -1,5 +1,7 @@
 package com.zysl.cloud.aws.biz.service;
 
+import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
+
 import java.util.List;
 
 /**
@@ -52,7 +54,7 @@ public interface IFileService<T> {
 	 * @param dest
 	 * @return void
 	 **/
-	void copy(T src,T dest);
+	T copy(T src, T dest);
 
 	/**
 	 * 移动文件

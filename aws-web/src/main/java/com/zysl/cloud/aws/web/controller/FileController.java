@@ -76,12 +76,11 @@ public class FileController extends BaseController implements FileSrv {
 			//复制源文件信息
 			S3ObjectBO src = new S3ObjectBO();
 			src.setBucketName(req.getBucketName());
-			src.setFileName(req.getFileName());
+			setPathAndFileName(src,req.getFileName());
 			//复制后的目标文件信息
 			S3ObjectBO dest = new S3ObjectBO();
 			dest.setBucketName(req.getBucketName());
-			dest.setFileName(BizConstants.SHARE_DEFAULT_FOLDER  + "/" + req.getFileName());
-
+			setPathAndFileName(dest,BizConstants.SHARE_DEFAULT_FOLDER  + "/" + req.getFileName());
 			//获取标签信息
 			List<TagsBO> tagList = Lists.newArrayList();
 			if(!StringUtils.isEmpty(req.getMaxDownloadAmout()+"")){
@@ -98,10 +97,11 @@ public class FileController extends BaseController implements FileSrv {
 			}
 			dest.setTagList(tagList);
 
-			fileService.copy(src, dest);
+			S3ObjectBO s3ObjectBO = (S3ObjectBO) fileService.copy(src, dest);
 			UploadFieDTO uploadFieDTO = new UploadFieDTO();
-			uploadFieDTO.setFolderName(dest.getBucketName());
-			uploadFieDTO.setFileName(dest.getFileName());
+			uploadFieDTO.setFolderName(s3ObjectBO.getBucketName());
+			uploadFieDTO.setFileName(s3ObjectBO.getPath() + s3ObjectBO.getFileName());
+			uploadFieDTO.setVersionId(s3ObjectBO.getVersionId());
 
 			return uploadFieDTO;
 		});

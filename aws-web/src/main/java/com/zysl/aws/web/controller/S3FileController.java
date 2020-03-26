@@ -415,7 +415,7 @@ public class S3FileController {
      * @param request
      * @return
      */
-    @PostMapping("/shareFile")
+//    @PostMapping("/shareFile")
     public BaseResponse<UploadFieResponse> shareFile(@RequestBody ShareFileRequest request){
         log.info("--开始调用shareFile分享文件的信息接口:{}--",request);
         BaseResponse<UploadFieResponse> baseResponse = new BaseResponse<>();
@@ -580,7 +580,7 @@ public class S3FileController {
      * @param request
      * @return
      */
-    @PostMapping("/copy")
+//    @PostMapping("/copy")
     public BaseResponse<String> copyFile(@RequestBody CopyFileRequest request){
         log.info("--copyFile 文件复制--request:{}", request);
         BaseResponse<String> baseResponse = new BaseResponse<>();
