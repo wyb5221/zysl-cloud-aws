@@ -1,12 +1,15 @@
 package com.zysl.cloud.aws.api.srv;
 
 import com.zysl.cloud.aws.api.dto.UploadFieDTO;
+import com.zysl.cloud.aws.api.req.CopyObjectsRequest;
 import com.zysl.cloud.aws.api.req.KeyPageRequest;
 import com.zysl.cloud.aws.api.req.KeyRequest;
 import com.zysl.cloud.aws.api.req.ShareFileRequest;
 import com.zysl.cloud.utils.common.BasePaginationResponse;
 import com.zysl.cloud.utils.common.BaseResponse;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -29,10 +32,20 @@ public interface FileSrv {
 	BasePaginationResponse<String> test2(KeyPageRequest request);
 
 	/**
-	 * 分享文件
+	 * 文件复制
 	 * @param request
 	 * @return
 	 */
-	BaseResponse<UploadFieDTO> shareFile(ShareFileRequest request);
+	@PostMapping("/copy")
+	BaseResponse<String> copyFile(@RequestBody CopyObjectsRequest request);
+
+	/**
+	 * 文件分享
+	 * @param request
+	 * @return
+	 */
+	@PostMapping("/shareFile")
+	BaseResponse<UploadFieDTO> shareFile(@RequestBody ShareFileRequest request);
+
 
 }

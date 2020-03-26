@@ -1,22 +1,32 @@
 package com.zysl.cloud.aws.web.controller;
 
+import com.google.common.collect.Lists;
 import com.zysl.cloud.aws.api.dto.UploadFieDTO;
+import com.zysl.cloud.aws.api.req.CopyObjectsRequest;
 import com.zysl.cloud.aws.api.req.KeyPageRequest;
 import com.zysl.cloud.aws.api.req.KeyRequest;
 import com.zysl.cloud.aws.api.req.ShareFileRequest;
 import com.zysl.cloud.aws.api.srv.FileSrv;
+import com.zysl.cloud.aws.biz.constant.BizConstants;
 import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.aws.biz.service.IS3BucketService;
+import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
+import com.zysl.cloud.aws.domain.bo.TagsBO;
+import com.zysl.cloud.aws.web.validator.CopyObjectsRequestV;
+import com.zysl.cloud.aws.web.validator.KeyRequestV;
+import com.zysl.cloud.aws.web.validator.ShareFileRequestV;
+import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.common.BaseController;
 import com.zysl.cloud.utils.common.BasePaginationResponse;
 import com.zysl.cloud.utils.common.BaseResponse;
+import com.zysl.cloud.utils.enums.RespCodeEnum;
 import com.zysl.cloud.utils.service.provider.ServiceProvider;
-import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
-import com.zysl.cloud.aws.web.validator.KeyRequestV;
+
+import java.util.List;
 
 
 @Slf4j
@@ -26,6 +36,8 @@ public class FileController extends BaseController implements FileSrv {
 
 	@Autowired
 	IS3BucketService bucketService;
+	@Autowired
+	IFileService fileService;
 
 	@Override
 	public BaseResponse<String> test(KeyRequest request){
@@ -43,7 +55,56 @@ public class FileController extends BaseController implements FileSrv {
 	}
 
 	@Override
+	public BaseResponse<String> copyFile(CopyObjectsRequest request) {
+		return ServiceProvider.call(request, CopyObjectsRequestV.class, String.class, req -> {
+			//复制源文件信息
+			S3ObjectBO src = new S3ObjectBO();
+			src.setBucketName(req.getSourceBucket());
+			src.setFileName(req.getSourceKey());
+			//复制后的目标文件信息
+			S3ObjectBO dest = new S3ObjectBO();
+			dest.setBucketName(req.getDestBucket());
+			dest.setFileName(req.getDestKey());
+			fileService.copy(src, dest);
+			return RespCodeEnum.SUCCESS.getDesc();
+		});
+	}
+
+	@Override
 	public BaseResponse<UploadFieDTO> shareFile(ShareFileRequest request) {
-		return null;
+		return ServiceProvider.call(request, ShareFileRequestV.class, UploadFieDTO.class, req -> {
+
+			//复制源文件信息
+			S3ObjectBO src = new S3ObjectBO();
+			src.setBucketName(req.getBucketName());
+			src.setFileName(req.getFileName());
+			//复制后的目标文件信息
+			S3ObjectBO dest = new S3ObjectBO();
+			dest.setBucketName(req.getBucketName());
+			dest.setFileName(BizConstants.SHARE_DEFAULT_FOLDER  + "/" + req.getFileName());
+
+			//获取标签信息
+			List<TagsBO> tagList = Lists.newArrayList();
+			if(!StringUtils.isEmpty(req.getMaxDownloadAmout()+"")){
+				TagsBO tag = new TagsBO();
+				tag.setKey(BizConstants.TAG_DOWNLOAD_AMOUT);
+				tag.setValue(String.valueOf(req.getMaxDownloadAmout()));
+				tagList.add(tag);
+			}
+			if(!StringUtils.isEmpty(req.getMaxHours()+"")){
+				TagsBO tag = new TagsBO();
+				tag.setKey(BizConstants.TAG_VALIDITY);
+				tag.setValue(String.valueOf(req.getMaxHours()));
+				tagList.add(tag);
+			}
+			dest.setTagList(tagList);
+
+			fileService.copy(src, dest);
+			UploadFieDTO uploadFieDTO = new UploadFieDTO();
+			uploadFieDTO.setFolderName(dest.getBucketName());
+			uploadFieDTO.setFileName(dest.getFileName());
+
+			return uploadFieDTO;
+		});
 	}
 }

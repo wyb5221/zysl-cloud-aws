@@ -66,7 +66,7 @@ public interface IFileService<T> {
 	void move(T src,T dest);
 
 	/**
-	 * 修改文件
+	 * 新增文件
 	 * @description
 	 * @author miaomingming
 	 * @date 11:52 2020/3/26

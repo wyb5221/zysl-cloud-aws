@@ -1,8 +1,5 @@
 package com.zysl.cloud.aws.biz.service;
 
-import com.zysl.cloud.aws.api.req.CopyObjectsRequest;
-import com.zysl.cloud.aws.api.req.ShareFileRequest;
-import com.zysl.cloud.aws.domain.bo.UploadFieBO;
 import java.util.List;
 
 public interface IFolderService<T> {
