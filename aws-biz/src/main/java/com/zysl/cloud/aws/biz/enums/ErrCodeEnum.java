@@ -29,6 +29,12 @@ public enum  ErrCodeEnum  {
 	S3_CREATE_BUCKET_EXIST(5020003, "创建bucket已存在."),
 
 	S3_BUCKET_OBJECT_NOT_EXIST(5030001, "创建对象已存在."),
+
+
+	WORD_FILE_NOT_EXIST(5040001, "word转pdf：找不到原始文件."),
+	WORD_FILE_TO_PDF_ERROR(5040002, "word转pdf：转换异常."),
+	WORD_FILE_TO_PDF_SIZE_ZERO(5040003, "word转pdf：转换后文件大小为0."),
+	WORD_FILE_TO_PDF_ENCRYPTION_SIZE_ZERO(5040004, "word转pdf：加密后文件大小为0."),
 	;
 
 	private Integer code;
