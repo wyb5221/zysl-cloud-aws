@@ -5,7 +5,7 @@ import com.zysl.cloud.aws.api.req.CreateBucketRequest;
 import com.zysl.cloud.aws.api.req.GetBucketsRequest;
 import com.zysl.cloud.aws.api.req.SetFileVersionRequest;
 import com.zysl.cloud.aws.api.srv.S3BucketSrv;
-import com.zysl.cloud.aws.biz.service.IS3BucketService;
+import com.zysl.cloud.aws.biz.service.s3.IS3BucketService;
 import com.zysl.cloud.aws.web.validator.CreateBucketRequestV;
 import com.zysl.cloud.aws.web.validator.GetBucketsRequestV;
 import com.zysl.cloud.aws.web.validator.SetFileVersionRequestV;

@@ -27,6 +27,9 @@ public class DownloadFileRequest extends BaseReqeust {
     //文件版本id
     @ApiModelProperty(value = "文件版本id", name = "versionId",dataType = SwaggerConstants.DATA_TYPE_STRING)
     private String versionId;
+    //文件版本id
+    @ApiModelProperty(value = "文件id，判断下载权限", name = "userId",dataType = SwaggerConstants.DATA_TYPE_STRING)
+    private String userId;
     //下载文件类型 0：默认，下载文件 1：下载二进制流
     @ApiModelProperty(value = "下载文件类型 0：默认，下载文件 1：下载二进制流", name = "type",required = true,dataType = SwaggerConstants.DATA_TYPE_STRING)
     private String type;

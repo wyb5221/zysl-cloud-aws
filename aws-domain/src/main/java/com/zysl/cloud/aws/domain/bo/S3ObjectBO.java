@@ -20,9 +20,14 @@ public class S3ObjectBO extends BaseFileBO implements Serializable {
 	//是否物理删除，1是0否，默认0
 	private Integer deleteStore;
 
+	private String userId;
+
 	//元素 List
 	//标签 List
 	List<TagsBO> tagList;
 	//子目录 List
+	List<ObjectInfoBO> folderList;
 	//子文件 List
+	List<ObjectInfoBO> fileList;
+
 }

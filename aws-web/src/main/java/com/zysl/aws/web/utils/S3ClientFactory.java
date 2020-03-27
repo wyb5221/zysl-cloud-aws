@@ -1,6 +1,6 @@
 package com.zysl.aws.web.utils;
 
-import com.zysl.cloud.aws.biz.service.IS3FactoryService;
+import com.zysl.cloud.aws.biz.service.s3.IS3FactoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

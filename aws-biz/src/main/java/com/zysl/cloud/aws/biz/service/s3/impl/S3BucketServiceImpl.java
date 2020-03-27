@@ -1,4 +1,4 @@
-package com.zysl.cloud.aws.biz.service.impl;
+package com.zysl.cloud.aws.biz.service.s3.impl;
 
 
 import com.alibaba.fastjson.JSON;
@@ -7,8 +7,8 @@ import com.zysl.cloud.aws.api.req.BucketFileRequest;
 import com.zysl.cloud.aws.api.req.SetFileVersionRequest;
 import com.zysl.cloud.aws.biz.constant.S3Method;
 import com.zysl.cloud.aws.biz.enums.ErrCodeEnum;
-import com.zysl.cloud.aws.biz.service.IS3BucketService;
-import com.zysl.cloud.aws.biz.service.IS3FactoryService;
+import com.zysl.cloud.aws.biz.service.s3.IS3BucketService;
+import com.zysl.cloud.aws.biz.service.s3.IS3FactoryService;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.common.AppLogicException;
