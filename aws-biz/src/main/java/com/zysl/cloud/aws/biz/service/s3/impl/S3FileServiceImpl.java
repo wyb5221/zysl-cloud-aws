@@ -2,21 +2,23 @@ package com.zysl.cloud.aws.biz.service.s3.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
+import com.zysl.cloud.aws.api.enums.DeleteStoreEnum;
 import com.zysl.cloud.aws.biz.constant.S3Method;
-import com.zysl.cloud.aws.biz.enums.DeleteStoreEnum;
-import com.zysl.cloud.aws.biz.service.IFileService;
+import com.zysl.cloud.aws.biz.enums.ErrCodeEnum;
 import com.zysl.cloud.aws.biz.service.s3.IS3FactoryService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
+import com.zysl.cloud.aws.biz.utils.DataAuthUtils;
 import com.zysl.cloud.aws.config.BizConfig;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.aws.domain.bo.TagsBO;
 import com.zysl.cloud.aws.utils.DateUtil;
 import com.zysl.cloud.aws.utils.DateUtils;
+import com.zysl.cloud.utils.StringUtils;
+import com.zysl.cloud.utils.common.AppLogicException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
@@ -37,6 +39,8 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 	private IS3FactoryService s3FactoryService;
 	@Autowired
 	private BizConfig bizConfig;
+	@Autowired
+	private DataAuthUtils dataAuthUtils;
 
 
 	@Override
@@ -360,5 +364,33 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 			versionList.add(s3Object);
 		});
 		return versionList;
+	}
+
+	@Override
+	public void checkDataOpAuth(String path,String fileName,String opAuthTypes){
+		log.info("checkDataOpAuth:path:{},fileName:{},opAuthTypes:{}", path,fileName,opAuthTypes);
+		String objAuths = null;
+		// 是对象
+		if (StringUtils.isNotBlank(fileName)) {
+			//读取对象的标签--权限列表
+			//TODO
+			if(dataAuthUtils.checkAuth(opAuthTypes,objAuths)){
+				return;
+			}
+		}
+		//逐级往上检查目录
+		String curPath = path;
+		while(curPath != null ){
+			//TODO 读取当前目录的标签
+			objAuths = "";
+			if(dataAuthUtils.checkAuth(opAuthTypes,objAuths)){
+				return;
+			}
+			curPath = "";//TODO截取上层目录
+		}
+
+		//遍历后还是无法匹配
+		log.warn("check.data.op.auth.failed:path:{},fileName:{},opAuthTypes:{}", path,fileName,opAuthTypes);
+		throw new AppLogicException(ErrCodeEnum.OBJECT_OP_AUTH_CHECK_ERROR.getCode());
 	}
 }

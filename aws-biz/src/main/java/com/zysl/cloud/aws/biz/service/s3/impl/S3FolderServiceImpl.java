@@ -2,10 +2,9 @@ package com.zysl.cloud.aws.biz.service.s3.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
+import com.zysl.cloud.aws.api.enums.DeleteStoreEnum;
 import com.zysl.cloud.aws.biz.constant.S3Method;
-import com.zysl.cloud.aws.biz.enums.DeleteStoreEnum;
 import com.zysl.cloud.aws.biz.service.IFileService;
-import com.zysl.cloud.aws.biz.service.IFolderService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FactoryService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FolderService;
 import com.zysl.cloud.aws.domain.bo.ObjectInfoBO;

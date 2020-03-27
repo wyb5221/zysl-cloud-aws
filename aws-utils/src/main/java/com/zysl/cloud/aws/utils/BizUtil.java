@@ -1,8 +1,6 @@
 package com.zysl.cloud.aws.utils;
 
 
-import com.aspose.words.SaveFormat;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
@@ -31,11 +29,11 @@ public class BizUtil {
      * 获取pdf文件名
      * @param fileName
      * @return
-     */
+
     public static String parseFName(String fileName,Integer formatType){
         if(fileName.indexOf(".") > -1){
             return fileName.substring(0,fileName.lastIndexOf(".") + 1) + SaveFormat.getName(formatType).toLowerCase();
         }
         return null;
-    }
+    }*/
 }

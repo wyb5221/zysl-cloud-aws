@@ -1,21 +1,22 @@
-package com.zysl.cloud.aws.biz.enums;
+package com.zysl.cloud.aws.api.enums;
 
 import lombok.Getter;
 
 /**
- * 是否物理删除，1是0否
+ * 0 默认下载二进制流
+ * 1 下载文件流
  */
 @Getter
-public enum DeleteStoreEnum {
+public enum DownTypeEnum {
 
-    NOCOVER(0, "否"),
-    COVER(1, "是");
+    NOCOVER("0", "默认,下载文件流"),
+    COVER("1", "base64进制的String");
 
-    private Integer code;
+    private String code;
 
     private String desc;
 
-    DeleteStoreEnum(Integer code, String desc) {
+    DownTypeEnum(String code, String desc) {
         this.code = code;
         this.desc = desc;
     }
@@ -26,7 +27,7 @@ public enum DeleteStoreEnum {
      * @return
      */
     public String getDesc(String code){
-        for(DeleteStoreEnum in : DeleteStoreEnum.values()){
+        for(DownTypeEnum in : DownTypeEnum.values()){
             if(code.equals(in.getCode())){
                 return in.getDesc();
             }

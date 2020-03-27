@@ -1,8 +1,8 @@
 package com.zysl.cloud.aws.web.controller;
 
 import com.google.common.collect.Lists;
-import com.zysl.aws.web.enums.DownTypeEnum;
 import com.zysl.cloud.aws.api.dto.*;
+import com.zysl.cloud.aws.api.enums.DownTypeEnum;
 import com.zysl.cloud.aws.api.req.*;
 import com.zysl.cloud.aws.api.srv.FileSrv;
 import com.zysl.cloud.aws.biz.constant.BizConstants;
