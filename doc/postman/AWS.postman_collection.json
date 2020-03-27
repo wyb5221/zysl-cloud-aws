@@ -1,0 +1,1729 @@
+{
+	"info": {
+		"_postman_id": "b34b8572-cfae-473e-93a2-8ffcd26709ec",
+		"name": "AWS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "localhost",
+			"item": [
+				{
+					"name": "bucket",
+					"item": [
+						{
+							"name": "创建存储桶bucket",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{localhost}}/aws/bucket/createBucket?bucketName=test-yy10&serviceNo=001",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"bucket",
+										"createBucket"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy10"
+										},
+										{
+											"key": "serviceNo",
+											"value": "001"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "查询所有bucket列表",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{localhost}}/aws/bucket/getBuckets?serviceNo=001",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"bucket",
+										"getBuckets"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy05",
+											"disabled": true
+										},
+										{
+											"key": "serviceNo",
+											"value": "001"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "设置版本权限",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"test-yy10\",\n\t\"status\":\"Enabled\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/bucket/setVersion",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"bucket",
+										"setVersion"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy07",
+											"disabled": true
+										},
+										{
+											"key": "status",
+											"value": "Enabled",
+											"disabled": true
+										},
+										{
+											"key": "",
+											"value": "Suspended",
+											"disabled": true
+										},
+										{
+											"key": "",
+											"value": "Enabled",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "获取文件夹下所有对象",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"test-yy01\",\n\t\"pageIndex\":4,\n\t\"pageSize\":5\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/bucket/getFilesByBucket?bucketName=test-yy05",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"bucket",
+										"getFilesByBucket"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy05"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "folder",
+					"item": [
+						{
+							"name": "创建目录",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"test-yy07\",\n\t\"folderName\":\"ABC/\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/folder/add",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"folder",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "删除目录",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"test-yy07\",\n\t\"key\":\"ABC/\",\n\t\"deleteStore\":1\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/folder/delete",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"folder",
+										"delete"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "查询目录对象列表",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"test-yy07\",\n\t\"key\":\"wyb/\",\n\t\"userId\":\"\",\n\t\"keyType\":2\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/folder/objects",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"folder",
+										"objects"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "目录复制",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"sourceBucket\":\"test-yy07\",\n\t\"sourceKey\":\"wyb/\",\n\t\n\t\"destBucket\":\"test-yy07\",\n\t\"destKey\":\"wyb01/\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/folder/copy",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"folder",
+										"copy"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "目录移动",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"sourceBucket\":\"test-yy07\",\n\t\"sourceKey\":\"ACAC/\",\n\t\n\t\"destBucket\":\"test-yy07\",\n\t\"destKey\":\"DEDE/\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/folder/move",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"folder",
+										"move"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "file",
+					"item": [
+						{
+							"name": "上传文件 Copy",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"fileId\":\"base1.txt\",\n\t\"bucketName\":\"test-yy07\",\n\t\"data\":\"5Lit5Zu95YyX5LqsDQpiYXNl\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/file/uploadFile",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"uploadFile"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "文件流上传",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "multipart/form-data",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"type": "file",
+											"src": "/D:/tmp/testFile/tt-txt.txt"
+										},
+										{
+											"key": "bucketName",
+											"value": "test-yy07",
+											"type": "text"
+										},
+										{
+											"key": "fileId",
+											"value": "ww1009.txt",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/file/uploadFileInfo",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"uploadFileInfo"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "查询文件大小",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{localhost}}/aws/file/getFileSize?bucketName=test-yy07&fileName=ww1001.txt",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"getFileSize"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy07"
+										},
+										{
+											"key": "fileName",
+											"value": "ww1001.txt"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "查询文件信息",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{localhost}}/aws/file/getFileInfo?bucketName=test-yy07&fileName=share/ww1009.txt",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"getFileInfo"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy07"
+										},
+										{
+											"key": "fileName",
+											"value": "share/ww1009.txt"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "查询文件版本号",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{localhost}}/aws/file/getFileVersion?bucketName=test-yy07&fileName=share/ww1009.txt",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"getFileVersion"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy07"
+										},
+										{
+											"key": "fileName",
+											"value": "share/ww1009.txt"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "下载文件",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"test-yy07\",\n\t\"fileId\":\"ww1009.txt\",\n\t\"versionId\":\"XVJ9BWF.vzw8p68gvdr5tLvbUJYK7YiS\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/file/downloadFile?bucketName=test-yy07&fileId=base1.txt",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"downloadFile"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy07"
+										},
+										{
+											"key": "fileId",
+											"value": "base1.txt"
+										},
+										{
+											"key": "versionId",
+											"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+											"disabled": true
+										},
+										{
+											"key": "userId",
+											"value": "wyb1",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "分享文件下载",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"test-yy02\",\n\t\"fileId\":\"tt-01.txt\",\n\t\"versionId\":\"XVJ9BWF.vzw8p68gvdr5tLvbUJYK7YiS\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/file/shareDownloadFile?bucketName=test-yy07&fileId=share/ww1009.txt",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"shareDownloadFile"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy07"
+										},
+										{
+											"key": "fileId",
+											"value": "share/ww1009.txt"
+										},
+										{
+											"key": "versionId",
+											"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "设置文件标签信息",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucket\":\"test-yy07\",\n\t\"keyList\":[{\n\t\t\"key\":\"ww1001.txt\",\n\t\t\"versionId\":\"\"\n\t},{\n\t\t\"key\":\"ww1009.txt\",\n\t\t\"versionId\":\"\"\n\t}\n\t],\n\t\"tageList\":[{\n\t\t\"key\":\"owner\",\n\t\t\"value\":\"wyb\"\n\t}]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/file/setTag",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"setTag"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "word转pdf",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"test-yy10\",\n\t\"fileName\":\"tt11.doc\",\n\t\"textMark\":\"中国\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/file/word2pdf",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"word2pdf"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "文件分享",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"test-yy07\",\n\t\"fileName\":\"ww1009.txt\",\n\t\"maxDownloadAmout\":5,\n\t\"maxHours\":10\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/file/shareFile",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"shareFile"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "删除对象",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"test-yy07\",\n\t\"key\":\"base1.txt\",\n\t\"versionId\":\"\",\n\t\"deleteStore\":1\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/file/delete",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"delete"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy06",
+											"disabled": true
+										},
+										{
+											"key": "key",
+											"value": "test/111",
+											"disabled": true
+										},
+										{
+											"key": "versionId",
+											"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "文件复制",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"sourceBucket\":\"test-yy07\",\n\t\"sourceKey\":\"测试.pdf\",\n\t\n\t\"destBucket\":\"test-yy07\",\n\t\"destKey\":\"wyb/测试-张.pdf\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/file/copy",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"copy"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy06",
+											"disabled": true
+										},
+										{
+											"key": "key",
+											"value": "test/111",
+											"disabled": true
+										},
+										{
+											"key": "versionId",
+											"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "文件移动",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"test-yy08\",\n\t\"key\":\"txt005.txt\",\n\t\"deleteStore\":1\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/aws/file/move",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"move"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy06",
+											"disabled": true
+										},
+										{
+											"key": "key",
+											"value": "test/111",
+											"disabled": true
+										},
+										{
+											"key": "versionId",
+											"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "测试",
+			"item": [
+				{
+					"name": "bucket",
+					"item": [
+						{
+							"name": "创建存储桶bucket",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{test}}/aws/bucket/createBucket?bucketName=wyb001&serviceNo=1",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"bucket",
+										"createBucket"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "wyb001"
+										},
+										{
+											"key": "serviceNo",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "查询所有bucket列表",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{test}}/aws/bucket/getBuckets",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"bucket",
+										"getBuckets"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy05",
+											"disabled": true
+										},
+										{
+											"key": "serviceNo",
+											"value": "001",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "设置版本权限",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"user01\",\n\t\"status\":\"Enabled\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/bucket/setVersion",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"bucket",
+										"setVersion"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy07",
+											"disabled": true
+										},
+										{
+											"key": "status",
+											"value": "Enabled",
+											"disabled": true
+										},
+										{
+											"key": "",
+											"value": "Suspended",
+											"disabled": true
+										},
+										{
+											"key": "",
+											"value": "Enabled",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "获取文件夹下所有对象",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"wyb001\",\n\t\"pageIndex\":4,\n\t\"pageSize\":5\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/bucket/getFilesByBucket?bucketName=user01",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"bucket",
+										"getFilesByBucket"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "user01"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "folder",
+					"item": [
+						{
+							"name": "创建目录",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"wyb001\",\n\t\"folderName\":\"test01\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/folder/add",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"folder",
+										"add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "删除目录",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"wyb001\",\n\t\"key\":\"test01-move\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/folder/delete",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"folder",
+										"delete"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "查询目录对象列表",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"wyb001\",\n\t\"key\":\"\",\n\t\"keyType\":0\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/folder/objects",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"folder",
+										"objects"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "目录复制",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"test-yy10\",\n\t\"key\":\"\",\n\t\"keyType\":0\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/folder/objects",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"folder",
+										"objects"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "目录移动",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"sourceBucket\":\"test-yy10\",\n\t\"sourceKey\":\"yy\",\n\t\n\t\"destBucket\":\"test-yy10\",\n\t\"destKey\":\"QA\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/folder/move",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"folder",
+										"move"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "file",
+					"item": [
+						{
+							"name": "上传文件 Copy",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"fileId\":\"t-01.txt\",\n\t\"bucketName\":\"wyb001\",\n\t\"data\":\"cXdlDQphc2QNCnp4Yw==\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/file/uploadFile",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"uploadFile"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "文件流上传",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"type": "file",
+											"src": "/D:/tmp/testFile/txt001.txt"
+										},
+										{
+											"key": "bucketName",
+											"value": "wyb001",
+											"type": "text"
+										},
+										{
+											"key": "fileId",
+											"value": "test01/www001.txt",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/file/uploadFileInfo",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"uploadFileInfo"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "查询文件大小",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{test}}/aws/file/getFileSize?bucketName=user01&fileName=1994589f-1169-438b-bcd4-af3d1c9972d0.webm",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"getFileSize"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "user01"
+										},
+										{
+											"key": "fileName",
+											"value": "1994589f-1169-438b-bcd4-af3d1c9972d0.webm"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "查询文件信息",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{test}}/aws/file/getFileSize?bucketName=user01&fileName=1994589f-1169-438b-bcd4-af3d1c9972d0.webm",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"getFileSize"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "user01"
+										},
+										{
+											"key": "fileName",
+											"value": "1994589f-1169-438b-bcd4-af3d1c9972d0.webm"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "查询文件版本号",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{test}}/aws/file/getFileVersion?bucketName=wyb001&fileName=t-01.txt",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"getFileVersion"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "wyb001"
+										},
+										{
+											"key": "fileName",
+											"value": "t-01.txt"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "下载文件",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"test-yy02\",\n\t\"fileId\":\"tt-01.txt\",\n\t\"versionId\":\"XVJ9BWF.vzw8p68gvdr5tLvbUJYK7YiS\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/file/downloadFile?bucketName=wyb001&fileId=t-01.txt",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"downloadFile"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "wyb001"
+										},
+										{
+											"key": "fileId",
+											"value": "t-01.txt"
+										},
+										{
+											"key": "versionId",
+											"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "设置文件标签信息",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucket\":\"wyb001\",\n\t\"key\":\"www003.txt\",\n\t\"versionId\":\"HiAcSauUqvdvZduHF7UtMJfpkfwS0l9\",\n\t\"tageList\":[{\n\t\t\"key\":\"create\",\n\t\t\"value\":\"wyb\"\n\t},\n\t{\n\t\t\"key\":\"amount\",\n\t\t\"value\":\"10\"\n\t}]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/file/setTag",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"setTag"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "分享文件下载",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"test-yy02\",\n\t\"fileId\":\"tt-01.txt\",\n\t\"versionId\":\"XVJ9BWF.vzw8p68gvdr5tLvbUJYK7YiS\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/file/downloadFile?bucketName=wyb001&fileId=tt-02.txt&versionId=cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"downloadFile"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "wyb001"
+										},
+										{
+											"key": "fileId",
+											"value": "tt-02.txt"
+										},
+										{
+											"key": "versionId",
+											"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "word转pdf",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"wyb001\",\n\t\"fileName\":\"tt-02.doc\",\n\t\"textMark\":\"汪勇彬\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/file/word2pdf",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"word2pdf"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "文件分享",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"wyb001\",\n\t\"fileName\":\"tt-02.doc\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/file/shareFile",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"shareFile"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "删除对象",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"bucketName\":\"wyb001\",\n\t\"key\":\"test01/tt.txt\",\n\t\"versionId\":\"0WnktG0t717f0x7nE9f17opofffAt5WA\",\n\t\"deleteStore\":1\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/file/delete",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"delete"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy06",
+											"disabled": true
+										},
+										{
+											"key": "key",
+											"value": "test/111",
+											"disabled": true
+										},
+										{
+											"key": "versionId",
+											"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "文件复制",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"sourceBucket\":\"wyb001\",\n\t\"sourceKey\":\"www001.txt\",\n\t\n\t\"destBucket\":\"wyb001\",\n\t\"destKey\":\"www001-1.txt\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/file/copy",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"copy"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy06",
+											"disabled": true
+										},
+										{
+											"key": "key",
+											"value": "test/111",
+											"disabled": true
+										},
+										{
+											"key": "versionId",
+											"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "文件移动",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"sourceBucket\":\"wyb001\",\n\t\"sourceKey\":\"www001-1.txt\",\n\t\n\t\"destBucket\":\"wyb001\",\n\t\"destKey\":\"www001-2.txt\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{test}}/aws/file/move",
+									"host": [
+										"{{test}}"
+									],
+									"path": [
+										"aws",
+										"file",
+										"move"
+									],
+									"query": [
+										{
+											"key": "bucketName",
+											"value": "test-yy06",
+											"disabled": true
+										},
+										{
+											"key": "key",
+											"value": "test/111",
+											"disabled": true
+										},
+										{
+											"key": "versionId",
+											"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
