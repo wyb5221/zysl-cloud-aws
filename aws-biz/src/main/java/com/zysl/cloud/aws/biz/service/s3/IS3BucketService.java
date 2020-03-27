@@ -1,4 +1,4 @@
-package com.zysl.cloud.aws.biz.service;
+package com.zysl.cloud.aws.biz.service.s3;
 
 import com.zysl.cloud.aws.api.req.BucketFileRequest;
 import com.zysl.cloud.aws.api.req.SetFileVersionRequest;

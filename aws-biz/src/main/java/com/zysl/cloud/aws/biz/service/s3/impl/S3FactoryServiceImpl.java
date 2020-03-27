@@ -1,8 +1,8 @@
-package com.zysl.cloud.aws.biz.service.impl;
+package com.zysl.cloud.aws.biz.service.s3.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.zysl.cloud.aws.biz.enums.ErrCodeEnum;
-import com.zysl.cloud.aws.biz.service.IS3FactoryService;
+import com.zysl.cloud.aws.biz.service.s3.IS3FactoryService;
 import com.zysl.cloud.aws.config.S3ServerConfig;
 import com.zysl.cloud.aws.prop.S3ServerProp;
 import com.zysl.cloud.utils.common.AppLogicException;
@@ -11,7 +11,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

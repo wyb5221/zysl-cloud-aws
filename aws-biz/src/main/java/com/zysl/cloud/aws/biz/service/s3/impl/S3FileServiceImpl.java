@@ -1,11 +1,12 @@
-package com.zysl.cloud.aws.biz.service.impl.s3;
+package com.zysl.cloud.aws.biz.service.s3.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.zysl.cloud.aws.biz.constant.S3Method;
 import com.zysl.cloud.aws.biz.enums.DeleteStoreEnum;
 import com.zysl.cloud.aws.biz.service.IFileService;
-import com.zysl.cloud.aws.biz.service.IS3FactoryService;
+import com.zysl.cloud.aws.biz.service.s3.IS3FactoryService;
+import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.config.BizConfig;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.aws.domain.bo.TagsBO;
@@ -30,7 +31,7 @@ import java.util.List;
 
 @Slf4j
 @Service("s3FileService")
-public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
+public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 
 	@Autowired
 	private IS3FactoryService s3FactoryService;
@@ -51,12 +52,15 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 									   .build();
 
 		PutObjectResponse response = s3FactoryService.callS3MethodWithBody(request,RequestBody.fromBytes(t.getBodys()),s3Client, S3Method.PUT_OBJECT);
+		log.info("s3file.create.response:{}", response);
 
 		t.setVersionId(response.versionId());
 		return t;
 	}
 	@Override
 	public void delete(S3ObjectBO t){
+		log.info("s3file.delete.param:{}", JSON.toJSONString(t));
+
 		//获取s3初始化对象
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
@@ -116,6 +120,8 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 
 	@Override
 	public void modify(S3ObjectBO t){
+		log.info("s3file.modify.param:{}", JSON.toJSONString(t));
+
 		//目前修改文件标签信息
 		//获取s3初始化对象
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
@@ -142,6 +148,8 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 		}
 
 		PutObjectTaggingResponse response = s3FactoryService.callS3Method(request.build(),s3,S3Method.PUT_OBJECT_TAGGING);
+		log.info("s3file.modify.param:{}", response);
+
 	}
 
 	@Override
@@ -151,6 +159,8 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 
 	@Override
 	public S3ObjectBO copy(S3ObjectBO src,S3ObjectBO dest){
+		log.info("s3file.create.param.src:{}, dest:{}", JSON.toJSONString(src), JSON.toJSONString(dest));
+
 		//获取s3初始化对象
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(src.getBucketName());
 
@@ -179,6 +189,7 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 		}
 
 		CopyObjectResponse response = s3FactoryService.callS3Method(request,s3,S3Method.COPY_OBJECT);
+		log.info("s3file.copy.response:{}", response);
 		dest.setVersionId(response.versionId());
 
 		//设置标签
@@ -192,6 +203,7 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 
 			//给目标文件设置标签
 			s3FactoryService.callS3Method(tagRequest, s3, S3Method.PUT_OBJECT_TAGGING);
+
 		}
 
 
@@ -200,6 +212,7 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 
 	@Override
 	public void move(S3ObjectBO src,S3ObjectBO dest){
+		log.info("s3file.move.param.src:{},dest:{}",  JSON.toJSONString(src),  JSON.toJSONString(dest));
 		//先复制文件
 		this.copy(src, dest);
 		//在删除文件
@@ -224,6 +237,7 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 		}
 
 		HeadObjectResponse response = s3FactoryService.callS3Method(request, s3Client, S3Method.HEAD_OBJECT);
+		log.info("s3file.copy.getBaseInfo:{}", response);
 
 		t.setVersionId(response.versionId());
 		t.setContentLength(response.contentLength());
@@ -238,6 +252,8 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 
 	@Override
 	public S3ObjectBO getDetailInfo(S3ObjectBO t){
+		log.info("s3file.getDetailInfo.param:{}", JSON.toJSONString(t));
+
 		//查询文件基础信息
 		getBaseInfo(t);
 
@@ -257,6 +273,8 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 					.build();
 		}
 		GetObjectTaggingResponse response = s3FactoryService.callS3Method(request, s3, S3Method.GET_OBJECT_TAGGING);
+		log.info("s3file.getDetailInfo.response:{}", response);
+
 		List<Tag> list = response.tagSet();
 		List<TagsBO> tagList = Lists.newArrayList();
 		list.forEach(obj -> {
@@ -271,6 +289,7 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 
 	@Override
 	public S3ObjectBO getInfoAndBody(S3ObjectBO t){
+		log.info("s3file.getInfoAndBody.param:{}", JSON.toJSONString(t));
 		//查询文件基础信息
 		getDetailInfo(t);
 
@@ -325,6 +344,7 @@ public class S3FileServiceImpl implements IFileService<S3ObjectBO> {
 				build();
 
 		ListObjectVersionsResponse response = s3FactoryService.callS3Method(request,s3Client, S3Method.LIST_OBJECT_VERSIONS);
+		log.info("s3file.getVersions.response:{}", response);
 
 		List<ObjectVersion> list = response.versions();
 		List<S3ObjectBO> versionList = Lists.newArrayList();

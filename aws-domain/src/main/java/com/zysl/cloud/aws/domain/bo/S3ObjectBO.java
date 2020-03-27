@@ -26,5 +26,8 @@ public class S3ObjectBO extends BaseFileBO implements Serializable {
 	//标签 List
 	List<TagsBO> tagList;
 	//子目录 List
+	List<ObjectInfoBO> folderList;
 	//子文件 List
+	List<ObjectInfoBO> fileList;
+
 }

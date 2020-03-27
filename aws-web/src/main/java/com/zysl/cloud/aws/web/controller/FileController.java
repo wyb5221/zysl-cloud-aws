@@ -7,7 +7,8 @@ import com.zysl.cloud.aws.api.req.*;
 import com.zysl.cloud.aws.api.srv.FileSrv;
 import com.zysl.cloud.aws.biz.constant.BizConstants;
 import com.zysl.cloud.aws.biz.service.IFileService;
-import com.zysl.cloud.aws.biz.service.IS3BucketService;
+import com.zysl.cloud.aws.biz.service.s3.IS3BucketService;
+import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.aws.domain.bo.TagsBO;
 import com.zysl.cloud.aws.utils.DateUtils;
@@ -21,7 +22,6 @@ import com.zysl.cloud.utils.enums.RespCodeEnum;
 import com.zysl.cloud.utils.service.provider.ServiceProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -46,7 +46,7 @@ public class FileController extends BaseController implements FileSrv {
 	@Autowired
 	IS3BucketService bucketService;
 	@Autowired
-	IFileService fileService;
+	IS3FileService fileService;
 
 	@Override
 	public BaseResponse<String> test(KeyRequest request){
