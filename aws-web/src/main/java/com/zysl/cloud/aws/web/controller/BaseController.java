@@ -26,10 +26,19 @@ public class BaseController extends com.zysl.cloud.utils.common.BaseController {
 		}
 		if(s3Key.endsWith("/")){
 			s3ObjectBO.setPath(s3Key);
+			s3ObjectBO.setFileName("");
 		}else{
 			s3ObjectBO.setPath(s3Key.substring(0,s3Key.lastIndexOf("/")+1));
 			s3ObjectBO.setFileName(s3Key.substring(s3Key.lastIndexOf("/")+1));
 		}
+	}
+
+	public static void main(String[] args) {
+		BaseController t = new BaseController();
+		S3ObjectBO s3ObjectBO = new S3ObjectBO();
+
+		t.setPathAndFileName(s3ObjectBO, "a/");
+		System.out.println(s3ObjectBO);
 	}
 
 }

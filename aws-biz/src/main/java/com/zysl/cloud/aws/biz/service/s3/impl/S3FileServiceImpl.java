@@ -74,7 +74,7 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 				//查询文件的版本信息
 				objectList.forEach(obj -> {
 					ObjectIdentifier objectIdentifier = ObjectIdentifier.builder()
-							.key(obj.getPath() + obj.getFileName())
+							.key(obj.getFileName())
 							.versionId(obj.getVersionId()).build();
 					objects.add(objectIdentifier);
 				});
@@ -272,7 +272,7 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 					.versionId(t.getVersionId())
 					.build();
 		}
-		GetObjectTaggingResponse response = s3FactoryService.callS3Method(request, s3, S3Method.GET_OBJECT_TAGGING);
+		GetObjectTaggingResponse response = s3FactoryService.callS3Method(request, s3, S3Method.GET_OBJECT_TAGGING, false);
 		log.info("s3file.getDetailInfo.response:{}", response);
 
 		List<Tag> list = response.tagSet();

@@ -1,6 +1,7 @@
 package com.zysl.cloud.aws.api.srv;
 
 import com.zysl.cloud.aws.api.dto.ObjectInfoDTO;
+import com.zysl.cloud.aws.api.req.CopyObjectsRequest;
 import com.zysl.cloud.aws.api.req.CreateFolderRequest;
 import com.zysl.cloud.aws.api.req.DelObjectRequest;
 import com.zysl.cloud.aws.api.req.QueryObjectsRequest;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 /**
  * 目录处理类
  */
-//@RequestMapping("/aws/folder")
+@RequestMapping("/aws/folder")
 public interface FolderSrv {
 
     /**
@@ -31,7 +32,7 @@ public interface FolderSrv {
      * @return
      */
     @PostMapping("/delete")
-    BaseResponse<String> deleteFile(@RequestBody DelObjectRequest request);
+    BaseResponse<String> deleteFolder(@RequestBody DelObjectRequest request);
 
     /**
      * 查询目录对象列表
@@ -39,5 +40,21 @@ public interface FolderSrv {
      */
     @PostMapping("/objects")
     BasePaginationResponse<ObjectInfoDTO> getS3Objects(@RequestBody QueryObjectsRequest request);
+
+    /**
+     * 目录复制
+     * @param request
+     * @return
+     */
+    @PostMapping("/copy")
+    BaseResponse<String> copyFolder(@RequestBody CopyObjectsRequest request);
+
+    /**
+     * 目录移动
+     * @param request
+     * @return
+     */
+    @PostMapping("/move")
+    BaseResponse<String> moveFolder(@RequestBody CopyObjectsRequest request);
 
 }
