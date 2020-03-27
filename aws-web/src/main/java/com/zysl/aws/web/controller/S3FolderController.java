@@ -19,7 +19,7 @@ import java.util.List;
  */
 @CrossOrigin
 @RestController
-@RequestMapping("/aws/folder")
+//@RequestMapping("/aws/folder")
 @Slf4j
 public class S3FolderController {
 

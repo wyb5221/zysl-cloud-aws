@@ -45,7 +45,7 @@ public interface IFolderService<T> {
 	 * @param dest
 	 * @return void
 	 **/
-	void copy(T src,T dest);
+	boolean copy(T src,T dest);
 
 	/**
 	 * 移动目录

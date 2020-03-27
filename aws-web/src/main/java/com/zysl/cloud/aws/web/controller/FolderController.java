@@ -5,6 +5,7 @@ import com.zysl.aws.web.config.BizConstants;
 import com.zysl.aws.web.enums.DeleteStoreEnum;
 import com.zysl.aws.web.enums.KeyTypeEnum;
 import com.zysl.cloud.aws.api.dto.ObjectInfoDTO;
+import com.zysl.cloud.aws.api.req.CopyObjectsRequest;
 import com.zysl.cloud.aws.api.req.CreateFolderRequest;
 import com.zysl.cloud.aws.api.req.DelObjectRequest;
 import com.zysl.cloud.aws.api.req.QueryObjectsRequest;
@@ -16,6 +17,7 @@ import com.zysl.cloud.aws.biz.service.s3.IS3FolderService;
 import com.zysl.cloud.aws.domain.bo.ObjectInfoBO;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.aws.domain.bo.TagsBO;
+import com.zysl.cloud.aws.web.validator.CopyObjectsRequestV;
 import com.zysl.cloud.aws.web.validator.CreateFolderRequestV;
 import com.zysl.cloud.aws.web.validator.DelObjectRequestV;
 import com.zysl.cloud.aws.web.validator.QueryObjectsRequestV;
@@ -57,63 +59,17 @@ public class FolderController extends BaseController implements FolderSrv {
     }
 
     @Override
-    public BaseResponse<String> deleteFile(DelObjectRequest request) {
+    public BaseResponse<String> deleteFolder(DelObjectRequest request) {
         return ServiceProvider.call(request, DelObjectRequestV.class, String.class, req ->{
             //先查询文件夹下的对象信息
             S3ObjectBO t = new S3ObjectBO();
             t.setBucketName(req.getBucketName());
             setPathAndFileName(t, req.getKey());
-            S3ObjectBO s3ObjectBO = (S3ObjectBO)folderService.getDetailInfo(t);
-            List<ObjectInfoBO> folderList = s3ObjectBO.getFolderList();
-            //删除文件
-            List<ObjectInfoBO> fileList = s3ObjectBO.getFileList();
-//            if(delfile){
-//
-//
-//            }
-            return null;
-        });
-    }
-    public boolean delfile(String bucket, List<ObjectInfoBO> fileList){
-        //删除文件信息
-        fileList.forEach(obj -> {
-            S3ObjectBO file = new S3ObjectBO();
-            file.setBucketName(bucket);
-            setPathAndFileName(file, obj.getKey());
-            file.setDeleteStore(DeleteStoreEnum.COVER.getCode());
-            fileService.delete(file);
-        });
-        return true;
-    }
 
-    public boolean operFolder(String bucket, List<ObjectInfoBO> folderList){
-        for (ObjectInfoBO object : folderList) {
-            S3ObjectBO t = new S3ObjectBO();
-            t.setBucketName(bucket);
-            setPathAndFileName(t, object.getKey());
-            S3ObjectBO s3ObjectBO = (S3ObjectBO)folderService.getDetailInfo(t);
-            List<ObjectInfoBO> files = s3ObjectBO.getFolderList();
-            //删除文件信息
-            files.forEach(obj -> {
-                S3ObjectBO file = new S3ObjectBO();
-                file.setBucketName(bucket);
-                setPathAndFileName(file, obj.getKey());
-                file.setDeleteStore(DeleteStoreEnum.COVER.getCode());
-                fileService.delete(file);
-            });
-            //文件夹
-            List<ObjectInfoBO> folders = s3ObjectBO.getFolderList();
-            if(!CollectionUtils.isEmpty(folderList)){
-                operFolder(bucket, folders);
-            }else{
-                //删除文件夹
-                S3ObjectBO del = new S3ObjectBO();
-                del.setBucketName(bucket);
-                setPathAndFileName(del,  object.getKey());
-                folderService.delete(del);
-            }
-        }
-        return true;
+            folderService.delete(t);
+
+            return RespCodeEnum.SUCCESS.getDesc();
+        });
     }
 
     @Override
@@ -151,7 +107,7 @@ public class FolderController extends BaseController implements FolderSrv {
             }
         });
     }
-
+    //判断是否有权限
     public boolean isTageExist(String userId, String bucket, String key, String versionId) {
         S3ObjectBO t = new S3ObjectBO();
         t.setBucketName(bucket);
@@ -170,4 +126,44 @@ public class FolderController extends BaseController implements FolderSrv {
         }
         return false;
     }
+
+    @Override
+    public BaseResponse<String> copyFolder(CopyObjectsRequest request) {
+        return ServiceProvider.call(request, CopyObjectsRequestV.class, String.class, req -> {
+            S3ObjectBO src = new S3ObjectBO();
+            src.setBucketName(req.getSourceBucket());
+            setPathAndFileName(src, req.getSourceKey());
+            S3ObjectBO dest = new S3ObjectBO();
+            dest.setBucketName(req.getDestBucket());
+            setPathAndFileName(dest, req.getDestKey());
+
+            folderService.copy(src, dest);
+            return RespCodeEnum.SUCCESS.getDesc();
+        });
+    }
+
+    @Override
+    public BaseResponse<String> moveFolder(CopyObjectsRequest request) {
+        return ServiceProvider.call(request, CopyObjectsRequestV.class, String.class, req ->{
+            S3ObjectBO src = new S3ObjectBO();
+            src.setBucketName(req.getSourceBucket());
+            setPathAndFileName(src, req.getSourceKey());
+            S3ObjectBO dest = new S3ObjectBO();
+            dest.setBucketName(req.getDestBucket());
+            setPathAndFileName(dest, req.getDestKey());
+            //先复制
+            boolean copyFlag = folderService.copy(src, dest);
+
+            if(copyFlag){
+                S3ObjectBO t = new S3ObjectBO();
+                t.setBucketName(req.getSourceBucket());
+                setPathAndFileName(t, req.getSourceKey());
+                t.setDeleteStore(DeleteStoreEnum.COVER.getCode());
+                folderService.delete(t);
+            }
+
+            return RespCodeEnum.SUCCESS.getDesc();
+        });
+    }
+
 }
