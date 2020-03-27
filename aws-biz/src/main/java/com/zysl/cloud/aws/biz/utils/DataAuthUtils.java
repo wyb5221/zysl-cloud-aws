@@ -1,5 +1,7 @@
-package com.zysl.cloud.aws.utils;
+package com.zysl.cloud.aws.biz.utils;
 
+import com.zysl.cloud.aws.api.dto.OPAuthDTO;
+import com.zysl.cloud.aws.api.enums.OPAuthTypeEnum;
 import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.WebUtil;
 import java.util.ArrayList;
@@ -38,23 +40,36 @@ public class DataAuthUtils {
 	 * @description
 	 * @author miaomingming
 	 * @date 9:53 2020/3/27
-	 * @param opType com.zysl.cloud.aws.api.enums.OPAuthTypeEnum
+	 * @param opTypes com.zysl.cloud.aws.api.enums.OPAuthTypeEnum
 	 * @param objectAuth 用户id:权限列表;用户id:权限列表;#角色ID:权限列表;角色ID:权限列表;#所有人的权限列表
 	 * @return java.lang.Boolean
 	 **/
-	public Boolean checkAuth(String opType,String objectAuth){
-		String tokenAuth = getUserAuth();//用户id#角色ID;角色ID
+	public boolean checkAuth(String opTypes,String objectAuth){
+		//用户id#角色ID;角色ID
+		String tokenAuth = getUserAuth();
 
-		if(StringUtils.isNotBlank(tokenAuth)){//没传则不校验
+		//没传则不校验
+		if(StringUtils.isNotBlank(tokenAuth)){
 			return Boolean.TRUE;
 		}
-		if (StringUtils.isNotBlank(objectAuth)) { // 没设置则异常
+		// 没设置则异常
+		if (StringUtils.isNotBlank(objectAuth)) {
 			return Boolean.FALSE;
 		}
 		//未去重列表，但不影响功能
 		List<String> authList = parseAuths(tokenAuth,objectAuth);
 
-		return authList.contains(opType);
+		if(authList.contains(OPAuthTypeEnum.ALL.getCode())){
+			return Boolean.TRUE;
+		}
+
+		for(char key:opTypes.toCharArray()){
+			if(!authList.contains(String.valueOf(key))){
+				return Boolean.FALSE;
+			}
+		}
+
+		return Boolean.TRUE;
 	}
 
 	/**
@@ -158,34 +173,33 @@ public class DataAuthUtils {
 	 * @param others
 	 * @return java.lang.String
 	 **/
-	public String contactAuths(Map<String,List<String>> userAuths,Map<String,List<String>> roleAuths,List<String> others){
+	public String contactAuths(List<OPAuthDTO> userAuths,List<OPAuthDTO> roleAuths,String others){
 		StringBuffer sb = new StringBuffer(256);
-		if(userAuths != null && !userAuths.isEmpty()){
-			userAuths.forEach((key,value)->{
-				if(!CollectionUtils.isEmpty(value)){
-					sb.append(key).append(":");
-					value.forEach(subKey->sb.append(subKey));
-					sb.append(";");
+		if(!CollectionUtils.isEmpty(userAuths)){
+			userAuths.forEach(o->{
+				if(StringUtils.isNotBlank(o.getValues())){
+					sb.append(o.getKey()).append(":")
+						.append(o.getValues())
+						.append(";");
 				}
 			});
 		}
 		sb.append("#");
 
-		if(roleAuths != null && !roleAuths.isEmpty()){
-			roleAuths.forEach((key,value)->{
-				if(!CollectionUtils.isEmpty(value)){
-					sb.append(key).append(":");
-					value.forEach(subKey->sb.append(subKey));
-					sb.append(";");
+		if(!CollectionUtils.isEmpty(roleAuths)){
+			roleAuths.forEach(o->{
+				if(StringUtils.isNotBlank(o.getValues())){
+					sb.append(o.getKey()).append(":")
+						.append(o.getValues())
+						.append(";");
 				}
 			});
 		}
 		sb.append("#");
 
-		if(!CollectionUtils.isEmpty(others)){
-			others.forEach(key->sb.append(key));
+		if(StringUtils.isNotBlank(others)){
+			sb.append(others);
 		}
-
 
 		return sb.toString();
 	}
@@ -196,13 +210,12 @@ public class DataAuthUtils {
 	public static void main(String[] args){
 		DataAuthUtils test = new DataAuthUtils();
 		String tokenAuth = "1;#2;3;";
-		String objectAuth = "1:rm;2:d;##";
+		String objectAuth = "1:rm;2:d;#4:k#t";
 
 
 		List<String> list = test.parseAuths(tokenAuth,objectAuth);
 
 		list.forEach((key)->System.out.println("key=" + key ));
-
 
 	}
 }
