@@ -1,4 +1,4 @@
-package com.zysl.aws.web.enums;
+package com.zysl.cloud.aws.api.enums;
 
 import lombok.Getter;
 

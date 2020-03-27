@@ -1,15 +1,15 @@
 package com.zysl.cloud.aws.web.controller;
 
 import com.google.common.collect.Lists;
-import com.zysl.aws.web.config.BizConstants;
-import com.zysl.aws.web.enums.DeleteStoreEnum;
-import com.zysl.aws.web.enums.KeyTypeEnum;
 import com.zysl.cloud.aws.api.dto.ObjectInfoDTO;
+import com.zysl.cloud.aws.api.enums.DeleteStoreEnum;
+import com.zysl.cloud.aws.api.enums.KeyTypeEnum;
 import com.zysl.cloud.aws.api.req.CopyObjectsRequest;
 import com.zysl.cloud.aws.api.req.CreateFolderRequest;
 import com.zysl.cloud.aws.api.req.DelObjectRequest;
 import com.zysl.cloud.aws.api.req.QueryObjectsRequest;
 import com.zysl.cloud.aws.api.srv.FolderSrv;
+import com.zysl.cloud.aws.biz.constant.BizConstants;
 import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.aws.biz.service.IFolderService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;

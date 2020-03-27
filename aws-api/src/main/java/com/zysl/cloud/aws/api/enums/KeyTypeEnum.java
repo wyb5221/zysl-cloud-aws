@@ -1,21 +1,22 @@
-package com.zysl.aws.web.enums;
+package com.zysl.cloud.aws.api.enums;
 
 import lombok.Getter;
 
 /**
- * 是否覆盖 0不覆盖 1覆盖
+ * 查询类型，0默认全部，1仅目录2仅文件
  */
 @Getter
-public enum InplaceEnum {
+public enum KeyTypeEnum {
 
-    NOCOVER("0", "不覆盖"),
-    COVER("1", "覆盖");
+    DEFAULT(0, "默认"),
+    FOLDER(1, "仅目录"),
+    FILE(2, "仅文件");
 
-    private String code;
+    private Integer code;
 
     private String desc;
 
-    InplaceEnum(String code, String desc) {
+    KeyTypeEnum(Integer code, String desc) {
         this.code = code;
         this.desc = desc;
     }
@@ -26,7 +27,7 @@ public enum InplaceEnum {
      * @return
      */
     public String getDesc(String code){
-        for(InplaceEnum in : InplaceEnum.values()){
+        for(KeyTypeEnum in : KeyTypeEnum.values()){
             if(code.equals(in.getCode())){
                 return in.getDesc();
             }

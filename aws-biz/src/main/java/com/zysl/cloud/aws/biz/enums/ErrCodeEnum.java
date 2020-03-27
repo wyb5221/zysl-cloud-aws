@@ -7,13 +7,15 @@ import lombok.Getter;
 //格式5xxyyzz:  xx、yy、xx表示3层分类编号，xx在这里定义，例如5010001
 //大类定义
 //501yyzz:s3调用异常
-//502yyzz:s3及bucket相关
-//503yyzz:s3的key相关
-//504yyzz:文件类型转换相关，比如word、pdf
+//50200zz:s3及bucket相关
+//50201zz:s3的key相关
+//504yyzz:
 //505yyzz:
 //506yyzz:
 //507yyzz:
 //508yyzz:
+//511yyzz:文件类型转换相关，比如word、pdf
+//521yyzz:数据权限
 @Getter
 public enum  ErrCodeEnum  {
 
@@ -30,13 +32,15 @@ public enum  ErrCodeEnum  {
 	S3_BUCKET_NOT_EXIST(5020002, "不存在的bucket编号."),
 	S3_CREATE_BUCKET_EXIST(5020003, "创建bucket已存在."),
 
-	S3_BUCKET_OBJECT_NOT_EXIST(5030001, "创建对象已存在."),
+	S3_BUCKET_OBJECT_NOT_EXIST(5020101, "创建对象已存在."),
 
 
-	WORD_FILE_NOT_EXIST(5040001, "word转pdf：找不到原始文件."),
-	WORD_FILE_TO_PDF_ERROR(5040002, "word转pdf：转换异常."),
-	WORD_FILE_TO_PDF_SIZE_ZERO(5040003, "word转pdf：转换后文件大小为0."),
-	WORD_FILE_TO_PDF_ENCRYPTION_SIZE_ZERO(5040004, "word转pdf：加密后文件大小为0."),
+	WORD_FILE_NOT_EXIST(5110001, "word转pdf：找不到原始文件."),
+	WORD_FILE_TO_PDF_ERROR(5110002, "word转pdf：转换异常."),
+	WORD_FILE_TO_PDF_SIZE_ZERO(5110003, "word转pdf：转换后文件大小为0."),
+	WORD_FILE_TO_PDF_ENCRYPTION_SIZE_ZERO(510004, "word转pdf：加密后文件大小为0."),
+
+	OBJECT_OP_AUTH_CHECK_ERROR(5210001, "无此数据的操作权限"),
 	;
 
 	private Integer code;

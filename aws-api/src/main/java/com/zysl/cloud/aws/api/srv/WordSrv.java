@@ -7,7 +7,6 @@ import com.zysl.cloud.utils.common.BaseResponse;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 @RequestMapping("/file")
 public interface WordSrv {
