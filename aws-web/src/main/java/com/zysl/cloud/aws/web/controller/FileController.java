@@ -101,7 +101,7 @@ public class FileController extends BaseController implements FileSrv {
 			MultipartHttpServletRequest multipartHttpServletRequest = (MultipartHttpServletRequest)request;
 			byte[] bytes = null;
 			try {
-				bytes = multipartHttpServletRequest.getFile("file").getBytes();
+					bytes = multipartHttpServletRequest.getFile("file").getBytes();
 			} catch (IOException e) {
 				log.error("--uploadFile获取文件流异常--：{}", e);
 				throw new AppLogicException("获取文件流异常");
