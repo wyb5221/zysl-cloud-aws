@@ -22,6 +22,8 @@ public class S3FolderServiceTest {
 
     @Autowired
     IS3FolderService folderService;
+    @Autowired
+    IS3FileService filerService;
 
     @Test
     public void create(){
@@ -31,15 +33,23 @@ public class S3FolderServiceTest {
 
         List<TagsBO> tagList = new ArrayList<>();
         TagsBO t1 = new TagsBO();
-        t1.setKey("k3");
-        t1.setValue("v3");
+        t1.setKey("k1");
+        t1.setValue("k1k1");
         TagsBO t2 = new TagsBO();
-        t2.setKey("k2");
-        t2.setValue("VVVVV222");
-//        tagList.add(t1);
+        t2.setKey("v2");
+        t2.setValue("v2");
+        tagList.add(t1);
         tagList.add(t2);
         t.setTagList(tagList);
         folderService.create(t);
+    }
+
+    @Test
+    public void a(){
+        S3ObjectBO t = new S3ObjectBO();
+        t.setBucketName("test-yy06");
+        t.setPath("test10/");
+        System.out.println(filerService.getTag(t));
     }
 
     @Test

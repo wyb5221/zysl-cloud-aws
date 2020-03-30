@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.zysl.cloud.aws.api.enums.DeleteStoreEnum;
 import com.zysl.cloud.aws.biz.constant.S3Method;
 import com.zysl.cloud.aws.biz.enums.S3TagKeyEnum;
-import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FactoryService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FolderService;
@@ -42,8 +41,7 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
 		//先查询标签信息
-
-
+        List<TagsBO> tagsBOList = fileService.getTag(t);
 
 		PutObjectRequest request = PutObjectRequest.builder().bucket(t.getBucketName()).
 				key(t.getPath()).build();
@@ -60,7 +58,7 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 		tag.setValue(t.getPath());
 		tagList.add(tag);
 
-		List<TagsBO> list = fileService.setTags(t, tagList);
+		List<TagsBO> list = fileService.setTags(tagsBOList, tagList);
 		t.setTagList(list);
 		fileService.modify(t);
 		t.setVersionId(response.versionId());

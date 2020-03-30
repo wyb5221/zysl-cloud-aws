@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -50,6 +51,8 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		log.info("s3file.create.param:{}", JSON.toJSONString(t));
 		S3Client s3Client = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
+        List<TagsBO> oldTagList = this.getTag(t);
+
 		PutObjectRequest request = PutObjectRequest.builder()
 									   .bucket(t.getBucketName())
 									   .key(StringUtils.join(t.getPath() ,t.getFileName()))
@@ -68,7 +71,7 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 			tag.setValue(t.getTagFileName());
 			tagList.add(tag);
 
-			t.setTagList(setTags(t, tagList));
+			t.setTagList(setTags(oldTagList, tagList));
 			this.modify(t);
 		}
 
@@ -78,16 +81,39 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 	}
 
 	@Override
+	public List<TagsBO> setTags(List<TagsBO> oldTagList, List<TagsBO> tagList){
+		List<TagsBO> newTagList = Lists.newArrayList();
+
+		//将新标签集合转成map
+        Map<String, String> tagMap = tagList.stream().collect(Collectors.toMap(TagsBO::getKey, TagsBO::getValue));
+        //遍历新增的标签和已有标签，标签key相同，则修改原有标签，标签key新增没有则保留
+
+		if(CollectionUtils.isEmpty(oldTagList)){
+			return tagList;
+		}else{
+			List<TagsBO> removalList = oldTagList.stream().filter(obj -> StringUtils.isEmpty(tagMap.get(obj.getKey()))).collect(Collectors.toList());
+			//将去重之后的集合和新添加的标签集合合并
+			tagList.addAll(removalList);
+			return tagList;
+		}
+	}
+
+	@Override
 	public List<TagsBO> setTags(S3ObjectBO t, List<TagsBO> tagList){
 		List<TagsBO> newTagList = Lists.newArrayList();
 
-		//先查询对象的标签信息
-		List<TagsBO> tagsBOList = this.getTag(t);
-		newTagList.addAll(tagsBOList);
+		//将新标签集合转成map
+        Map<String, String> tagMap = tagList.stream().collect(Collectors.toMap(TagsBO::getKey, TagsBO::getValue));
+
+        //查询对象原有标签
+		List<TagsBO> oldTagList = this.getTag(t);
+
 		//遍历新增的标签和已有标签，标签key相同，则修改原有标签，标签key新增没有则保留
-		newTagList.removeAll(tagList);
-		newTagList.addAll(tagList);
-		return newTagList;
+        List<TagsBO> removalList = oldTagList.stream().filter(obj -> !StringUtils.isEmpty(tagMap.get(obj.getKey()))).collect(Collectors.toList());
+        //将去重之后的集合和新添加的标签集合合并
+        tagList.addAll(removalList);
+
+		return tagList;
 	}
 
 	@Override

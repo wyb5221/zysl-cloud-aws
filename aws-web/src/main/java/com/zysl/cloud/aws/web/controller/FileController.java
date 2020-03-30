@@ -119,8 +119,7 @@ public class FileController extends BaseController implements FileSrv {
 
 	@Override
 	public BaseResponse<DownloadFileDTO> downloadFile(HttpServletRequest request, HttpServletResponse response, DownloadFileRequest downRequest) {
-
-		ServiceProvider.call(downRequest, DownloadFileRequestV.class, String.class, req ->{
+		return ServiceProvider.call(downRequest, DownloadFileRequestV.class, DownloadFileDTO.class, req ->{
 			S3ObjectBO t = new S3ObjectBO();
 			t.setBucketName(req.getBucketName());
 			setPathAndFileName(t, req.getFileId());
@@ -144,6 +143,7 @@ public class FileController extends BaseController implements FileSrv {
 				//userid不为空是，需要校验权限
 				return null;
 			}
+
 
 			byte[] bytes = s3ObjectBO.getBodys();
 			log.info("--下载接口返回的文件数据大小--", bytes.length);
@@ -178,6 +178,7 @@ public class FileController extends BaseController implements FileSrv {
 					outputStream.write(bytes);
 					outputStream.flush();
 					outputStream.close();
+
 				} catch (IOException e) {
 					log.info("--文件下载异常：--", e);
 					throw new AppLogicException("文件流处理异常");
@@ -185,7 +186,6 @@ public class FileController extends BaseController implements FileSrv {
 				return null;
 			}
 		});
-		return null;
 	}
 
 	@Override
