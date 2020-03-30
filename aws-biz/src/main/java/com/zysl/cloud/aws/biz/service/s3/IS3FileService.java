@@ -1,6 +1,10 @@
 package com.zysl.cloud.aws.biz.service.s3;
 
 import com.zysl.cloud.aws.biz.service.IFileService;
+import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
+import com.zysl.cloud.aws.domain.bo.TagsBO;
+
+import java.util.List;
 
 public interface IS3FileService<T> extends IFileService<T> {
 
@@ -18,4 +22,18 @@ public interface IS3FileService<T> extends IFileService<T> {
 	 **/
 	void checkDataOpAuth(String path,String fileName,String opAuthTypes);
 
+	/**
+	 * 查询对象标签信息
+	 * @param t
+	 * @return
+	 */
+	List<TagsBO> getTag(S3ObjectBO t);
+
+	/**
+	 * 查询指定标签key的value
+	 * @param tagList
+	 * @param key
+	 * @return
+	 */
+	String getTagValue(List<TagsBO> tagList, String key);
 }

@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.zysl.cloud.aws.api.enums.DeleteStoreEnum;
 import com.zysl.cloud.aws.biz.constant.S3Method;
 import com.zysl.cloud.aws.biz.enums.ErrCodeEnum;
+import com.zysl.cloud.aws.biz.enums.S3TagKeyEnum;
 import com.zysl.cloud.aws.biz.service.s3.IS3FactoryService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.biz.utils.DataAuthUtils;
@@ -26,7 +27,10 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 import sun.misc.BASE64Decoder;
 
+import javax.crypto.KeyGenerator;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -57,6 +61,15 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 
 		PutObjectResponse response = s3FactoryService.callS3MethodWithBody(request,RequestBody.fromBytes(t.getBodys()),s3Client, S3Method.PUT_OBJECT);
 		log.info("s3file.create.response:{}", response);
+
+		//设置标签
+		List<TagsBO> tagList = Lists.newArrayList();
+		TagsBO tag = new TagsBO();
+		tag.setKey(S3TagKeyEnum.FILE_NAME.getCode());
+		tag.setValue(t.getFileName());
+		tagList.add(tag);
+		t.setTagList(tagList);
+		this.modify(t);
 
 		t.setVersionId(response.versionId());
 		return t;
@@ -182,6 +195,15 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		}catch (Exception e){
 			throw new AppLogicException(ErrCodeEnum.S3_COPY_SOURCE_ENCODE_ERROR.getCode());
 		}
+//		KeyGenerator KEY_GENERATOR = null;
+//		try {
+//			KEY_GENERATOR = KeyGenerator.getInstance("utf-8");
+//		} catch (NoSuchAlgorithmException e) {
+//			e.printStackTrace();
+//		}
+//		KEY_GENERATOR.init(256, new SecureRandom());
+
+
 
 		//查询复制接口入参
 		CopyObjectRequest request = null;
@@ -196,15 +218,19 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 					.copySource(copySourceUrl)
 					.bucket(dest.getBucketName()).key(dest.getPath() + dest.getFileName())
 					.tagging(tagging)
+					.taggingDirective(TaggingDirective.REPLACE)
 					.build();
 		}
+
+
+
 
 		CopyObjectResponse response = s3FactoryService.callS3Method(request,s3,S3Method.COPY_OBJECT);
 		log.info("s3file.copy.response:{}", response);
 		dest.setVersionId(response.versionId());
 
 		//设置标签
-		if(!CollectionUtils.isEmpty(tagSet)){
+	/*	if(!CollectionUtils.isEmpty(tagSet)){
 			Tagging tagging = Tagging.builder().tagSet(tagSet).build();
 
 			PutObjectTaggingRequest tagRequest = PutObjectTaggingRequest.builder()
@@ -215,7 +241,7 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 			//给目标文件设置标签
 			s3FactoryService.callS3Method(tagRequest, s3, S3Method.PUT_OBJECT_TAGGING);
 
-		}
+		}*/
 
 
 		return dest;
@@ -267,34 +293,10 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 
 		//查询文件基础信息
 		getBaseInfo(t);
-
-		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
-		//查询文件的标签信息
-		GetObjectTaggingRequest request = null;
-		if(StringUtils.isEmpty(t.getVersionId())){
-			request = GetObjectTaggingRequest.builder()
-					.bucket(t.getBucketName())
-					.key(t.getPath() + t.getFileName())
-					.build();
-		}else{
-			request = GetObjectTaggingRequest.builder()
-					.bucket(t.getBucketName())
-					.key(t.getPath() + t.getFileName())
-					.versionId(t.getVersionId())
-					.build();
-		}
-		GetObjectTaggingResponse response = s3FactoryService.callS3Method(request, s3, S3Method.GET_OBJECT_TAGGING, false);
-		log.info("s3file.getDetailInfo.response:{}", response);
-
-		List<Tag> list = response.tagSet();
-		List<TagsBO> tagList = Lists.newArrayList();
-		list.forEach(obj -> {
-			TagsBO tag = new TagsBO();
-			tag.setKey(obj.key());
-			tag.setValue(obj.value());
-			tagList.add(tag);
-		});
+		//查询文件标签
+		List<TagsBO> tagList = getTag(t);
 		t.setTagList(tagList);
+
 		return t;
 	}
 
@@ -399,5 +401,50 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		//遍历后还是无法匹配
 		log.warn("check.data.op.auth.failed:path:{},fileName:{},opAuthTypes:{}", path,fileName,opAuthTypes);
 		throw new AppLogicException(ErrCodeEnum.OBJECT_OP_AUTH_CHECK_ERROR.getCode());
+	}
+
+	@Override
+	public List<TagsBO> getTag(S3ObjectBO t) {
+		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
+		//查询文件的标签信息
+		GetObjectTaggingRequest request = null;
+		if(StringUtils.isEmpty(t.getVersionId())){
+			request = GetObjectTaggingRequest.builder()
+					.bucket(t.getBucketName())
+					.key(t.getPath() + t.getFileName())
+					.build();
+		}else{
+			request = GetObjectTaggingRequest.builder()
+					.bucket(t.getBucketName())
+					.key(t.getPath() + t.getFileName())
+					.versionId(t.getVersionId())
+					.build();
+		}
+		GetObjectTaggingResponse response = s3FactoryService.callS3Method(request, s3, S3Method.GET_OBJECT_TAGGING, false);
+		log.info("s3file.getDetailInfo.response:{}", response);
+
+		if(null != response){
+			List<Tag> list = response.tagSet();
+			List<TagsBO> tagList = Lists.newArrayList();
+			list.forEach(obj -> {
+				TagsBO tag = new TagsBO();
+				tag.setKey(obj.key());
+				tag.setValue(obj.value());
+				tagList.add(tag);
+			});
+			return tagList;
+		}else{
+			return null;
+		}
+	}
+
+	@Override
+	public String getTagValue(List<TagsBO> tagList, String key) {
+		for (TagsBO tag :tagList) {
+			if(key.equals(tag.getKey())){
+				return tag.getValue();
+			}
+		}
+		return null;
 	}
 }

@@ -6,11 +6,14 @@ import com.zysl.cloud.aws.api.enums.DownTypeEnum;
 import com.zysl.cloud.aws.api.req.*;
 import com.zysl.cloud.aws.api.srv.FileSrv;
 import com.zysl.cloud.aws.biz.constant.BizConstants;
+import com.zysl.cloud.aws.biz.enums.S3TagKeyEnum;
 import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.aws.biz.service.s3.IS3BucketService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
+import com.zysl.cloud.aws.config.BizConfig;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.aws.domain.bo.TagsBO;
+import com.zysl.cloud.aws.utils.DateUtil;
 import com.zysl.cloud.aws.utils.DateUtils;
 import com.zysl.cloud.aws.web.validator.*;
 import com.zysl.cloud.utils.BeanCopyUtil;
@@ -47,6 +50,8 @@ public class FileController extends BaseController implements FileSrv {
 	IS3BucketService bucketService;
 	@Autowired
 	IS3FileService fileService;
+	@Autowired
+	private BizConfig bizConfig;
 
 	@Override
 	public BaseResponse<String> test(KeyRequest request){
@@ -135,7 +140,7 @@ public class FileController extends BaseController implements FileSrv {
 				//需要校验权限
 				for (TagsBO tag : tagList) {
 					//判断标签可以是否是owner
-					if(BizConstants.TAG_OWNER.equals(tag.getKey()) &&
+					if(S3TagKeyEnum.FILE_NAME.getCode().equals(tag.getKey()) &&
 							req.getUserId().equals(tag.getValue())){
 						//在判断标签value
 						tagFlag = true;
@@ -164,7 +169,11 @@ public class FileController extends BaseController implements FileSrv {
 					response.setCharacterEncoding("UTF-8");
 
 					String userAgent = request.getHeader("User-Agent").toUpperCase();//获取浏览器名（IE/Chome/firefox）
-					String fileId = t.getFileName();
+
+					//获取标签中的文件名称
+					String tagValue = fileService.getTagValue(tagList, S3TagKeyEnum.FILE_NAME.getCode());
+
+					String fileId = StringUtils.isEmpty(tagValue) ? t.getFileName() : tagValue;
 					if (userAgent.contains("MSIE") ||
 							(userAgent.indexOf("GECKO")>0 && userAgent.indexOf("RV:11")>0)) {
 						fileId = URLEncoder.encode(t.getFileName(), "UTF-8");// IE浏览器
@@ -271,6 +280,9 @@ public class FileController extends BaseController implements FileSrv {
             fileInfoDTO.setLastModified(object.getLastModified());
             fileInfoDTO.setVersionId(object.getVersionId());
             fileInfoDTO.setTageList(BeanCopyUtil.copyList(object.getTagList(), TageDTO.class));
+			fileInfoDTO.setPath(object.getPath());
+			//获取标签中的文件名称
+			fileInfoDTO.setFileName(fileService.getTagValue(object.getTagList(), S3TagKeyEnum.FILE_NAME.getCode()));
             return fileInfoDTO;
         });
     }
@@ -336,7 +348,14 @@ public class FileController extends BaseController implements FileSrv {
 			t.setVersionId(req.getVersionId());
 			setPathAndFileName(t,req.getFileName());
             S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.getBaseInfo(t);
-			return s3ObjectBO.getContentLength();
+
+			Date date1 = s3ObjectBO.getLastModified();
+			Date date2 = DateUtil.createDate(bizConfig.DOWNLOAD_TIME);
+			if(DateUtil.doCompareDate(date1, date2) < 0){
+				return s3ObjectBO.getContentLength() * 3/4;
+			}else{
+				return s3ObjectBO.getContentLength();
+			}
 		});
 	}
 
@@ -374,6 +393,23 @@ public class FileController extends BaseController implements FileSrv {
 			setPathAndFileName(dest,req.getDestKey());
 
 			fileService.copy(src, dest);
+			return RespCodeEnum.SUCCESS.getDesc();
+		});
+	}
+
+	@Override
+	public BaseResponse<String> moveFile(CopyObjectsRequest request) {
+		return ServiceProvider.call(request, CopyObjectsRequestV.class, String.class, req -> {
+			//复制源文件信息
+			S3ObjectBO src = new S3ObjectBO();
+			src.setBucketName(req.getSourceBucket());
+			setPathAndFileName(src,req.getSourceKey());
+			//复制后的目标文件信息
+			S3ObjectBO dest = new S3ObjectBO();
+			dest.setBucketName(req.getDestBucket());
+			setPathAndFileName(dest,req.getDestKey());
+
+			fileService.move(src, dest);
 			return RespCodeEnum.SUCCESS.getDesc();
 		});
 	}

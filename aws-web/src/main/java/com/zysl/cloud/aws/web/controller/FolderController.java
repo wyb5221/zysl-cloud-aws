@@ -10,6 +10,7 @@ import com.zysl.cloud.aws.api.req.DelObjectRequest;
 import com.zysl.cloud.aws.api.req.QueryObjectsRequest;
 import com.zysl.cloud.aws.api.srv.FolderSrv;
 import com.zysl.cloud.aws.biz.constant.BizConstants;
+import com.zysl.cloud.aws.biz.enums.S3TagKeyEnum;
 import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.aws.biz.service.IFolderService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
@@ -51,7 +52,7 @@ public class FolderController extends BaseController implements FolderSrv {
         return ServiceProvider.call(request, CreateFolderRequestV.class, String.class, req ->{
             S3ObjectBO t = new S3ObjectBO();
             t.setBucketName(req.getBucketName());
-            setPathAndFileName(t, req.getFolderName());
+            setPathAndFileName(t, req.getFolderName() + "/");
 
             folderService.create(t);
             return RespCodeEnum.SUCCESS.getDesc();
@@ -64,7 +65,7 @@ public class FolderController extends BaseController implements FolderSrv {
             //先查询文件夹下的对象信息
             S3ObjectBO t = new S3ObjectBO();
             t.setBucketName(req.getBucketName());
-            setPathAndFileName(t, req.getKey());
+            setPathAndFileName(t, req.getKey() + "/");
 
             folderService.delete(t);
 
@@ -78,7 +79,7 @@ public class FolderController extends BaseController implements FolderSrv {
 
             S3ObjectBO t = new S3ObjectBO();
             t.setBucketName(req.getBucketName());
-            setPathAndFileName(t, req.getKey());
+            setPathAndFileName(t, req.getKey() + "/");
 
             S3ObjectBO s3ObjectBO = (S3ObjectBO)folderService.getDetailInfo(t);
 
@@ -99,26 +100,26 @@ public class FolderController extends BaseController implements FolderSrv {
             //在判断标签权限
             if(!StringUtils.isEmpty(req.getUserId())){
                 //userid不为空是，需要校验权限
-                objectList.stream().filter(obj -> isTageExist(req.getUserId(), req.getBucketName(), obj.getKey(),"")).collect(Collectors.toList());
+                List<ObjectInfoBO> objecs = objectList.stream().filter(obj -> isTageExist(req.getUserId(), req.getBucketName(), obj.getKey(),"")).collect(Collectors.toList());
 
-                return BeanCopyUtil.copyList(objectList, ObjectInfoDTO.class);
+                return BeanCopyUtil.copyList(objecs, ObjectInfoDTO.class);
             }else {
                 return BeanCopyUtil.copyList(objectList, ObjectInfoDTO.class);
             }
         });
     }
+
     //判断是否有权限
     public boolean isTageExist(String userId, String bucket, String key, String versionId) {
         S3ObjectBO t = new S3ObjectBO();
         t.setBucketName(bucket);
         t.setVersionId(versionId);
         setPathAndFileName(t, key);
-        S3ObjectBO object = (S3ObjectBO)fileService.getDetailInfo(t);
-        List<TagsBO> tagList = object.getTagList();
+        List<TagsBO> tagList = fileService.getTag(t);
 
         for (TagsBO tag : tagList) {
             //判断标签可以是否是owner
-            if(BizConstants.TAG_OWNER.equals(tag.getKey()) &&
+            if(S3TagKeyEnum.FILE_NAME.getCode().equals(tag.getKey()) &&
                     userId.equals(tag.getValue())){
                 //在判断标签value
                 return true;
@@ -132,10 +133,10 @@ public class FolderController extends BaseController implements FolderSrv {
         return ServiceProvider.call(request, CopyObjectsRequestV.class, String.class, req -> {
             S3ObjectBO src = new S3ObjectBO();
             src.setBucketName(req.getSourceBucket());
-            setPathAndFileName(src, req.getSourceKey());
+            setPathAndFileName(src, req.getSourceKey() + "/");
             S3ObjectBO dest = new S3ObjectBO();
             dest.setBucketName(req.getDestBucket());
-            setPathAndFileName(dest, req.getDestKey());
+            setPathAndFileName(dest, req.getDestKey() + "/");
 
             folderService.copy(src, dest);
             return RespCodeEnum.SUCCESS.getDesc();
@@ -147,17 +148,17 @@ public class FolderController extends BaseController implements FolderSrv {
         return ServiceProvider.call(request, CopyObjectsRequestV.class, String.class, req ->{
             S3ObjectBO src = new S3ObjectBO();
             src.setBucketName(req.getSourceBucket());
-            setPathAndFileName(src, req.getSourceKey());
+            setPathAndFileName(src, req.getSourceKey() + "/");
             S3ObjectBO dest = new S3ObjectBO();
             dest.setBucketName(req.getDestBucket());
-            setPathAndFileName(dest, req.getDestKey());
+            setPathAndFileName(dest, req.getDestKey() + "/");
             //先复制
             boolean copyFlag = folderService.copy(src, dest);
 
             if(copyFlag){
                 S3ObjectBO t = new S3ObjectBO();
                 t.setBucketName(req.getSourceBucket());
-                setPathAndFileName(t, req.getSourceKey());
+                setPathAndFileName(t, req.getSourceKey() + "/");
                 t.setDeleteStore(DeleteStoreEnum.COVER.getCode());
                 folderService.delete(t);
             }
