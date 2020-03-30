@@ -4,11 +4,14 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.zysl.cloud.aws.api.enums.DeleteStoreEnum;
 import com.zysl.cloud.aws.biz.constant.S3Method;
+import com.zysl.cloud.aws.biz.enums.S3TagKeyEnum;
 import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FactoryService;
+import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FolderService;
 import com.zysl.cloud.aws.domain.bo.ObjectInfoBO;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
+import com.zysl.cloud.aws.domain.bo.TagsBO;
 import com.zysl.cloud.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +33,7 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 	@Autowired
 	private IS3FactoryService s3FactoryService;
 	@Autowired
-	private IFileService fileService;
+	private IS3FileService fileService;
 
 
 	@Override
@@ -41,9 +44,19 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 		PutObjectRequest request = PutObjectRequest.builder().bucket(t.getBucketName()).
 				key(t.getPath()).build();
 
-//		PutObjectResponse response = s3FactoryService.callS3Method(request, s3, S3Method.PUT_OBJECT);
-		PutObjectResponse response = s3.putObject(request, RequestBody.empty());
+		RequestBody requestBody = RequestBody.empty();
+		PutObjectResponse response = s3FactoryService.callS3MethodWithBody
+				(request, requestBody, s3, S3Method.PUT_OBJECT);
 		log.info("s3file.create.response:{}", response);
+
+		//设置标签
+		List<TagsBO> tagList = Lists.newArrayList();
+		TagsBO tag = new TagsBO();
+		tag.setKey(S3TagKeyEnum.FILE_NAME.getCode());
+		tag.setValue(t.getPath());
+		tagList.add(tag);
+		t.setTagList(tagList);
+		fileService.modify(t);
 		t.setVersionId(response.versionId());
 
 		return t;
@@ -213,9 +226,9 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 	}
 
 	public String replaceString(String source, String target){
-		String str = source.split("/")[0];
-		String cut = source.substring(0, str.length() + 1);
-		return source.replace(cut, target);
+        String str = source.split("/")[0];
+        String str1 = target + source.substring(str.length() + 1);
+        return str1;
 	}
 
 	@Override
@@ -284,8 +297,8 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 		t.setFileList(files);
 
 		//查询目录的标签信息
-//		S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.getDetailInfo(t);
-//		t.setTagList(s3ObjectBO.getTagList());
+		List<TagsBO> tagList = fileService.getTag(t);
+		t.setTagList(tagList);
 		return t;
 	}
 
