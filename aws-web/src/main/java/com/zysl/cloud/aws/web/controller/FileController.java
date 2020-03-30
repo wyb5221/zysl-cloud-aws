@@ -39,6 +39,7 @@ import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 
 @Slf4j
@@ -53,27 +54,17 @@ public class FileController extends BaseController implements FileSrv {
 	@Autowired
 	private BizConfig bizConfig;
 
-	@Override
-	public BaseResponse<String> test(KeyRequest request){
-		return ServiceProvider.call(request,KeyRequestV.class,String.class,req->{
-			return "test11";
-		});
-	}
-
-	@Override
-	public BasePaginationResponse<String> test2(KeyPageRequest request){
-		return ServiceProvider.callList(request,KeyRequestV.class,String.class,(req,myPage)->{
-//			myPage.setTotalRecords(xx);//其他方法查询列查询；或者mybatis分页插件
-			return bucketService.getS3Buckets(request.getName());
-		});
-	}
 
 	@Override
 	public BaseResponse<UploadFieDTO> uploadFile(UploadFileRequest request) {
 		return ServiceProvider.call(request, UploadFileRequestV.class, UploadFieDTO.class, req -> {
 			S3ObjectBO t = new S3ObjectBO();
 			t.setBucketName(req.getBucketName());
-			setPathAndFileName(t, req.getFileId());
+			String fileId = req.getFileId();
+			if(StringUtils.isEmpty(fileId)){
+				fileId = UUID.randomUUID().toString().replaceAll("-","");
+			}
+			setPathAndFileName(t, fileId);
 			//进行解密
 			BASE64Decoder decoder = new BASE64Decoder();
 			byte[] bytes = null;
@@ -83,13 +74,14 @@ public class FileController extends BaseController implements FileSrv {
 				log.info("---uploadFile流转换异常：{}--", e);
 			}
 			t.setBodys(bytes);
+			t.setTagFileName(req.getFileName());
 
 			S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.create(t);
 
 			//设置返回参数
 			UploadFieDTO uploadFieDTO = new UploadFieDTO();
 			uploadFieDTO.setFolderName(s3ObjectBO.getBucketName());
-			uploadFieDTO.setFileName(s3ObjectBO.getPath() + s3ObjectBO.getFileName());
+			uploadFieDTO.setFileName(StringUtils.join(s3ObjectBO.getPath(), s3ObjectBO.getFileName()));
 			uploadFieDTO.setVersionId(s3ObjectBO.getVersionId());
 			return uploadFieDTO;
 		});
@@ -112,13 +104,14 @@ public class FileController extends BaseController implements FileSrv {
 				throw new AppLogicException("获取文件流异常");
 			}
 			s3Object.setBodys(bytes);
+			s3Object.setTagFileName(request.getParameter("fileName"));
 
 			S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.create(s3Object);
 
 			//设置返回参数
 			UploadFieDTO uploadFieDTO = new UploadFieDTO();
 			uploadFieDTO.setFolderName(s3ObjectBO.getBucketName());
-			uploadFieDTO.setFileName(s3ObjectBO.getPath() + s3ObjectBO.getFileName());
+			uploadFieDTO.setFileName(StringUtils.join(s3ObjectBO.getPath(), s3ObjectBO.getFileName()));
 			uploadFieDTO.setVersionId(s3ObjectBO.getVersionId());
 			return uploadFieDTO;
 		});
@@ -320,7 +313,7 @@ public class FileController extends BaseController implements FileSrv {
     }
 
     @Override
-	public BasePaginationResponse<ObjectVersionDTO> getFileVersion(GetFileRequest request) {
+	public BasePaginationResponse<ObjectVersionDTO> getFileVersion(GetFileVerRequest request) {
 		return ServiceProvider.callList(request, GetFileRequestV.class, ObjectVersionDTO.class, (req, page) ->{
             S3ObjectBO t = new S3ObjectBO();
             t.setBucketName(req.getBucketName());

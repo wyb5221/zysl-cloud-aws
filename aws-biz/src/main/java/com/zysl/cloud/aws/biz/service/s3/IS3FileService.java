@@ -36,4 +36,6 @@ public interface IS3FileService<T> extends IFileService<T> {
 	 * @return
 	 */
 	String getTagValue(List<TagsBO> tagList, String key);
+
+	List<TagsBO> setTags(S3ObjectBO t, List<TagsBO> tagList);
 }

@@ -51,4 +51,26 @@ public class S3FileServiceTest {
         dest.setTagList(tagList);
         fileService.copy(src, dest);
     }
+
+    @Test
+    public void a(){
+        S3ObjectBO t = new S3ObjectBO();
+        t.setBucketName("test-yy06");
+        t.setFileName("测试文档.doc");
+        List<TagsBO> tagList = new ArrayList<>();
+        TagsBO t1 = new TagsBO();
+        t1.setKey("k3");
+        t1.setValue("v3");
+        TagsBO t2 = new TagsBO();
+        t2.setKey("k2");
+        t2.setValue("v2");
+        TagsBO t3 = new TagsBO();
+        t3.setKey("k3");
+        t3.setValue("v3");
+        tagList.add(t1);
+        tagList.add(t2);
+        tagList.add(t3);
+        t.setTagList(tagList);
+        fileService.modify(t);
+    }
 }

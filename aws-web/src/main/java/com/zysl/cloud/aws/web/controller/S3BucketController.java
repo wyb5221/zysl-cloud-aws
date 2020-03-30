@@ -54,7 +54,7 @@ public class S3BucketController extends BaseController implements S3BucketSrv {
 
 	@Override
 	public BasePaginationResponse<String> getBuckets(GetBucketsRequest request){
-		return ServiceProvider.callList(request, GetBucketsRequestV.class, String.class,(req,myPage)->{
+		return ServiceProvider.callList(request, null, String.class,(req,myPage)->{
 			return s3BucketService.getS3Buckets(request.getServerNo());
 		});
 	}
