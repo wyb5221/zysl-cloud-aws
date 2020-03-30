@@ -31,6 +31,7 @@ public enum  ErrCodeEnum  {
 	S3_SERVER_NO_NOT_EXIST(5020001, "不存在的服务器编号."),
 	S3_BUCKET_NOT_EXIST(5020002, "不存在的bucket编号."),
 	S3_CREATE_BUCKET_EXIST(5020003, "创建bucket已存在."),
+	S3_COPY_SOURCE_ENCODE_ERROR(5020004, "复制对象时encode源url异常."),
 
 	S3_BUCKET_OBJECT_NOT_EXIST(5020101, "创建对象已存在."),
 

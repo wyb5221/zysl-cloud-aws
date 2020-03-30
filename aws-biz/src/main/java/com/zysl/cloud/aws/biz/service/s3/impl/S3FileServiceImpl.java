@@ -189,6 +189,12 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 			});
 		}
 
+		String copySourceUrl = null;
+		try{
+			copySourceUrl = java.net.URLEncoder.encode(src.getBucketName() + "/" + src.getPath() + src.getFileName(), "utf-8");
+		}catch (Exception e){
+			throw new AppLogicException(ErrCodeEnum.S3_COPY_SOURCE_ENCODE_ERROR.getCode());
+		}
 //		KeyGenerator KEY_GENERATOR = null;
 //		try {
 //			KEY_GENERATOR = KeyGenerator.getInstance("utf-8");
@@ -199,18 +205,17 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 
 
 
-
 		//查询复制接口入参
 		CopyObjectRequest request = null;
 		if(CollectionUtils.isEmpty(tagSet)){
 			request = CopyObjectRequest.builder()
-					.copySource(src.getBucketName() + "/" + src.getPath() + src.getFileName())
+					.copySource(copySourceUrl)
 					.bucket(dest.getBucketName()).key(dest.getPath() + dest.getFileName())
 					.build();
 		}else{
 			Tagging tagging = Tagging.builder().tagSet(tagSet).build();
 			request = CopyObjectRequest.builder()
-					.copySource(src.getBucketName() + "/" + src.getPath() + src.getFileName())
+					.copySource(copySourceUrl)
 					.bucket(dest.getBucketName()).key(dest.getPath() + dest.getFileName())
 					.tagging(tagging)
 					.taggingDirective(TaggingDirective.REPLACE)
