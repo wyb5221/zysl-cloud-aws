@@ -18,7 +18,7 @@ import org.springframework.http.MediaType;
 @EnableEurekaClient
 @Import(SpringContextUtil.class)
 @SpringBootApplication
-@ComponentScan("com.zysl")
+@ComponentScan("com.zysl.cloud")
 public class AwsWebApplication {
 
     public static void main(String[] args) {
