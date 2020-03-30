@@ -418,15 +418,28 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		GetObjectTaggingResponse response = s3FactoryService.callS3Method(request, s3, S3Method.GET_OBJECT_TAGGING, false);
 		log.info("s3file.getDetailInfo.response:{}", response);
 
-		List<Tag> list = response.tagSet();
-		List<TagsBO> tagList = Lists.newArrayList();
-		list.forEach(obj -> {
-			TagsBO tag = new TagsBO();
-			tag.setKey(obj.key());
-			tag.setValue(obj.value());
-			tagList.add(tag);
-		});
+		if(null != response){
+			List<Tag> list = response.tagSet();
+			List<TagsBO> tagList = Lists.newArrayList();
+			list.forEach(obj -> {
+				TagsBO tag = new TagsBO();
+				tag.setKey(obj.key());
+				tag.setValue(obj.value());
+				tagList.add(tag);
+			});
+			return tagList;
+		}else{
+			return null;
+		}
+	}
 
-		return tagList;
+	@Override
+	public String getTagValue(List<TagsBO> tagList, String key) {
+		for (TagsBO tag :tagList) {
+			if(key.equals(tag.getKey())){
+				return tag.getValue();
+			}
+		}
+		return null;
 	}
 }

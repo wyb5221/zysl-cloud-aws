@@ -29,4 +29,11 @@ public interface IS3FileService<T> extends IFileService<T> {
 	 */
 	List<TagsBO> getTag(S3ObjectBO t);
 
+	/**
+	 * 查询指定标签key的value
+	 * @param tagList
+	 * @param key
+	 * @return
+	 */
+	String getTagValue(List<TagsBO> tagList, String key);
 }

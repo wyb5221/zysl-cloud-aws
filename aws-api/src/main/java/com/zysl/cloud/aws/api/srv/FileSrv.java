@@ -125,6 +125,14 @@ public interface FileSrv {
 	BaseResponse<String> copyFile(@RequestBody CopyObjectsRequest request);
 
 	/**
+	 * 文件移动
+	 * @param request
+	 * @return
+	 */
+	@PostMapping("/move")
+	BaseResponse<String> moveFile(@RequestBody CopyObjectsRequest request);
+
+	/**
 	 * 文件分享
 	 * @param request
 	 * @return

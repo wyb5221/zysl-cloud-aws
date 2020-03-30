@@ -150,9 +150,11 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 			if(throwLogicException){
 				throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_AWS_SERVICE_EXCEPTION.getCode());
 			}
-		}catch (Exception e){//SdkClientException等
-			log.error("callS3Method.error({}):",methodName,e);
-			throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_ERROR.getCode());
+		}catch (Exception e) {//SdkClientException等
+			log.error("callS3Method.error({}):", methodName, e);
+			if (throwLogicException) {
+				throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_ERROR.getCode());
+			}
 		}
 		return response;
 	}

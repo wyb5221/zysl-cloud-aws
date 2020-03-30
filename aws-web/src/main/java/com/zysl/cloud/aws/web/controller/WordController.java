@@ -42,7 +42,7 @@ public class WordController extends BaseController implements WordSrv {
 			//调用s3接口下载文件内容
 			S3ObjectBO queryBO = new S3ObjectBO();
 			queryBO.setBucketName(request.getBucketName());
-			queryBO.setFileName(request.getFileName());
+			setPathAndFileName(queryBO,request.getFileName());
 			queryBO.setVersionId(request.getVersionId());
 			S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.getInfoAndBody(queryBO);
 
