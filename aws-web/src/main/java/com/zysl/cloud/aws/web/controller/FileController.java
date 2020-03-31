@@ -7,13 +7,11 @@ import com.zysl.cloud.aws.api.req.*;
 import com.zysl.cloud.aws.api.srv.FileSrv;
 import com.zysl.cloud.aws.biz.constant.BizConstants;
 import com.zysl.cloud.aws.biz.enums.S3TagKeyEnum;
-import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.aws.biz.service.s3.IS3BucketService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.config.BizConfig;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.aws.domain.bo.TagsBO;
-import com.zysl.cloud.aws.utils.DateUtil;
 import com.zysl.cloud.aws.utils.DateUtils;
 import com.zysl.cloud.aws.web.validator.*;
 import com.zysl.cloud.utils.BeanCopyUtil;
@@ -202,20 +200,20 @@ public class FileController extends BaseController implements FileSrv {
 			for (TagsBO tag : tagList) {
 
 				//判断下载次数
-				if(BizConstants.TAG_DOWNLOAD_AMOUT.equals(tag.getKey()) &&
+				if(S3TagKeyEnum.TAG_DOWNLOAD_AMOUT.getCode().equals(tag.getKey()) &&
 						Integer.parseInt(tag.getValue()) < 1){
 					//下载次数已下完
 					log.info("--shareDownloadFile文件载次数已下完：--");
 					return null;
 				}
 				//判断是否在有效期内
-				if(BizConstants.TAG_VALIDITY.equals(tag.getKey()) &&
+				if(S3TagKeyEnum.TAG_VALIDITY.getCode().equals(tag.getKey()) &&
 						DateUtils.doCompareDate(new Date(), DateUtils.getStringToDate(tag.getValue())) > 0){
 					//已过有效期
 					log.info("--shareDownloadFile文件已过有效期：--");
 					return null;
 				}
-				if(BizConstants.TAG_DOWNLOAD_AMOUT.equals(tag.getKey())){
+				if(S3TagKeyEnum.TAG_DOWNLOAD_AMOUT.getCode().equals(tag.getKey())){
 					int amout = Integer.parseInt(tag.getValue()) - 1;
 					tag.setValue(String.valueOf(amout));
 					newTagList.add(tag);
@@ -343,8 +341,8 @@ public class FileController extends BaseController implements FileSrv {
             S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.getBaseInfo(t);
 
 			Date date1 = s3ObjectBO.getLastModified();
-			Date date2 = DateUtil.createDate(bizConfig.DOWNLOAD_TIME);
-			if(DateUtil.doCompareDate(date1, date2) < 0){
+			Date date2 = DateUtils.createDate(bizConfig.DOWNLOAD_TIME);
+			if(DateUtils.doCompareDate(date1, date2) < 0){
 				return s3ObjectBO.getContentLength() * 3/4;
 			}else{
 				return s3ObjectBO.getContentLength();
@@ -423,13 +421,13 @@ public class FileController extends BaseController implements FileSrv {
 			List<TagsBO> tagList = Lists.newArrayList();
 			if(!StringUtils.isEmpty(req.getMaxDownloadAmout()+"")){
 				TagsBO tag = new TagsBO();
-				tag.setKey(BizConstants.TAG_DOWNLOAD_AMOUT);
+				tag.setKey(S3TagKeyEnum.TAG_DOWNLOAD_AMOUT.getCode());
 				tag.setValue(String.valueOf(req.getMaxDownloadAmout()));
 				tagList.add(tag);
 			}
 			if(!StringUtils.isEmpty(req.getMaxHours()+"")){
 				TagsBO tag = new TagsBO();
-				tag.setKey(BizConstants.TAG_VALIDITY);
+				tag.setKey(S3TagKeyEnum.TAG_VALIDITY.getCode());
 				tag.setValue(String.valueOf(req.getMaxHours()));
 				tagList.add(tag);
 			}

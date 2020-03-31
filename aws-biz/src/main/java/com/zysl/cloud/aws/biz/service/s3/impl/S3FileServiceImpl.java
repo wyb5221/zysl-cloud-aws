@@ -12,7 +12,6 @@ import com.zysl.cloud.aws.biz.utils.DataAuthUtils;
 import com.zysl.cloud.aws.config.BizConfig;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.aws.domain.bo.TagsBO;
-import com.zysl.cloud.aws.utils.DateUtil;
 import com.zysl.cloud.aws.utils.DateUtils;
 import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.common.AppLogicException;
@@ -344,11 +343,11 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		GetObjectResponse objectResponse = objectAsBytes.response();
 
 		Date date1 = Date.from(objectResponse.lastModified());
-		Date date2 = DateUtil.createDate(bizConfig.DOWNLOAD_TIME);
+		Date date2 = DateUtils.createDate(bizConfig.DOWNLOAD_TIME);
 
 		byte[] bytes = objectAsBytes.asByteArray();
 		log.info("--asByteArray结束时间--:{}", System.currentTimeMillis());
-		if(DateUtil.doCompareDate(date1, date2) < 0){
+		if(DateUtils.doCompareDate(date1, date2) < 0){
 			//进行解码
 			BASE64Decoder decoder = new BASE64Decoder();
 			byte[] fileContent = new byte[0];

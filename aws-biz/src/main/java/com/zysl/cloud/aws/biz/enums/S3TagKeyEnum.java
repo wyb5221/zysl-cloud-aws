@@ -10,6 +10,8 @@ public enum S3TagKeyEnum {
 	//权限参考：OPAuthTypeEnum
 	USER_AUTH("userAuth", "用户权限列表"),
 	FILE_NAME("fileName", "文件名"),
+	TAG_DOWNLOAD_AMOUT("maxDownloadAmout", "最大下载次数"),
+	TAG_VALIDITY("validity", "有效期，单位小时"),
 	;
 
 

@@ -39,7 +39,7 @@ public enum  ErrCodeEnum  {
 	WORD_FILE_NOT_EXIST(5110001, "word转pdf：找不到原始文件."),
 	WORD_FILE_TO_PDF_ERROR(5110002, "word转pdf：转换异常."),
 	WORD_FILE_TO_PDF_SIZE_ZERO(5110003, "word转pdf：转换后文件大小为0."),
-	WORD_FILE_TO_PDF_ENCRYPTION_SIZE_ZERO(510004, "word转pdf：加密后文件大小为0."),
+	WORD_FILE_TO_PDF_ENCRYPTION_SIZE_ZERO(5110004, "word转pdf：加密后文件大小为0."),
 
 	OBJECT_OP_AUTH_CHECK_ERROR(5210001, "无此数据的操作权限"),
 	;
