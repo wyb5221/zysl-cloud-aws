@@ -142,7 +142,7 @@ public interface FileSrv {
 	 * @param request
 	 * @return com.zysl.cloud.utils.common.BaseResponse<java.lang.String>
 	 **/
-	@PostMapping("/dataAuth")
+	@PostMapping("/setDataAuth")
 	BaseResponse<String> updateDataAuth(@RequestBody DataAuthRequest request);
 
 }

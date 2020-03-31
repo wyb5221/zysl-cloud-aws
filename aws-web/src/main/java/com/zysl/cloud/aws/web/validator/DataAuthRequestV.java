@@ -28,7 +28,7 @@ public class DataAuthRequestV extends GetFileRequestV {
 
 		if(!CollectionUtils.isEmpty(userAuths)){
 			for(OPAuthDTO dto:userAuths){
-				if(formatCheck(dto.getValues()) || formatCheck(dto.getValues())){
+				if(!formatCheck(dto.getKey()) || !formatCheck(dto.getValue())){
 					errors.add("用户名或权限列表不能包含以下字符(括号内): ( = ) ( _ )  ( : ) ");
 					break;
 				}
@@ -37,14 +37,14 @@ public class DataAuthRequestV extends GetFileRequestV {
 
 		if(!CollectionUtils.isEmpty(groupAuths)){
 			for(OPAuthDTO dto:groupAuths){
-				if(formatCheck(dto.getValues()) || formatCheck(dto.getValues())){
+				if(!formatCheck(dto.getKey()) || !formatCheck(dto.getValue())){
 					errors.add("组名或权限列表不能包含以下字符(括号内): ( = ) ( _ )  ( : ) ");
 					break;
 				}
 			}
 		}
 
-		if(formatCheck(everyOneAuths)){
+		if(!formatCheck(everyOneAuths)){
 			errors.add("所有人的权限列表不能包含以下字符(括号内): ( = ) ( _ )  ( : ) ");
 		}
 	}

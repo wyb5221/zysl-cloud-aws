@@ -14,14 +14,23 @@ public class OPAuthDTO implements Serializable {
 	@ApiModelProperty(value = "操作角色或用户", name = "key", required = true,dataType = SwaggerConstants.DATA_TYPE_STRING)
 	private String key;
 
-	@ApiModelProperty(value = "操作权限列表，参考OPAuthTypeEnum,例如：dm", name = "values", required = true,dataType = SwaggerConstants.DATA_TYPE_STRING)
-	private String values;
+	@ApiModelProperty(value = "操作权限列表，参考OPAuthTypeEnum,例如：dm", name = "value", required = true,dataType = SwaggerConstants.DATA_TYPE_STRING)
+	private String value;
+
+
+	public OPAuthDTO(){}
+
+	public OPAuthDTO(String key,String value){
+		this.key = key;
+		this.value = value;
+	}
 
 	@Override
 	public String toString() {
-		return "OPAuthDTO{" +
-				   "key='" + key + '\'' +
-				   ", values='" + values + '\'' +
-				   '}';
+		final StringBuffer sb = new StringBuffer("{\"OPAuthDTO\":{");
+		sb.append("key='").append(key).append('\'');
+		sb.append(", value='").append(value).append('\'');
+		sb.append("}}");
+		return sb.toString();
 	}
 }
