@@ -27,13 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 @RequestMapping("/aws/file")
 public interface FileSrv {
 
-	@GetMapping("/test")
-	BaseResponse<String> test(KeyRequest request);
-
-
-	@GetMapping("/test2")
-	BasePaginationResponse<String> test2(KeyPageRequest request);
-
 	/**
 	 * base64进制String上传文件
 	 * @param request
@@ -99,7 +92,7 @@ public interface FileSrv {
 	 * @return
 	 */
 	@GetMapping("/getFileVersion")
-	BasePaginationResponse<ObjectVersionDTO> getFileVersion(GetFileRequest request);
+	BasePaginationResponse<ObjectVersionDTO> getFileVersion(GetFileVerRequest request);
 
 	/**
 	 * 获取文件大小

@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.zysl.cloud.aws.api.enums.DeleteStoreEnum;
 import com.zysl.cloud.aws.biz.constant.S3Method;
 import com.zysl.cloud.aws.biz.enums.S3TagKeyEnum;
-import com.zysl.cloud.aws.biz.service.IFileService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FactoryService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FolderService;
@@ -41,6 +40,9 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 		log.info("s3file.create.param:{}", JSON.toJSONString(t));
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
+		//先查询标签信息
+        List<TagsBO> tagsBOList = fileService.getTag(t);
+
 		PutObjectRequest request = PutObjectRequest.builder().bucket(t.getBucketName()).
 				key(t.getPath()).build();
 
@@ -50,12 +52,14 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 		log.info("s3file.create.response:{}", response);
 
 		//设置标签
-		List<TagsBO> tagList = Lists.newArrayList();
+		List<TagsBO> tagList = CollectionUtils.isEmpty(t.getTagList()) ? Lists.newArrayList() : t.getTagList();
 		TagsBO tag = new TagsBO();
 		tag.setKey(S3TagKeyEnum.FILE_NAME.getCode());
 		tag.setValue(t.getPath());
 		tagList.add(tag);
-		t.setTagList(tagList);
+
+		List<TagsBO> list = fileService.setTags(tagsBOList, tagList);
+		t.setTagList(list);
 		fileService.modify(t);
 		t.setVersionId(response.versionId());
 
@@ -287,10 +291,9 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 			object.setUploadTime(obj.lastModified());
 			fileList.add(object);
 		});
-		String a = t.getPath() + t.getFileName();
-		System.out.println();
+
 		List<ObjectInfoBO> files = fileList.stream().filter(obj ->
-				!obj.getKey().equals(t.getPath() + t.getFileName())
+				!obj.getKey().equals(StringUtils.join(t.getPath() ,t.getFileName()))
 		).collect(Collectors.toList());
 
 		t.setFolderList(folderList);
@@ -312,7 +315,7 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 		//查询文件夹的版本信息，需要在key后面加/
 		ListObjectVersionsRequest request = ListObjectVersionsRequest.builder().
 				bucket(t.getBucketName()).
-				prefix(t.getPath() + t.getFileName() ).
+				prefix(StringUtils.join(t.getPath() ,t.getFileName())).
 				build();
 
 		ListObjectVersionsResponse response = s3FactoryService.callS3Method(request,s3, S3Method.LIST_OBJECT_VERSIONS);
