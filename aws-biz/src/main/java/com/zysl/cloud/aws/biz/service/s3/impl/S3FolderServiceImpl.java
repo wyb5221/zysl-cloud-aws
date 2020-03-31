@@ -58,7 +58,7 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 		tag.setValue(t.getPath());
 		tagList.add(tag);
 
-		List<TagBO> list = fileService.setTags(tagsBOList, tagList);
+		List<TagBO> list = fileService.mergeTags(tagsBOList, tagList);
 		t.setTagList(list);
 		fileService.modify(t);
 		t.setVersionId(response.versionId());
