@@ -44,7 +44,7 @@ public class FileInfoDTO implements Serializable {
     private String objectLockMode;
     private Date objectLockRetainUntilDate;
     private String objectLockLegalHoldStatus;
-    private List<TageDTO> tageList;
+    private List<TagDTO> tageList;
     private String path;
     private String fileName;
 

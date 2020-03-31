@@ -3,15 +3,17 @@ package com.zysl.cloud.aws.web.controller;
 import com.google.common.collect.Lists;
 import com.zysl.cloud.aws.api.dto.*;
 import com.zysl.cloud.aws.api.enums.DownTypeEnum;
+import com.zysl.cloud.aws.api.enums.OPAuthTypeEnum;
 import com.zysl.cloud.aws.api.req.*;
 import com.zysl.cloud.aws.api.srv.FileSrv;
 import com.zysl.cloud.aws.biz.constant.BizConstants;
 import com.zysl.cloud.aws.biz.enums.S3TagKeyEnum;
 import com.zysl.cloud.aws.biz.service.s3.IS3BucketService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
+import com.zysl.cloud.aws.biz.utils.DataAuthUtils;
 import com.zysl.cloud.aws.config.BizConfig;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
-import com.zysl.cloud.aws.domain.bo.TagsBO;
+import com.zysl.cloud.aws.domain.bo.TagBO;
 import com.zysl.cloud.aws.utils.DateUtils;
 import com.zysl.cloud.aws.web.validator.*;
 import com.zysl.cloud.utils.BeanCopyUtil;
@@ -21,9 +23,11 @@ import com.zysl.cloud.utils.common.BasePaginationResponse;
 import com.zysl.cloud.utils.common.BaseResponse;
 import com.zysl.cloud.utils.enums.RespCodeEnum;
 import com.zysl.cloud.utils.service.provider.ServiceProvider;
+import java.util.ArrayList;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import sun.misc.BASE64Decoder;
@@ -51,6 +55,8 @@ public class FileController extends BaseController implements FileSrv {
 	IS3FileService fileService;
 	@Autowired
 	private BizConfig bizConfig;
+	@Autowired
+	private DataAuthUtils dataAuthUtils;
 
 
 	@Override
@@ -124,11 +130,11 @@ public class FileController extends BaseController implements FileSrv {
 			t.setVersionId(req.getVersionId());
 
 			S3ObjectBO s3ObjectBO = (S3ObjectBO) fileService.getInfoAndBody(t);
-			List<TagsBO> tagList = s3ObjectBO.getTagList();
+			List<TagBO> tagList = s3ObjectBO.getTagList();
 			boolean tagFlag = false;
 			if(!StringUtils.isEmpty(req.getUserId())){
 				//需要校验权限
-				for (TagsBO tag : tagList) {
+				for (TagBO tag : tagList) {
 					//判断标签可以是否是owner
 					if(S3TagKeyEnum.FILE_NAME.getCode().equals(tag.getKey()) &&
 							req.getUserId().equals(tag.getValue())){
@@ -195,9 +201,9 @@ public class FileController extends BaseController implements FileSrv {
 			t.setVersionId(req.getVersionId());
 
 			S3ObjectBO s3ObjectBO = (S3ObjectBO) fileService.getInfoAndBody(t);
-			List<TagsBO> tagList = s3ObjectBO.getTagList();
-			List<TagsBO> newTagList = Lists.newArrayList();
-			for (TagsBO tag : tagList) {
+			List<TagBO> tagList = s3ObjectBO.getTagList();
+			List<TagBO> newTagList = Lists.newArrayList();
+			for (TagBO tag : tagList) {
 
 				//判断下载次数
 				if(S3TagKeyEnum.TAG_DOWNLOAD_AMOUT.getCode().equals(tag.getKey()) &&
@@ -270,7 +276,7 @@ public class FileController extends BaseController implements FileSrv {
             fileInfoDTO.setContentLength(object.getContentLength());
             fileInfoDTO.setLastModified(object.getLastModified());
             fileInfoDTO.setVersionId(object.getVersionId());
-            fileInfoDTO.setTageList(BeanCopyUtil.copyList(object.getTagList(), TageDTO.class));
+            fileInfoDTO.setTageList(BeanCopyUtil.copyList(object.getTagList(), TagDTO.class));
 			fileInfoDTO.setPath(object.getPath());
 			//获取标签中的文件名称
 			fileInfoDTO.setFileName(fileService.getTagValue(object.getTagList(), S3TagKeyEnum.FILE_NAME.getCode()));
@@ -356,8 +362,8 @@ public class FileController extends BaseController implements FileSrv {
         return ServiceProvider.call(request, SetFileTagRequestV.class, String.class, req ->{
             S3ObjectBO t = new S3ObjectBO();
             t.setBucketName(req.getBucket());
-            List<TageDTO> tageList = req.getTageList();
-            List<TagsBO> tags = BeanCopyUtil.copyList(tageList, TagsBO.class);
+            List<TagDTO> tageList = req.getTageList();
+            List<TagBO> tags = BeanCopyUtil.copyList(tageList, TagBO.class);
             t.setTagList(tags);
             //同时修改多个文件的标签
             List<KeyVersionDTO> keyList = req.getKeyList();
@@ -418,15 +424,15 @@ public class FileController extends BaseController implements FileSrv {
 			dest.setBucketName(req.getBucketName());
 			setPathAndFileName(dest,BizConstants.SHARE_DEFAULT_FOLDER  + "/" + req.getFileName());
 			//获取标签信息
-			List<TagsBO> tagList = Lists.newArrayList();
+			List<TagBO> tagList = Lists.newArrayList();
 			if(!StringUtils.isEmpty(req.getMaxDownloadAmout()+"")){
-				TagsBO tag = new TagsBO();
+				TagBO tag = new TagBO();
 				tag.setKey(S3TagKeyEnum.TAG_DOWNLOAD_AMOUT.getCode());
 				tag.setValue(String.valueOf(req.getMaxDownloadAmout()));
 				tagList.add(tag);
 			}
 			if(!StringUtils.isEmpty(req.getMaxHours()+"")){
-				TagsBO tag = new TagsBO();
+				TagBO tag = new TagBO();
 				tag.setKey(S3TagKeyEnum.TAG_VALIDITY.getCode());
 				tag.setValue(String.valueOf(req.getMaxHours()));
 				tagList.add(tag);
@@ -440,6 +446,26 @@ public class FileController extends BaseController implements FileSrv {
 			uploadFieDTO.setVersionId(s3ObjectBO.getVersionId());
 
 			return uploadFieDTO;
+		});
+	}
+
+
+	@Override
+	public BaseResponse<String> updateDataAuth(@RequestBody DataAuthRequest request){
+		return ServiceProvider.call(request, DataAuthRequestV.class, String.class, req -> {
+			S3ObjectBO src = new S3ObjectBO();
+			src.setBucketName(req.getBucketName());
+			setPathAndFileName(src,req.getFileName());
+			src.setVersionId(req.getVersionId());
+
+			List<TagBO> list = new ArrayList<>();
+			TagBO tagBO = new TagBO();
+			tagBO.setKey(S3TagKeyEnum.USER_AUTH.getCode());
+			tagBO.setValue(dataAuthUtils.contactAuths(req.getUserAuths(),req.getGroupAuths(),req.getEveryOneAuths()));
+			list.add(tagBO);
+
+			fileService.addTags(src,list);
+			return RespCodeEnum.SUCCESS.getDesc();
 		});
 	}
 }

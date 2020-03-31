@@ -3,6 +3,7 @@ package com.zysl.cloud.aws.biz.service.s3.impl;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.zysl.cloud.aws.api.enums.DeleteStoreEnum;
+import com.zysl.cloud.aws.api.enums.OPAuthTypeEnum;
 import com.zysl.cloud.aws.biz.constant.S3Method;
 import com.zysl.cloud.aws.biz.enums.ErrCodeEnum;
 import com.zysl.cloud.aws.biz.enums.S3TagKeyEnum;
@@ -11,7 +12,7 @@ import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.biz.utils.DataAuthUtils;
 import com.zysl.cloud.aws.config.BizConfig;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
-import com.zysl.cloud.aws.domain.bo.TagsBO;
+import com.zysl.cloud.aws.domain.bo.TagBO;
 import com.zysl.cloud.aws.utils.DateUtils;
 import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.common.AppLogicException;
@@ -50,7 +51,7 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		log.info("s3file.create.param:{}", JSON.toJSONString(t));
 		S3Client s3Client = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
-        List<TagsBO> oldTagList = this.getTag(t);
+        List<TagBO> oldTagList = this.getTags(t);
 
 		PutObjectRequest request = PutObjectRequest.builder()
 									   .bucket(t.getBucketName())
@@ -64,13 +65,13 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 
 		if(!StringUtils.isEmpty(t.getTagFileName())){
 			//设置标签
-			List<TagsBO> tagList = Lists.newArrayList();
-			TagsBO tag = new TagsBO();
+			List<TagBO> tagList = Lists.newArrayList();
+			TagBO tag = new TagBO();
 			tag.setKey(S3TagKeyEnum.FILE_NAME.getCode());
 			tag.setValue(t.getTagFileName());
 			tagList.add(tag);
 
-			t.setTagList(setTags(oldTagList, tagList));
+			t.setTagList(mergeTags(oldTagList, tagList));
 			this.modify(t);
 		}
 
@@ -80,17 +81,17 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 	}
 
 	@Override
-	public List<TagsBO> setTags(List<TagsBO> oldTagList, List<TagsBO> tagList){
-		List<TagsBO> newTagList = Lists.newArrayList();
+	public List<TagBO> mergeTags(List<TagBO> oldTagList, List<TagBO> tagList){
+		List<TagBO> newTagList = Lists.newArrayList();
 
 		//将新标签集合转成map
-        Map<String, String> tagMap = tagList.stream().collect(Collectors.toMap(TagsBO::getKey, TagsBO::getValue));
+        Map<String, String> tagMap = tagList.stream().collect(Collectors.toMap(TagBO::getKey, TagBO::getValue));
         //遍历新增的标签和已有标签，标签key相同，则修改原有标签，标签key新增没有则保留
 
 		if(CollectionUtils.isEmpty(oldTagList)){
 			return tagList;
 		}else{
-			List<TagsBO> removalList = oldTagList.stream().filter(obj -> StringUtils.isEmpty(tagMap.get(obj.getKey()))).collect(Collectors.toList());
+			List<TagBO> removalList = oldTagList.stream().filter(obj -> StringUtils.isEmpty(tagMap.get(obj.getKey()))).collect(Collectors.toList());
 			//将去重之后的集合和新添加的标签集合合并
 			tagList.addAll(removalList);
 			return tagList;
@@ -98,17 +99,17 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 	}
 
 	@Override
-	public List<TagsBO> setTags(S3ObjectBO t, List<TagsBO> tagList){
-		List<TagsBO> newTagList = Lists.newArrayList();
+	public List<TagBO> addTags(S3ObjectBO t, List<TagBO> tagList){
+		List<TagBO> newTagList = Lists.newArrayList();
 
 		//将新标签集合转成map
-        Map<String, String> tagMap = tagList.stream().collect(Collectors.toMap(TagsBO::getKey, TagsBO::getValue));
+        Map<String, String> tagMap = tagList.stream().collect(Collectors.toMap(TagBO::getKey, TagBO::getValue));
 
         //查询对象原有标签
-		List<TagsBO> oldTagList = this.getTag(t);
+		List<TagBO> oldTagList = this.getTags(t);
 
 		//遍历新增的标签和已有标签，标签key相同，则修改原有标签，标签key新增没有则保留
-        List<TagsBO> removalList = oldTagList.stream().filter(obj -> !StringUtils.isEmpty(tagMap.get(obj.getKey()))).collect(Collectors.toList());
+        List<TagBO> removalList = oldTagList.stream().filter(obj -> !StringUtils.isEmpty(tagMap.get(obj.getKey()))).collect(Collectors.toList());
         //将去重之后的集合和新添加的标签集合合并
         tagList.addAll(removalList);
 
@@ -185,7 +186,7 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
 		//设置标签入参
-		List<TagsBO> tageList = t.getTagList();
+		List<TagBO> tageList = t.getTagList();
 		//文件tage设置参数
 		PutObjectTaggingRequest.Builder request = PutObjectTaggingRequest.builder()
 				.bucket(t.getBucketName())
@@ -280,6 +281,9 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		log.info("s3file.getBaseInfo.param:{}", JSON.toJSONString(t));
 		S3Client s3Client = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
+		checkDataOpAuth(t, OPAuthTypeEnum.READ.getCode());
+
+
 		HeadObjectRequest request = null;
 		if(StringUtils.isEmpty(t.getVersionId())){
 			request = HeadObjectRequest.builder()
@@ -313,7 +317,7 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		//查询文件基础信息
 		getBaseInfo(t);
 		//查询文件标签
-		List<TagsBO> tagList = getTag(t);
+		List<TagBO> tagList = getTags(t);
 		t.setTagList(tagList);
 
 		return t;
@@ -395,35 +399,50 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 	}
 
 	@Override
-	public void checkDataOpAuth(String path,String fileName,String opAuthTypes){
-		log.info("checkDataOpAuth:path:{},fileName:{},opAuthTypes:{}", path,fileName,opAuthTypes);
+	public void checkDataOpAuth(S3ObjectBO s3ObjectBO,String opAuthTypes){
+//		S3ObjectBO s3ObjectBO = new S3ObjectBO();
+//		s3ObjectBO.setBucketName(bucket);
+//		s3ObjectBO.setPath(path);
+//		s3ObjectBO.setFileName(fileName);
+//		s3ObjectBO.setVersionId(fileVersionId);
+
+		log.info("checkDataOpAuth:param:{},opAuthTypes:{}", JSON.toJSONString(s3ObjectBO),opAuthTypes);
 		String objAuths = null;
 		// 是对象
-		if (StringUtils.isNotBlank(fileName)) {
+		if (StringUtils.isNotBlank(s3ObjectBO.getFileName())) {
 			//读取对象的标签--权限列表
-			//TODO
+			objAuths = getTagValue(getTags(s3ObjectBO),S3TagKeyEnum.USER_AUTH.getCode());
 			if(dataAuthUtils.checkAuth(opAuthTypes,objAuths)){
 				return;
 			}
 		}
 		//逐级往上检查目录
-		String curPath = path;
-		while(curPath != null ){
-			//TODO 读取当前目录的标签
-			objAuths = "";
+		String curPath = s3ObjectBO.getPath();
+		if(StringUtils.isNotBlank(curPath) && !curPath.endsWith("/")){
+			curPath += "/";
+		}
+		S3ObjectBO bo = s3ObjectBO;
+		bo.setBucketName(s3ObjectBO.getBucketName());
+		while(StringUtils.isNotBlank(curPath)){
+			bo.setPath(curPath);
+			objAuths = getTagValue(getTags(s3ObjectBO),S3TagKeyEnum.USER_AUTH.getCode());
 			if(dataAuthUtils.checkAuth(opAuthTypes,objAuths)){
 				return;
 			}
-			curPath = "";//TODO截取上层目录
+			//截取上层目录
+			curPath = curPath.substring(0,curPath.length() - 1);
+			if(curPath.lastIndexOf("/") > -1){
+				curPath = curPath.substring(0,curPath.lastIndexOf("/") + 1);
+			}
 		}
 
 		//遍历后还是无法匹配
-		log.warn("check.data.op.auth.failed:path:{},fileName:{},opAuthTypes:{}", path,fileName,opAuthTypes);
-		throw new AppLogicException(ErrCodeEnum.OBJECT_OP_AUTH_CHECK_ERROR.getCode());
+		log.warn("check.data.op.auth.failed:s3ObjectBO：{},opAuthTypes:{}", JSON.toJSONString(s3ObjectBO),opAuthTypes);
+		throw new AppLogicException(ErrCodeEnum.OBJECT_OP_AUTH_CHECK_FAILED.getCode());
 	}
 
 	@Override
-	public List<TagsBO> getTag(S3ObjectBO t) {
+	public List<TagBO> getTags(S3ObjectBO t) {
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 		//查询文件的标签信息
 		GetObjectTaggingRequest request = null;
@@ -444,9 +463,9 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 
 		if(null != response){
 			List<Tag> list = response.tagSet();
-			List<TagsBO> tagList = Lists.newArrayList();
+			List<TagBO> tagList = Lists.newArrayList();
 			list.forEach(obj -> {
-				TagsBO tag = new TagsBO();
+				TagBO tag = new TagBO();
 				tag.setKey(obj.key());
 				tag.setValue(obj.value());
 				tagList.add(tag);
@@ -458,8 +477,8 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 	}
 
 	@Override
-	public String getTagValue(List<TagsBO> tagList, String key) {
-		for (TagsBO tag :tagList) {
+	public String getTagValue(List<TagBO> tagList, String key) {
+		for (TagBO tag :tagList) {
 			if(key.equals(tag.getKey())){
 				return tag.getValue();
 			}

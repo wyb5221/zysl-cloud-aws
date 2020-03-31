@@ -10,14 +10,14 @@ import java.io.Serializable;
  */
 @Setter
 @Getter
-public class TageDTO implements Serializable {
+public class TagDTO implements Serializable {
     private static final long serialVersionUID = -1757458336891053584L;
     private String key;
     private String value;
 
     @Override
     public String toString() {
-        return "TageDTO{" +
+        return "TagDTO{" +
                 "key='" + key + '\'' +
                 ", value='" + value + '\'' +
                 '}';
