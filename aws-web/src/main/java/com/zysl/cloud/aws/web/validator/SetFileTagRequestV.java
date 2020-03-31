@@ -1,14 +1,13 @@
 package com.zysl.cloud.aws.web.validator;
 
 import com.zysl.cloud.aws.api.dto.KeyVersionDTO;
-import com.zysl.cloud.aws.api.dto.TageDTO;
+import com.zysl.cloud.aws.api.dto.TagDTO;
 import com.zysl.cloud.utils.validator.IValidator;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.CollectionUtils;
 
 import javax.validation.constraints.NotBlank;
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -23,7 +22,7 @@ public class SetFileTagRequestV implements IValidator {
     //文件集合
     private List<KeyVersionDTO> keyList;
     //标签集合
-    private List<TageDTO> tageList;
+    private List<TagDTO> tageList;
 
     @Override
     public void customizedValidate(List<String> errors, Integer userCase) {

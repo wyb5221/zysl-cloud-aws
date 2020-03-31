@@ -10,7 +10,7 @@ import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FolderService;
 import com.zysl.cloud.aws.domain.bo.ObjectInfoBO;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
-import com.zysl.cloud.aws.domain.bo.TagsBO;
+import com.zysl.cloud.aws.domain.bo.TagBO;
 import com.zysl.cloud.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +41,7 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
 		//先查询标签信息
-        List<TagsBO> tagsBOList = fileService.getTag(t);
+        List<TagBO> tagsBOList = fileService.getTags(t);
 
 		PutObjectRequest request = PutObjectRequest.builder().bucket(t.getBucketName()).
 				key(t.getPath()).build();
@@ -52,13 +52,13 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 		log.info("s3file.create.response:{}", response);
 
 		//设置标签
-		List<TagsBO> tagList = CollectionUtils.isEmpty(t.getTagList()) ? Lists.newArrayList() : t.getTagList();
-		TagsBO tag = new TagsBO();
+		List<TagBO> tagList = CollectionUtils.isEmpty(t.getTagList()) ? Lists.newArrayList() : t.getTagList();
+		TagBO tag = new TagBO();
 		tag.setKey(S3TagKeyEnum.FILE_NAME.getCode());
 		tag.setValue(t.getPath());
 		tagList.add(tag);
 
-		List<TagsBO> list = fileService.setTags(tagsBOList, tagList);
+		List<TagBO> list = fileService.setTags(tagsBOList, tagList);
 		t.setTagList(list);
 		fileService.modify(t);
 		t.setVersionId(response.versionId());
@@ -300,7 +300,7 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 		t.setFileList(files);
 
 		//查询目录的标签信息
-		List<TagsBO> tagList = fileService.getTag(t);
+		List<TagBO> tagList = fileService.getTags(t);
 		t.setTagList(tagList);
 		return t;
 	}

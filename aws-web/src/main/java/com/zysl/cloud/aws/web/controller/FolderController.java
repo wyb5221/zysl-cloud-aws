@@ -9,15 +9,12 @@ import com.zysl.cloud.aws.api.req.CreateFolderRequest;
 import com.zysl.cloud.aws.api.req.DelObjectRequest;
 import com.zysl.cloud.aws.api.req.QueryObjectsRequest;
 import com.zysl.cloud.aws.api.srv.FolderSrv;
-import com.zysl.cloud.aws.biz.constant.BizConstants;
 import com.zysl.cloud.aws.biz.enums.S3TagKeyEnum;
-import com.zysl.cloud.aws.biz.service.IFileService;
-import com.zysl.cloud.aws.biz.service.IFolderService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FolderService;
 import com.zysl.cloud.aws.domain.bo.ObjectInfoBO;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
-import com.zysl.cloud.aws.domain.bo.TagsBO;
+import com.zysl.cloud.aws.domain.bo.TagBO;
 import com.zysl.cloud.aws.web.validator.CopyObjectsRequestV;
 import com.zysl.cloud.aws.web.validator.CreateFolderRequestV;
 import com.zysl.cloud.aws.web.validator.DelObjectRequestV;
@@ -30,7 +27,6 @@ import com.zysl.cloud.utils.enums.RespCodeEnum;
 import com.zysl.cloud.utils.service.provider.ServiceProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -115,9 +111,9 @@ public class FolderController extends BaseController implements FolderSrv {
         t.setBucketName(bucket);
         t.setVersionId(versionId);
         setPathAndFileName(t, key);
-        List<TagsBO> tagList = fileService.getTag(t);
+        List<TagBO> tagList = fileService.getTags(t);
 
-        for (TagsBO tag : tagList) {
+        for (TagBO tag : tagList) {
             //判断标签可以是否是owner
             if(S3TagKeyEnum.FILE_NAME.getCode().equals(tag.getKey()) &&
                     userId.equals(tag.getValue())){

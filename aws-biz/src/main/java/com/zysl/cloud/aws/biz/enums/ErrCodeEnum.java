@@ -41,7 +41,9 @@ public enum  ErrCodeEnum  {
 	WORD_FILE_TO_PDF_SIZE_ZERO(5110003, "word转pdf：转换后文件大小为0."),
 	WORD_FILE_TO_PDF_ENCRYPTION_SIZE_ZERO(5110004, "word转pdf：加密后文件大小为0."),
 
-	OBJECT_OP_AUTH_CHECK_ERROR(5210001, "无此数据的操作权限"),
+	OBJECT_OP_AUTH_CHECK_FAILED(5210001, "数据操作权限：无权限"),
+	OBJECT_OP_AUTH_CHECK_DATA_FORMAT_ERROR(5210002, "数据操作权限：配置参数或head参数格式异常"),
+	OBJECT_OP_AUTH_CHECK_ERROR(5210003, "数据操作权限：计算权限异常"),
 	;
 
 	private Integer code;

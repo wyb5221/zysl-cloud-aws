@@ -134,4 +134,15 @@ public interface FileSrv {
 	BaseResponse<UploadFieDTO> shareFile(@RequestBody ShareFileRequest request);
 
 
+	/**
+	 * 设置数据操作权限
+	 * @description
+	 * @author miaomingming
+	 * @date 16:52 2020/3/30
+	 * @param request
+	 * @return com.zysl.cloud.utils.common.BaseResponse<java.lang.String>
+	 **/
+	@PostMapping("/dataAuth")
+	BaseResponse<String> updateDataAuth(@RequestBody DataAuthRequest request);
+
 }

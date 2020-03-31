@@ -2,8 +2,11 @@ package com.zysl.cloud.aws.biz.utils;
 
 import com.zysl.cloud.aws.api.dto.OPAuthDTO;
 import com.zysl.cloud.aws.api.enums.OPAuthTypeEnum;
+import com.zysl.cloud.aws.biz.enums.ErrCodeEnum;
 import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.WebUtil;
+import com.zysl.cloud.utils.common.AppLogicException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +21,13 @@ import org.springframework.util.CollectionUtils;
 public class DataAuthUtils {
 
 	private final String DATA_AUTH_TOKEN = "auth-token";
+
+	//分类间隔符
+	private final String CLASS_SEPARATOR = ":";
+	//数据组间隔符
+	private final String ITEM_SEPARATOR = "_";
+	//key-value间隔符
+	private final String KV_SEPARATOR = "=";
 
 	@Autowired
 	private WebUtil webUtil;
@@ -41,19 +51,19 @@ public class DataAuthUtils {
 	 * @author miaomingming
 	 * @date 9:53 2020/3/27
 	 * @param opTypes com.zysl.cloud.aws.api.enums.OPAuthTypeEnum
-	 * @param objectAuth 用户id:权限列表;用户id:权限列表;#角色ID:权限列表;角色ID:权限列表;#所有人的权限列表
+	 * @param objectAuth 用户id=权限列表_用户id=权限列表_/角色ID=权限列表_角色ID=权限列表_/所有人的权限列表
 	 * @return java.lang.Boolean
 	 **/
 	public boolean checkAuth(String opTypes,String objectAuth){
-		//用户id#角色ID;角色ID
+		//用户id/角色ID;角色ID
 		String tokenAuth = getUserAuth();
 
 		//没传则不校验
-		if(StringUtils.isNotBlank(tokenAuth)){
+		if(StringUtils.isBlank(tokenAuth)){
 			return Boolean.TRUE;
 		}
 		// 没设置则异常
-		if (StringUtils.isNotBlank(objectAuth)) {
+		if (StringUtils.isBlank(objectAuth)) {
 			return Boolean.FALSE;
 		}
 		//未去重列表，但不影响功能
@@ -77,37 +87,35 @@ public class DataAuthUtils {
 	 * @description
 	 * @author miaomingming
 	 * @date 10:15 2020/3/27
-	 * @param tokenAuth 用户id#角色ID;角色ID
-	 * @param objectAuth 用户id:权限列表;用户id:权限列表;#角色ID:权限列表;角色ID:权限列表;#所有人的权限列表
+	 * @param tokenAuth 用户id/角色ID_角色ID
+	 * @param objectAuth 用户id=权限列表_用户id=权限列表_/角色ID=权限列表_角色ID=权限列表_/所有人的权限列表
 	 * @return java.util.List<java.lang.String>
 	 **/
 	private List<String> parseAuths(String tokenAuth,String objectAuth){
 		List<String> authList = new ArrayList<>();
 
-		//格式校验:一个#
-		if(tokenAuth.indexOf("#") != tokenAuth.lastIndexOf("#")){
-			log.warn("tokenAuth.format.error:{}",tokenAuth);
-			return authList;
+		try{
+			//用户ID校验
+			String userId = tokenAuth.substring(0,tokenAuth.indexOf(CLASS_SEPARATOR));
+			String userIdAuths = objectAuth.substring(0,objectAuth.indexOf(CLASS_SEPARATOR));
+			addAuthToList(authList,userId,userIdAuths);
+
+			//角色ID校验
+			String roleIds = tokenAuth.substring(tokenAuth.indexOf(CLASS_SEPARATOR)+1);
+			String roleIdAuths = objectAuth.substring(objectAuth.indexOf(CLASS_SEPARATOR)+1,objectAuth.lastIndexOf(CLASS_SEPARATOR));
+			addAuthToList(authList,roleIds,roleIdAuths);
+
+			//所有人权限校验
+			String otherAuth = objectAuth.substring(objectAuth.lastIndexOf(CLASS_SEPARATOR)+1);
+			addAuthToList(authList,otherAuth);
+		}catch (StringIndexOutOfBoundsException e){
+			log.error("parseAuths.format.error:tokenAuth:{},objectAuth:{}",tokenAuth,objectAuth);
+			throw new AppLogicException(ErrCodeEnum.OBJECT_OP_AUTH_CHECK_DATA_FORMAT_ERROR.getCode());
+		}catch (Exception e){
+			log.error("parseAuths.format.error:tokenAuth:{},objectAuth:{}::",tokenAuth,objectAuth,e);
+			throw new AppLogicException(ErrCodeEnum.OBJECT_OP_AUTH_CHECK_ERROR.getCode());
 		}
-		//格式校验:二个#
-		if(objectAuth.length() - objectAuth.replaceAll("#","").length() != 2){
-			log.warn("objectAuth.format.error:{}",objectAuth);
-			return authList;
-		}
 
-		//用户ID校验
-		String userId = tokenAuth.substring(0,tokenAuth.indexOf("#"));
-		String userIdAuths = objectAuth.substring(0,objectAuth.indexOf("#"));
-		addAuthToList(authList,userId,userIdAuths);
-
-		//角色ID校验
-		String roleIds = tokenAuth.substring(tokenAuth.indexOf("#")+1);
-		String roleIdAuths = objectAuth.substring(objectAuth.indexOf("#")+1,objectAuth.lastIndexOf("#"));
-		addAuthToList(authList,roleIds,roleIdAuths);
-
-		//所有人权限校验
-		String otherAuth = objectAuth.substring(objectAuth.lastIndexOf("#")+1);
-		addAuthToList(authList,otherAuth);
 
 		return authList;
 	}
@@ -127,18 +135,18 @@ public class DataAuthUtils {
 			return;
 		}
 		//对象-角色列表
-		String[] obAuthList = obAuths.split(";");
+		String[] obAuthList = obAuths.split(ITEM_SEPARATOR);
 		//对象list
 		List<String> obList = new ArrayList<>();
 		if(StringUtils.isNotBlank(ob)){
-			obList = Arrays.asList(ob.split(";"));
+			obList = Arrays.asList(ob.split(ITEM_SEPARATOR));
 		}
 
 		for(String obAuth : obAuthList){
 			if(StringUtils.isBlank(obAuth)){
 				continue;
 			}
-			String[] obAuthItem = obAuth.split(":");
+			String[] obAuthItem = obAuth.split(KV_SEPARATOR);
 			if(obList.contains(obAuthItem[0])){
 				addAuthToList(authList,obAuthItem[1]);
 			}
@@ -164,10 +172,10 @@ public class DataAuthUtils {
 	}
 
 	/**
-	 * 
-	 * @description 
+	 *
+	 * @description
 	 * @author miaomingming
-	 * @date 10:38 2020/3/27 
+	 * @date 10:38 2020/3/27
 	 * @param userAuths
 	 * @param roleAuths
 	 * @param others
@@ -178,24 +186,24 @@ public class DataAuthUtils {
 		if(!CollectionUtils.isEmpty(userAuths)){
 			userAuths.forEach(o->{
 				if(StringUtils.isNotBlank(o.getValues())){
-					sb.append(o.getKey()).append(":")
+					sb.append(o.getKey()).append(KV_SEPARATOR)
 						.append(o.getValues())
-						.append(";");
+						.append(ITEM_SEPARATOR);
 				}
 			});
 		}
-		sb.append("#");
+		sb.append(CLASS_SEPARATOR);
 
 		if(!CollectionUtils.isEmpty(roleAuths)){
 			roleAuths.forEach(o->{
 				if(StringUtils.isNotBlank(o.getValues())){
-					sb.append(o.getKey()).append(":")
+					sb.append(o.getKey()).append(KV_SEPARATOR)
 						.append(o.getValues())
-						.append(";");
+						.append(ITEM_SEPARATOR);
 				}
 			});
 		}
-		sb.append("#");
+		sb.append(CLASS_SEPARATOR);
 
 		if(StringUtils.isNotBlank(others)){
 			sb.append(others);
@@ -209,8 +217,8 @@ public class DataAuthUtils {
 
 	public static void main(String[] args){
 		DataAuthUtils test = new DataAuthUtils();
-		String tokenAuth = "1;#2;3;";
-		String objectAuth = "1:rm;2:d;#4:k#t";
+		String tokenAuth = "01:g1_g2";
+		String objectAuth = "001=a_002=c_:g1=m_g2=d_:r";
 
 
 		List<String> list = test.parseAuths(tokenAuth,objectAuth);

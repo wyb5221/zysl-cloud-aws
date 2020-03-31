@@ -1,7 +1,7 @@
 package com.zysl.cloud.aws.api.req;
 
 import com.zysl.cloud.aws.api.dto.KeyVersionDTO;
-import com.zysl.cloud.aws.api.dto.TageDTO;
+import com.zysl.cloud.aws.api.dto.TagDTO;
 import com.zysl.cloud.utils.common.BaseReqeust;
 import com.zysl.cloud.utils.constants.SwaggerConstants;
 import io.swagger.annotations.ApiModel;
@@ -9,7 +9,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -28,7 +27,7 @@ public class SetFileTagRequest extends BaseReqeust {
     private List<KeyVersionDTO> keyList;
     //标签集合
     @ApiModelProperty(value = "标签集合", name = "tageList",dataType = SwaggerConstants.DATA_TYPE_ARRAY)
-    private List<TageDTO> tageList;
+    private List<TagDTO> tageList;
 
     @Override
     public String toString() {
