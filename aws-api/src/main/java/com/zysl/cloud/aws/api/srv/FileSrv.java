@@ -145,4 +145,13 @@ public interface FileSrv {
 	@PostMapping("/setDataAuth")
 	BaseResponse<String> updateDataAuth(@RequestBody DataAuthRequest request);
 
+	/**
+	 * 文件重命名
+	 * @param request
+	 * @return
+	 */
+	@PostMapping("/rename")
+	BaseResponse<String> fileRename(@RequestBody ObjectRenameRequest request);
+
+
 }

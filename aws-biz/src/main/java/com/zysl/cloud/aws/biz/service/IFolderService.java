@@ -98,4 +98,10 @@ public interface IFolderService<T> {
 	 **/
 	List<T> getVersions(T t);
 
+	/**
+	 * 目录重命名
+	 * @param t
+	 */
+	void rename(T t);
+
 }

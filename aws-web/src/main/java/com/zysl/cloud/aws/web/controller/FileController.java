@@ -83,7 +83,15 @@ public class FileController extends BaseController implements FileSrv {
 				log.info("---uploadFile流转换异常：{}--", e);
 			}
 			t.setBodys(bytes);
-			t.setTagFileName(req.getFileName());
+			//设置标签信息
+			if(!StringUtils.isEmpty(req.getFileName())){
+				List<TagBO> tagList = Lists.newArrayList();
+				TagBO tag = new TagBO();
+				tag.setKey(S3TagKeyEnum.FILE_NAME.getCode());
+				tag.setValue(req.getFileName());
+				tagList.add(tag);
+				t.setTagList(tagList);
+			}
 
 			S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.create(t);
 
@@ -117,7 +125,15 @@ public class FileController extends BaseController implements FileSrv {
 				throw new AppLogicException("获取文件流异常");
 			}
 			s3Object.setBodys(bytes);
-			s3Object.setTagFileName(request.getParameter("fileName"));
+			//设置标签信息
+			if(!StringUtils.isEmpty(request.getParameter("fileName"))){
+				List<TagBO> tagList = Lists.newArrayList();
+				TagBO tag = new TagBO();
+				tag.setKey(S3TagKeyEnum.FILE_NAME.getCode());
+				tag.setValue(request.getParameter("fileName"));
+				tagList.add(tag);
+				s3Object.setTagList(tagList);
+			}
 
 			S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.create(s3Object);
 
@@ -515,6 +531,26 @@ public class FileController extends BaseController implements FileSrv {
 			src.setTagList(fileService.addTags(src,list));
 
 			fileService.modify(src);
+			return RespCodeEnum.SUCCESS.getDesc();
+		});
+	}
+
+	@Override
+	public BaseResponse<String> fileRename(ObjectRenameRequest request) {
+		return ServiceProvider.call(request, ObjectRenameRequestV.class, String.class, req -> {
+
+			S3ObjectBO t = new S3ObjectBO();
+			t.setBucketName(req.getBucketName());
+			setPathAndFileName(t, req.getSourcekey());
+			//设置标签
+			List<TagBO> tagList = Lists.newArrayList();
+			TagBO tag = new TagBO();
+			tag.setKey(S3TagKeyEnum.FILE_NAME.getCode());
+			tag.setValue(req.getDestKey());
+			tagList.add(tag);
+			t.setTagList(tagList);
+			//调用重命名接口
+			fileService.rename(t);
 			return RespCodeEnum.SUCCESS.getDesc();
 		});
 	}

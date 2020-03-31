@@ -2,7 +2,7 @@ package com.zysl.cloud.aws.web;
 
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
-import com.zysl.cloud.aws.domain.bo.TagsBO;
+import com.zysl.cloud.aws.domain.bo.TagBO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,11 +39,11 @@ public class S3FileServiceTest {
         dest.setPath("copy/");
         dest.setFileName("txt001.txt");
 
-        List<TagsBO> tagList = new ArrayList<>();
-        TagsBO t1 = new TagsBO();
+        List<TagBO> tagList = new ArrayList<>();
+        TagBO t1 = new TagBO();
         t1.setKey("key1");
         t1.setValue("v1");
-        TagsBO t2 = new TagsBO();
+        TagBO t2 = new TagBO();
         t2.setKey("key2");
         t2.setValue("v2");
         tagList.add(t1);
@@ -57,14 +57,14 @@ public class S3FileServiceTest {
         S3ObjectBO t = new S3ObjectBO();
         t.setBucketName("test-yy06");
         t.setFileName("测试文档.doc");
-        List<TagsBO> tagList = new ArrayList<>();
-        TagsBO t1 = new TagsBO();
+        List<TagBO> tagList = new ArrayList<>();
+        TagBO t1 = new TagBO();
         t1.setKey("k3");
         t1.setValue("v3");
-        TagsBO t2 = new TagsBO();
+        TagBO t2 = new TagBO();
         t2.setKey("k2");
         t2.setValue("v2");
-        TagsBO t3 = new TagsBO();
+        TagBO t3 = new TagBO();
         t3.setKey("k3");
         t3.setValue("v3");
         tagList.add(t1);

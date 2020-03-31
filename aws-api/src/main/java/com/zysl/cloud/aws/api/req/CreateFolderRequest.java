@@ -23,11 +23,15 @@ public class CreateFolderRequest extends BaseReqeust {
 	@ApiModelProperty(value = "存储桶名称", name = "bucketName",required = true,dataType = SwaggerConstants.DATA_TYPE_STRING)
 	private String bucketName;
 
+	@ApiModelProperty(value = "标签中存储目录名称", name = "tagFolderName",dataType = SwaggerConstants.DATA_TYPE_STRING)
+	private String tagFolderName;
+
 	@Override
 	public String toString() {
 		return "CreateFolderRequest{" +
 				"folderName='" + folderName + '\'' +
 				", bucketName='" + bucketName + '\'' +
+				", tagFolderName='" + tagFolderName + '\'' +
 				'}';
 	}
 }

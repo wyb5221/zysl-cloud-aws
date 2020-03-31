@@ -1,10 +1,7 @@
 package com.zysl.cloud.aws.api.srv;
 
 import com.zysl.cloud.aws.api.dto.ObjectInfoDTO;
-import com.zysl.cloud.aws.api.req.CopyObjectsRequest;
-import com.zysl.cloud.aws.api.req.CreateFolderRequest;
-import com.zysl.cloud.aws.api.req.DelObjectRequest;
-import com.zysl.cloud.aws.api.req.QueryObjectsRequest;
+import com.zysl.cloud.aws.api.req.*;
 import com.zysl.cloud.utils.common.BasePaginationResponse;
 import com.zysl.cloud.utils.common.BaseResponse;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -56,5 +53,13 @@ public interface FolderSrv {
      */
     @PostMapping("/move")
     BaseResponse<String> moveFolder(@RequestBody CopyObjectsRequest request);
+
+    /**
+     * 目录重命名
+     * @param request
+     * @return
+     */
+    @PostMapping("/rename")
+    BaseResponse<String> folderRename(@RequestBody ObjectRenameRequest request);
 
 }

@@ -1,6 +1,8 @@
 package com.zysl.cloud.aws.utils;
 
 
+import com.zysl.cloud.utils.StringUtils;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
@@ -36,4 +38,18 @@ public class BizUtil {
         }
         return null;
     }*/
+
+    /**
+     * 获取/目录最后一个字符串
+     * @param str
+     * @return
+     */
+    public static String subLastString(String str){
+        if(StringUtils.isEmpty(str)){
+            return null;
+        }
+        String[] strs = str.split("/");
+        return strs[strs.length-1];
+    }
+
 }
