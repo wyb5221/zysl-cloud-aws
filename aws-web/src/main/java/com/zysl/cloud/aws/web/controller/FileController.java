@@ -69,6 +69,11 @@ public class FileController extends BaseController implements FileSrv {
 				fileId = UUID.randomUUID().toString().replaceAll("-","");
 			}
 			setPathAndFileName(t, fileId);
+
+
+			//数据权限校验
+			fileService.checkDataOpAuth(t, OPAuthTypeEnum.WRITE.getCode());
+
 			//进行解密
 			BASE64Decoder decoder = new BASE64Decoder();
 			byte[] bytes = null;
@@ -99,6 +104,10 @@ public class FileController extends BaseController implements FileSrv {
 			s3Object.setBucketName(request.getParameter("bucketName"));
 			setPathAndFileName(s3Object,request.getParameter("fileId"));
 
+
+			//数据权限校验
+			fileService.checkDataOpAuth(s3Object, OPAuthTypeEnum.READ.getCode());
+
 			MultipartHttpServletRequest multipartHttpServletRequest = (MultipartHttpServletRequest)request;
 			byte[] bytes = null;
 			try {
@@ -128,6 +137,10 @@ public class FileController extends BaseController implements FileSrv {
 			t.setBucketName(req.getBucketName());
 			setPathAndFileName(t, req.getFileId());
 			t.setVersionId(req.getVersionId());
+
+
+			//数据权限校验
+			fileService.checkDataOpAuth(t, OPAuthTypeEnum.READ.getCode());
 
 			S3ObjectBO s3ObjectBO = (S3ObjectBO) fileService.getInfoAndBody(t);
 			List<TagBO> tagList = s3ObjectBO.getTagList();
@@ -258,6 +271,10 @@ public class FileController extends BaseController implements FileSrv {
             t.setBucketName(req.getBucketName());
             t.setVersionId(req.getVersionId());
             setPathAndFileName(t,req.getKey());
+
+			//数据权限校验
+			fileService.checkDataOpAuth(t, OPAuthTypeEnum.DELETE.getCode());
+
             fileService.delete(t);
             return RespCodeEnum.SUCCESS.getDesc();
         });
@@ -270,6 +287,9 @@ public class FileController extends BaseController implements FileSrv {
             t.setBucketName(req.getBucketName());
             t.setVersionId(req.getVersionId());
             setPathAndFileName(t,req.getFileName());
+
+            //数据权限校验
+			fileService.checkDataOpAuth(t, OPAuthTypeEnum.READ.getCode());
 
             S3ObjectBO object = (S3ObjectBO)fileService.getDetailInfo(t);
             FileInfoDTO fileInfoDTO = new FileInfoDTO();
@@ -291,6 +311,10 @@ public class FileController extends BaseController implements FileSrv {
             t.setBucketName(req.getBucketName());
             setPathAndFileName(t, req.getFileId());
             t.setVersionId(req.getVersionId());
+
+
+			//数据权限校验
+			fileService.checkDataOpAuth(t, OPAuthTypeEnum.READ.getCode());
 
             S3ObjectBO s3ObjectBO = (S3ObjectBO) fileService.getInfoAndBody(t);
             byte[] bytes = s3ObjectBO.getBodys();
@@ -323,6 +347,10 @@ public class FileController extends BaseController implements FileSrv {
             t.setBucketName(req.getBucketName());
             setPathAndFileName(t,req.getFileName());
 
+
+			//数据权限校验
+			fileService.checkDataOpAuth(t, OPAuthTypeEnum.READ.getCode());
+
             List<S3ObjectBO> objectList = fileService.getVersions(t);
             List<ObjectVersionDTO> versionList = Lists.newArrayList();
             objectList.forEach(obj ->{
@@ -344,6 +372,10 @@ public class FileController extends BaseController implements FileSrv {
 			t.setBucketName(req.getBucketName());
 			t.setVersionId(req.getVersionId());
 			setPathAndFileName(t,req.getFileName());
+
+			//数据权限校验
+			fileService.checkDataOpAuth(t, OPAuthTypeEnum.READ.getCode());
+
             S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.getBaseInfo(t);
 
 			Date date1 = s3ObjectBO.getLastModified();
@@ -384,10 +416,17 @@ public class FileController extends BaseController implements FileSrv {
 			S3ObjectBO src = new S3ObjectBO();
 			src.setBucketName(req.getSourceBucket());
 			setPathAndFileName(src,req.getSourceKey());
+
 			//复制后的目标文件信息
 			S3ObjectBO dest = new S3ObjectBO();
 			dest.setBucketName(req.getDestBucket());
 			setPathAndFileName(dest,req.getDestKey());
+
+
+			//数据权限校验
+			fileService.checkDataOpAuth(src, OPAuthTypeEnum.READ.getCode());
+			//数据权限校验
+			fileService.checkDataOpAuth(dest, OPAuthTypeEnum.WRITE.getCode());
 
 			fileService.copy(src, dest);
 			return RespCodeEnum.SUCCESS.getDesc();
@@ -405,6 +444,12 @@ public class FileController extends BaseController implements FileSrv {
 			S3ObjectBO dest = new S3ObjectBO();
 			dest.setBucketName(req.getDestBucket());
 			setPathAndFileName(dest,req.getDestKey());
+
+
+			//数据权限校验
+			fileService.checkDataOpAuth(src, OPAuthTypeEnum.READ.getCode());
+			//数据权限校验
+			fileService.checkDataOpAuth(dest, OPAuthTypeEnum.WRITE.getCode());
 
 			fileService.move(src, dest);
 			return RespCodeEnum.SUCCESS.getDesc();
@@ -458,13 +503,18 @@ public class FileController extends BaseController implements FileSrv {
 			setPathAndFileName(src,req.getFileName());
 			src.setVersionId(req.getVersionId());
 
+			//数据权限校验
+			fileService.checkDataOpAuth(src, OPAuthTypeEnum.MODIFY.getCode());
+
 			List<TagBO> list = new ArrayList<>();
 			TagBO tagBO = new TagBO();
 			tagBO.setKey(S3TagKeyEnum.USER_AUTH.getCode());
 			tagBO.setValue(dataAuthUtils.contactAuths(req.getUserAuths(),req.getGroupAuths(),req.getEveryOneAuths()));
 			list.add(tagBO);
 
-			fileService.addTags(src,list);
+			src.setTagList(fileService.addTags(src,list));
+
+			fileService.modify(src);
 			return RespCodeEnum.SUCCESS.getDesc();
 		});
 	}

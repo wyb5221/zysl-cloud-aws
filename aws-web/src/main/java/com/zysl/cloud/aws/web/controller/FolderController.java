@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.zysl.cloud.aws.api.dto.ObjectInfoDTO;
 import com.zysl.cloud.aws.api.enums.DeleteStoreEnum;
 import com.zysl.cloud.aws.api.enums.KeyTypeEnum;
+import com.zysl.cloud.aws.api.enums.OPAuthTypeEnum;
 import com.zysl.cloud.aws.api.req.CopyObjectsRequest;
 import com.zysl.cloud.aws.api.req.CreateFolderRequest;
 import com.zysl.cloud.aws.api.req.DelObjectRequest;
@@ -50,6 +51,9 @@ public class FolderController extends BaseController implements FolderSrv {
             t.setBucketName(req.getBucketName());
             setPathAndFileName(t, req.getFolderName() + "/");
 
+            //数据权限校验
+            fileService.checkDataOpAuth(t, OPAuthTypeEnum.WRITE.getCode());
+
             folderService.create(t);
             return RespCodeEnum.SUCCESS.getDesc();
         });
@@ -62,6 +66,10 @@ public class FolderController extends BaseController implements FolderSrv {
             S3ObjectBO t = new S3ObjectBO();
             t.setBucketName(req.getBucketName());
             setPathAndFileName(t, req.getKey() + "/");
+
+
+            //数据权限校验
+            fileService.checkDataOpAuth(t, OPAuthTypeEnum.DELETE.getCode());
 
             folderService.delete(t);
 
@@ -76,6 +84,10 @@ public class FolderController extends BaseController implements FolderSrv {
             S3ObjectBO t = new S3ObjectBO();
             t.setBucketName(req.getBucketName());
             setPathAndFileName(t, req.getKey() + "/");
+
+
+            //数据权限校验
+            fileService.checkDataOpAuth(t, OPAuthTypeEnum.READ.getCode());
 
             S3ObjectBO s3ObjectBO = (S3ObjectBO)folderService.getDetailInfo(t);
 
@@ -134,6 +146,11 @@ public class FolderController extends BaseController implements FolderSrv {
             dest.setBucketName(req.getDestBucket());
             setPathAndFileName(dest, req.getDestKey() + "/");
 
+            //数据权限校验
+            fileService.checkDataOpAuth(src, OPAuthTypeEnum.READ.getCode());
+            //数据权限校验
+            fileService.checkDataOpAuth(dest, OPAuthTypeEnum.WRITE.getCode());
+
             folderService.copy(src, dest);
             return RespCodeEnum.SUCCESS.getDesc();
         });
@@ -148,6 +165,12 @@ public class FolderController extends BaseController implements FolderSrv {
             S3ObjectBO dest = new S3ObjectBO();
             dest.setBucketName(req.getDestBucket());
             setPathAndFileName(dest, req.getDestKey() + "/");
+
+            //数据权限校验
+            fileService.checkDataOpAuth(src, OPAuthTypeEnum.READ.getCode());
+            //数据权限校验
+            fileService.checkDataOpAuth(dest, OPAuthTypeEnum.WRITE.getCode());
+
             //先复制
             boolean copyFlag = folderService.copy(src, dest);
 

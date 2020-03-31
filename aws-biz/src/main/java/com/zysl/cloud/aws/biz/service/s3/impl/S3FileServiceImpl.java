@@ -109,7 +109,7 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		List<TagBO> oldTagList = this.getTags(t);
 
 		//遍历新增的标签和已有标签，标签key相同，则修改原有标签，标签key新增没有则保留
-        List<TagBO> removalList = oldTagList.stream().filter(obj -> !StringUtils.isEmpty(tagMap.get(obj.getKey()))).collect(Collectors.toList());
+        List<TagBO> removalList = oldTagList.stream().filter(obj -> StringUtils.isEmpty(tagMap.get(obj.getKey()))).collect(Collectors.toList());
         //将去重之后的集合和新添加的标签集合合并
         tagList.addAll(removalList);
 
@@ -280,9 +280,6 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 	public S3ObjectBO getBaseInfo(S3ObjectBO t){
 		log.info("s3file.getBaseInfo.param:{}", JSON.toJSONString(t));
 		S3Client s3Client = s3FactoryService.getS3ClientByBucket(t.getBucketName());
-
-		checkDataOpAuth(t, OPAuthTypeEnum.READ.getCode());
-
 
 		HeadObjectRequest request = null;
 		if(StringUtils.isEmpty(t.getVersionId())){
