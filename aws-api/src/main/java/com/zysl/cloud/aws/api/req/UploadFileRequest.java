@@ -32,7 +32,6 @@ public class UploadFileRequest extends BaseReqeust {
     //有效期，单位小时
     @ApiModelProperty(value = "有效期，单位小时", name = "validity",dataType = SwaggerConstants.DATA_TYPE_INTEGER)
     private Integer validity;
-    //有效期，单位小时
     @ApiModelProperty(value = "标签中保存文件名称", name = "fileName",dataType = SwaggerConstants.DATA_TYPE_STRING)
     private String fileName;
 

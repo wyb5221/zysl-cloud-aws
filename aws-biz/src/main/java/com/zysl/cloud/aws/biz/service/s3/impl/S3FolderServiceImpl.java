@@ -37,30 +37,36 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 
 	@Override
 	public S3ObjectBO create(S3ObjectBO t){
-		log.info("s3file.create.param:{}", JSON.toJSONString(t));
+		log.info("s3folder.create.param:{}", JSON.toJSONString(t));
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
 		//先查询标签信息
         List<TagBO> tagsBOList = fileService.getTags(t);
+        if(!CollectionUtils.isEmpty(t.getTagList())){
+			//合并标签集合
+			tagsBOList = fileService.mergeTags(tagsBOList, t.getTagList());
+		}
+		List<Tag> tagSet = Lists.newArrayList();
+		tagsBOList.forEach(obj -> {
+			tagSet.add(Tag.builder().key(obj.getKey()).value(obj.getValue()).build());
+		});
+		//设置标签信息
+		Tagging tagging = CollectionUtils.isEmpty(tagSet) ? null : Tagging.builder().tagSet(tagSet).build();
 
-		PutObjectRequest request = PutObjectRequest.builder().bucket(t.getBucketName()).
-				key(t.getPath()).build();
+		PutObjectRequest request = null;
+		if(null == tagging){
+			request = PutObjectRequest.builder().bucket(t.getBucketName()).
+					key(t.getPath()).build();
+		}else{
+			request = PutObjectRequest.builder().bucket(t.getBucketName()).
+					key(t.getPath()).tagging(tagging).build();
+		}
 
 		RequestBody requestBody = RequestBody.empty();
 		PutObjectResponse response = s3FactoryService.callS3MethodWithBody
 				(request, requestBody, s3, S3Method.PUT_OBJECT);
-		log.info("s3file.create.response:{}", response);
+		log.info("s3folder.create.response:{}", response);
 
-		//设置标签
-		List<TagBO> tagList = CollectionUtils.isEmpty(t.getTagList()) ? Lists.newArrayList() : t.getTagList();
-		TagBO tag = new TagBO();
-		tag.setKey(S3TagKeyEnum.FILE_NAME.getCode());
-		tag.setValue(t.getPath());
-		tagList.add(tag);
-
-		List<TagBO> list = fileService.mergeTags(tagsBOList, tagList);
-		t.setTagList(list);
-		fileService.modify(t);
 		t.setVersionId(response.versionId());
 
 		return t;
@@ -80,12 +86,12 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 				.build();
 
 		DeleteObjectsResponse response = s3FactoryService.callS3Method(request, s3, S3Method.DELETE_OBJECTS);
-		log.info("s3file.delete.response:{}", response);
+		log.info("s3folder.delete.response:{}", response);
 	}
 
 	@Override
 	public void delete(S3ObjectBO t){
-		log.info("s3file.delete.param:{}", JSON.toJSONString(t));
+		log.info("s3folder.delete.param:{}", JSON.toJSONString(t));
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
 		/**
@@ -161,11 +167,11 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 				.build();
 
 		CopyObjectResponse response = s3FactoryService.callS3Method(request,s3,S3Method.COPY_OBJECT);
-		log.info("s3file.copy.response:{}", response);
+		log.info("s3folder.copy.response:{}", response);
 	 */
 	@Override
 	public boolean copy(S3ObjectBO src,S3ObjectBO dest){
-		log.info("s3file.move.param.src:{}，dest:{}", JSON.toJSONString(src), JSON.toJSONString(dest));
+		log.info("s3folder.move.param.src:{}，dest:{}", JSON.toJSONString(src), JSON.toJSONString(dest));
 		//获取s3初始化对象
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(src.getBucketName());
 
@@ -253,7 +259,7 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 
 	@Override
 	public S3ObjectBO getDetailInfo(S3ObjectBO t){
-		log.info("s3file.getDetailInfo.param:{}", JSON.toJSONString(t));
+		log.info("s3folder.getDetailInfo.param:{}", JSON.toJSONString(t));
 		//获取s3初始化对象
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
@@ -308,7 +314,7 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 
 	@Override
 	public List<S3ObjectBO> getVersions(S3ObjectBO t){
-		log.info("s3file.getVersions.param:{}", JSON.toJSONString(t));
+		log.info("s3folder.getVersions.param:{}", JSON.toJSONString(t));
 		//获取s3初始化对象
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
@@ -319,7 +325,7 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 				build();
 
 		ListObjectVersionsResponse response = s3FactoryService.callS3Method(request,s3, S3Method.LIST_OBJECT_VERSIONS);
-		log.info("s3file.getVersions.response:{}", response);
+		log.info("s3folder.getVersions.response:{}", response);
 
 		List<ObjectVersion> list = response.versions();
 		List<S3ObjectBO> versionList = Lists.newArrayList();
@@ -337,6 +343,14 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 		return versionList;
 	}
 
+	@Override
+	public void rename(S3ObjectBO t) {
+		log.info("s3folder.rename.param:{}", JSON.toJSONString(t));
+
+		//重新上传目录，同时修改标签
+		this.create(t);
+
+	}
 
 
 	public void setPathAndFileName(S3ObjectBO s3ObjectBO,String s3Key){

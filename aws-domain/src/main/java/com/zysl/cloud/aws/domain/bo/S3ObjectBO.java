@@ -22,8 +22,6 @@ public class S3ObjectBO extends BaseFileBO implements Serializable {
 	//权限校验参数
 	private String userId;
 
-	private String tagFileName;
-
 	//元素 List
 	//标签 List
 	List<TagBO> tagList;

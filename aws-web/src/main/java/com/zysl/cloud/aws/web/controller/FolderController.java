@@ -9,6 +9,7 @@ import com.zysl.cloud.aws.api.req.CopyObjectsRequest;
 import com.zysl.cloud.aws.api.req.CreateFolderRequest;
 import com.zysl.cloud.aws.api.req.DelObjectRequest;
 import com.zysl.cloud.aws.api.req.QueryObjectsRequest;
+import com.zysl.cloud.aws.api.req.*;
 import com.zysl.cloud.aws.api.srv.FolderSrv;
 import com.zysl.cloud.aws.biz.enums.S3TagKeyEnum;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
@@ -16,10 +17,8 @@ import com.zysl.cloud.aws.biz.service.s3.IS3FolderService;
 import com.zysl.cloud.aws.domain.bo.ObjectInfoBO;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.aws.domain.bo.TagBO;
-import com.zysl.cloud.aws.web.validator.CopyObjectsRequestV;
-import com.zysl.cloud.aws.web.validator.CreateFolderRequestV;
-import com.zysl.cloud.aws.web.validator.DelObjectRequestV;
-import com.zysl.cloud.aws.web.validator.QueryObjectsRequestV;
+import com.zysl.cloud.aws.utils.BizUtil;
+import com.zysl.cloud.aws.web.validator.*;
 import com.zysl.cloud.utils.BeanCopyUtil;
 import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.common.BasePaginationResponse;
@@ -53,6 +52,16 @@ public class FolderController extends BaseController implements FolderSrv {
 
             //数据权限校验
             fileService.checkDataOpAuth(t, OPAuthTypeEnum.WRITE.getCode());
+
+            //设置标签
+            if(!StringUtils.isEmpty(req.getTagFolderName())){
+                List<TagBO> tagList = Lists.newArrayList();
+                TagBO tag = new TagBO();
+                tag.setKey(S3TagKeyEnum.FILE_NAME.getCode());
+                tag.setValue(BizUtil.subLastString(req.getTagFolderName()));
+                tagList.add(tag);
+                t.setTagList(tagList);
+            }
 
             folderService.create(t);
             return RespCodeEnum.SUCCESS.getDesc();
@@ -182,6 +191,25 @@ public class FolderController extends BaseController implements FolderSrv {
                 folderService.delete(t);
             }
 
+            return RespCodeEnum.SUCCESS.getDesc();
+        });
+    }
+
+    @Override
+    public BaseResponse<String> folderRename(ObjectRenameRequest request) {
+        return ServiceProvider.call(request, ObjectRenameRequestV.class, String.class, req -> {
+            S3ObjectBO t = new S3ObjectBO();
+            t.setBucketName(req.getBucketName());
+            setPathAndFileName(t, req.getSourcekey() + "/");
+            //设置标签
+            List<TagBO> tagList = Lists.newArrayList();
+            TagBO tag = new TagBO();
+            tag.setKey(S3TagKeyEnum.FILE_NAME.getCode());
+            tag.setValue(BizUtil.subLastString(req.getDestKey()));
+            tagList.add(tag);
+            t.setTagList(tagList);
+
+            folderService.rename(t);
             return RespCodeEnum.SUCCESS.getDesc();
         });
     }

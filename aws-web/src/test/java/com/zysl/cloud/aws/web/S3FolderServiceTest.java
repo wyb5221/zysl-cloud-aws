@@ -3,7 +3,7 @@ package com.zysl.cloud.aws.web;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FolderService;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
-import com.zysl.cloud.aws.domain.bo.TagsBO;
+import com.zysl.cloud.aws.domain.bo.TagBO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,11 +31,11 @@ public class S3FolderServiceTest {
         t.setBucketName("test-yy06");
         t.setPath("test10/");
 
-        List<TagsBO> tagList = new ArrayList<>();
-        TagsBO t1 = new TagsBO();
+        List<TagBO> tagList = new ArrayList<>();
+        TagBO t1 = new TagBO();
         t1.setKey("k1");
         t1.setValue("k1k1");
-        TagsBO t2 = new TagsBO();
+        TagBO t2 = new TagBO();
         t2.setKey("v2");
         t2.setValue("v2");
         tagList.add(t1);
@@ -48,8 +48,8 @@ public class S3FolderServiceTest {
     public void a(){
         S3ObjectBO t = new S3ObjectBO();
         t.setBucketName("test-yy06");
-        t.setPath("test10/");
-        System.out.println(filerService.getTag(t));
+        t.setPath("test1001.txt");
+        System.out.println("----:"+filerService.getTags(t));
     }
 
     @Test

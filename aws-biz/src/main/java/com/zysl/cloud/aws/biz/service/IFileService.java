@@ -117,4 +117,10 @@ public interface IFileService<T> {
 	 **/
 	List<T> getVersions(T t);
 
+	/**
+	 * 文件重命名
+	 * @param t
+	 */
+	void rename(T t);
+
 }
