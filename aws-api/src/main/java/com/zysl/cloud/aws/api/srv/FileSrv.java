@@ -153,5 +153,15 @@ public interface FileSrv {
 	@PostMapping("/rename")
 	BaseResponse<String> fileRename(@RequestBody ObjectRenameRequest request);
 
+	/**
+	 * 文件是否存在
+	 * @description
+	 * @author miaomingming
+	 * @date 15:24 2020/4/1
+	 * @param request
+	 * @return com.zysl.cloud.utils.common.BaseResponse<java.lang.Boolean>
+	 **/
+	@PostMapping("/exist")
+	BaseResponse<Boolean> isExistFile(@RequestBody FileExistRequest request);
 
 }

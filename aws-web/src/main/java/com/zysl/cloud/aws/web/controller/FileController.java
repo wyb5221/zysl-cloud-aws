@@ -26,10 +26,12 @@ import com.zysl.cloud.utils.service.provider.ServiceProvider;
 import java.util.ArrayList;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
@@ -552,6 +554,34 @@ public class FileController extends BaseController implements FileSrv {
 			//调用重命名接口
 			fileService.rename(t);
 			return RespCodeEnum.SUCCESS.getDesc();
+		});
+	}
+
+
+	@Override
+	public BaseResponse<Boolean> isExistFile(@RequestBody FileExistRequest request){
+		return ServiceProvider.call(request, FileExistRequestV.class, Boolean.class, req -> {
+			List<String> buckets = req.getBucketNames();
+			if(CollectionUtils.isEmpty(buckets)){
+				buckets = bizConfig.getAnnouncementBuckets();
+			}
+
+			if(!CollectionUtils.isEmpty(buckets)){
+				S3ObjectBO bo = new S3ObjectBO();
+				for(String bucket:buckets){
+					bo.setBucketName(bucket);
+					setPathAndFileName(bo, req.getFileName());
+					try{
+						fileService.getBaseInfo(bo);
+						return Boolean.TRUE;
+					}catch (AppLogicException e){
+						log.warn("NoSuchKeyException:{}:{}",bucket,req.getFileName());
+					}
+
+				}
+			}
+
+			return Boolean.FALSE;
 		});
 	}
 }

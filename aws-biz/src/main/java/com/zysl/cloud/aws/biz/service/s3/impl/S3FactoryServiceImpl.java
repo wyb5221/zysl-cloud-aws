@@ -138,9 +138,6 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 		}catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e){
 			log.error("callS3Method.invoke({}).error:",methodName,e);
 			throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_INVOKE_ERROR.getCode());
-		}catch (NoSuchMethodException e){
-			log.error("callS3Method.invoke({})->noSuchMethod:",methodName);
-			throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_NO_SUCH.getCode());
 		}catch (Exception e){
 			log.error("callS3Method.error({}):",methodName,e);
 			throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_ERROR.getCode());
