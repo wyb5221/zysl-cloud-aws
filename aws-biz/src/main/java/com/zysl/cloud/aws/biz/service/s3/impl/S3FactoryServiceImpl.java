@@ -106,6 +106,11 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 		return this.S3_BUCKET_SERVER_MAP;
 	}
 
+	@Override
+	public boolean judgeBucket(String bucket1, String bucket2) {
+		return !S3_BUCKET_SERVER_MAP.get(bucket1).equals(S3_BUCKET_SERVER_MAP.get(bucket2));
+	}
+
 
 	@Override
 	public <T extends S3Response,R extends S3Request>T callS3Method(R r,S3Client s3Client,String methodName)

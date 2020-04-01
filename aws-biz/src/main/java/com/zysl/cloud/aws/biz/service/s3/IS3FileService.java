@@ -62,4 +62,26 @@ public interface IS3FileService<T> extends IFileService<T> {
 	 * @return java.util.List<com.zysl.cloud.aws.domain.bo.TagBO>
 	 **/
 	List<TagBO> addTags(S3ObjectBO t, List<TagBO> tagList);
+
+	/**
+	 * 创建断点续传id
+	 * @param t
+	 * @return
+	 */
+	String createMultipartUpload(T t);
+
+	/**
+	 * 断点续传
+	 * @param t
+	 * @return
+	 */
+	T uploadPart(T t);
+
+	/**
+	 * 断点续传完成
+	 * @param t
+	 * @return
+	 */
+	T completeMultipartUpload(T t);
+
 }

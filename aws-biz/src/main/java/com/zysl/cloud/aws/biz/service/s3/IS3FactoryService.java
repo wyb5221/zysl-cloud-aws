@@ -82,6 +82,14 @@ public interface IS3FactoryService {
 	Map<String, String> getBucketServerNoMap();
 
 	/**
+	 * 判断两个bucket是否在同一服务器
+	 * @param bucket1
+	 * @param bucket2
+	 * @return
+	 */
+	boolean judgeBucket(String bucket1, String bucket2);
+
+	/**
 	 * 统一调用s3方法
 	 * @description
 	 * @author miaomingming

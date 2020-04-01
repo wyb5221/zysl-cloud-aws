@@ -55,8 +55,8 @@ public class S3FileServiceTest {
     @Test
     public void a(){
         S3ObjectBO t = new S3ObjectBO();
-        t.setBucketName("test-yy06");
-        t.setFileName("测试文档.doc");
+        t.setBucketName("share-02");
+        t.setFileName("ww1002.txt");
         List<TagBO> tagList = new ArrayList<>();
         TagBO t1 = new TagBO();
         t1.setKey("k3");

@@ -18,7 +18,7 @@ public class GetFileRequestV implements IValidator {
     @NotBlank
     private String bucketName;
     //文件名称
-//    @NotBlank
+    @NotBlank
     private String fileName;
 
     @Override

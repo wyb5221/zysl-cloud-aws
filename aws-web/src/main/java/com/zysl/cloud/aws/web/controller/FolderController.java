@@ -54,14 +54,15 @@ public class FolderController extends BaseController implements FolderSrv {
             fileService.checkDataOpAuth(t, OPAuthTypeEnum.WRITE.getCode());
 
             //设置标签
+            List<TagBO> tagList = Lists.newArrayList();
             if(!StringUtils.isEmpty(req.getTagFolderName())){
-                List<TagBO> tagList = Lists.newArrayList();
                 TagBO tag = new TagBO();
                 tag.setKey(S3TagKeyEnum.FILE_NAME.getCode());
                 tag.setValue(BizUtil.subLastString(req.getTagFolderName()));
                 tagList.add(tag);
-                t.setTagList(tagList);
             }
+            t.setTagList(fileService.addTags(t, tagList));
+
 
             folderService.create(t);
             return RespCodeEnum.SUCCESS.getDesc();
@@ -155,6 +156,9 @@ public class FolderController extends BaseController implements FolderSrv {
             dest.setBucketName(req.getDestBucket());
             setPathAndFileName(dest, req.getDestKey() + "/");
 
+            //设置目标文件标签
+            dest.setTagList(fileService.addTags(src, Lists.newArrayList()));
+
             //数据权限校验
             fileService.checkDataOpAuth(src, OPAuthTypeEnum.READ.getCode());
             //数据权限校验
@@ -174,6 +178,8 @@ public class FolderController extends BaseController implements FolderSrv {
             S3ObjectBO dest = new S3ObjectBO();
             dest.setBucketName(req.getDestBucket());
             setPathAndFileName(dest, req.getDestKey() + "/");
+            //设置目标文件标签
+            dest.setTagList(fileService.addTags(src, Lists.newArrayList()));
 
             //数据权限校验
             fileService.checkDataOpAuth(src, OPAuthTypeEnum.READ.getCode());
