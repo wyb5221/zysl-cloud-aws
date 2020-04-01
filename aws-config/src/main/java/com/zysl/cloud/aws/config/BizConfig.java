@@ -20,4 +20,8 @@ public class BizConfig {
 
     @Value("${spring.download.date}")
     public String DOWNLOAD_TIME;
+
+
+    @Value("${share.file.bucket.name}")
+    public String shareFileBucket;
 }
