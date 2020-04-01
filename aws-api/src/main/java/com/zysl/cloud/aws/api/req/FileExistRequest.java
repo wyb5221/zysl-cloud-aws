@@ -20,12 +20,16 @@ public class FileExistRequest extends BaseReqeust {
 	//文件名称
 	@ApiModelProperty(value = "文件名称", name = "fileName",required = true,dataType = SwaggerConstants.DATA_TYPE_STRING)
 	private String fileName;
+	//文件版本id
+	@ApiModelProperty(value = "文件版本id", name = "versionId",dataType = SwaggerConstants.DATA_TYPE_STRING)
+	private String versionId;
 
 	@Override
 	public String toString() {
 		final StringBuffer sb = new StringBuffer("{\"FileExistRequest\":{");
 		sb.append("bucketNames=").append(bucketNames);
 		sb.append(", fileName='").append(fileName).append('\'');
+		sb.append(", versionId='").append(versionId).append('\'');
 		sb.append("},\"super-FileExistRequest\":")
 			.append(super.toString()).append("}");
 		return sb.toString();

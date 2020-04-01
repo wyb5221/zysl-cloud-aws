@@ -568,9 +568,10 @@ public class FileController extends BaseController implements FileSrv {
 
 			if(!CollectionUtils.isEmpty(buckets)){
 				S3ObjectBO bo = new S3ObjectBO();
+				bo.setVersionId(req.getVersionId());
+				setPathAndFileName(bo, req.getFileName());
 				for(String bucket:buckets){
 					bo.setBucketName(bucket);
-					setPathAndFileName(bo, req.getFileName());
 					try{
 						fileService.getBaseInfo(bo);
 						return Boolean.TRUE;
