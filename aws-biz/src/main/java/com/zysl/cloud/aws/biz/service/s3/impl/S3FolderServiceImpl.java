@@ -38,7 +38,7 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 	@Override
 	public S3ObjectBO create(S3ObjectBO t){
 		log.info("s3folder.create.param:{}", JSON.toJSONString(t));
-		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
+		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName(),Boolean.TRUE);
 
 		//先查询标签信息
         List<TagBO> tagsBOList = fileService.getTags(t);
@@ -173,7 +173,7 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 	public boolean copy(S3ObjectBO src,S3ObjectBO dest){
 		log.info("s3folder.move.param.src:{}，dest:{}", JSON.toJSONString(src), JSON.toJSONString(dest));
 		//获取s3初始化对象
-		S3Client s3 = s3FactoryService.getS3ClientByBucket(src.getBucketName());
+		S3Client s3 = s3FactoryService.getS3ClientByBucket(src.getBucketName(),Boolean.TRUE);
 
 		/**
 		 * 同时复制目录下的所有对象

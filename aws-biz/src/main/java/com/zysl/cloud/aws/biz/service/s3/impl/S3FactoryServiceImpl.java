@@ -42,6 +42,9 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 	//s3服务器连接信息 key为SERVER_NO
 	private Map<String, S3Client> S3_SERVER_CLIENT_MAP = new ConcurrentHashMap<>();
 
+	//s3服务器 key为SERVER_NO
+	private Map<String, S3ServerProp> S3_SERVER_MAP = new ConcurrentHashMap<>();
+
 	//s3服务器的bucket--serverNo
 	private Map<String, String> S3_BUCKET_SERVER_MAP = new ConcurrentHashMap<>();
 
@@ -71,7 +74,21 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 
 	@Override
 	public S3Client getS3ClientByBucket(String bucketName){
-		return getS3ClientByServerNo(getServerNo(bucketName));
+		return getS3ClientByBucket(bucketName,Boolean.FALSE);
+	}
+
+	@Override
+	public S3Client getS3ClientByBucket(String bucketName,Boolean isWrite) throws AppLogicException{
+		String serverNo = getServerNo(bucketName);
+		if(isWrite != null && isWrite){
+			S3ServerProp prop = this.S3_SERVER_MAP.get(serverNo);
+			if(prop != null && prop.getNoSpace() != null && prop.getNoSpace()){
+				log.error("s3.no.space.serverNo:{}",serverNo);
+				throw new AppLogicException(ErrCodeEnum.S3_NO_SPACE_WARN.getCode());
+			}
+		}
+
+		return getS3ClientByServerNo(serverNo);
 	}
 
 	@Override
@@ -121,9 +138,6 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 		}catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e){
 			log.error("callS3Method.invoke({}).error:",methodName,e);
 			throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_INVOKE_ERROR.getCode());
-		}catch (NoSuchMethodException e){
-			log.error("callS3Method.invoke({})->noSuchMethod:",methodName);
-			throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_NO_SUCH.getCode());
 		}catch (Exception e){
 			log.error("callS3Method.error({}):",methodName,e);
 			throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_ERROR.getCode());
@@ -191,6 +205,9 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 		List<S3ServerProp> s3ServerProps = s3ServerConfig.getServers();
 		if(!CollectionUtils.isEmpty(s3ServerProps)){
 			for (S3ServerProp props : s3ServerProps) {
+
+				this.S3_SERVER_MAP.put(props.getServerNo(),props);
+
 				//初始化s3连接
 				AwsBasicCredentials awsCreds = AwsBasicCredentials.create(props.getAccessKey(), props.getSecretKey());
 				S3Client s3Client = S3Client

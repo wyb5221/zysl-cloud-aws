@@ -39,6 +39,17 @@ public interface IS3FactoryService {
 	 **/
 	S3Client getS3ClientByBucket(String bucketName);
 
+
+	/**
+	 * 获取s3连接
+	 * @description
+	 * @author miaomingming
+	 * @date 14:46 2020/4/1
+	 * @param bucketName
+	 * @param isWrite
+	 * @return software.amazon.awssdk.services.s3.S3Client
+	 **/
+	S3Client getS3ClientByBucket(String bucketName,Boolean isWrite) throws AppLogicException;
 	/**
 	 * 是否存在bucketName
 	 * @description

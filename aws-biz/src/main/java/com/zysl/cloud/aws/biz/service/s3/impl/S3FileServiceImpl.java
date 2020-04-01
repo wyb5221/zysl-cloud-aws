@@ -49,7 +49,7 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 	@Override
 	public S3ObjectBO create(S3ObjectBO t){
 		log.info("s3file.create.param:{}", JSON.toJSONString(t));
-		S3Client s3Client = s3FactoryService.getS3ClientByBucket(t.getBucketName());
+		S3Client s3Client = s3FactoryService.getS3ClientByBucket(t.getBucketName(),Boolean.TRUE);
 
         List<TagBO> oldTagList = this.getTags(t);
 		if(!CollectionUtils.isEmpty(t.getTagList())){
@@ -191,7 +191,7 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 
 		//目前修改文件标签信息
 		//获取s3初始化对象
-		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
+		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName(),Boolean.TRUE);
 
 		//设置标签入参
 		List<TagBO> tageList = t.getTagList();
@@ -229,7 +229,7 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		log.info("s3file.create.param.src:{}, dest:{}", JSON.toJSONString(src), JSON.toJSONString(dest));
 
 		//获取s3初始化对象
-		S3Client s3 = s3FactoryService.getS3ClientByBucket(src.getBucketName());
+		S3Client s3 = s3FactoryService.getS3ClientByBucket(src.getBucketName(),Boolean.TRUE);
 
 		//获取标签内容
 		List<Tag> tagSet = new ArrayList<>();

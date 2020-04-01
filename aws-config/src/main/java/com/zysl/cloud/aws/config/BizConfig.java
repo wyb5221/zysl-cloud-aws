@@ -1,9 +1,14 @@
 package com.zysl.cloud.aws.config;
 
+import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
+@Getter
+@Setter
 public class BizConfig {
 
     //word转pdf用到的字体
@@ -20,4 +25,17 @@ public class BizConfig {
 
     @Value("${spring.download.date}")
     public String DOWNLOAD_TIME;
+
+
+    @Value("${share.file.bucket.name}")
+    public String shareFileBucket;
+
+    @Value("#{'${announcement.buckets}'.split(',')}")
+    public List<String> announcementBuckets;
+
+    /**
+     * 版本号，测试用，可以不配置
+     **/
+    @Value("${application.version}")
+    public String curVer;
 }

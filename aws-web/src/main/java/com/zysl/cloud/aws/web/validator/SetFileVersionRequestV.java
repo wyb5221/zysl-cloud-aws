@@ -31,9 +31,9 @@ public class SetFileVersionRequestV implements IValidator {
 
     @Override
     public void customizedValidate(List<String> errors, Integer userCase){
-        String pattern = "^[a-zA-Z0-9.\\-_]{3,60}$";
+        String pattern = "^[a-zA-Z0-9.\\-_]{3,63}$";
         //判断存储桶是否满足命名规则
-        if(Pattern.compile(pattern).matcher(bucketName).matches()){
+        if(!Pattern.compile(pattern).matcher(bucketName).matches()){
             errors.add("存储桶不满足命名规则.");
         }
     }
