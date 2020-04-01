@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -60,6 +61,11 @@ public class FileController extends BaseController implements FileSrv {
 	@Autowired
 	private DataAuthUtils dataAuthUtils;
 
+
+	@GetMapping("/curVer")
+	public String getCurVersion(){
+		return bizConfig.getCurVer();
+	}
 
 	@Override
 	public BaseResponse<UploadFieDTO> uploadFile(UploadFileRequest request) {

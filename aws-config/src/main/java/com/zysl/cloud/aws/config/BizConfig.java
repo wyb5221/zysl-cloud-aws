@@ -32,4 +32,10 @@ public class BizConfig {
 
     @Value("#{'${announcement.buckets}'.split(',')}")
     public List<String> announcementBuckets;
+
+    /**
+     * 版本号，测试用，可以不配置
+     **/
+    @Value("${application.version}")
+    public String curVer;
 }
