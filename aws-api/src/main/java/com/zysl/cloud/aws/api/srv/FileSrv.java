@@ -164,4 +164,28 @@ public interface FileSrv {
 	@PostMapping("/exist")
 	BaseResponse<Boolean> isExistFile(@RequestBody FileExistRequest request);
 
+	/**
+	 * 创建断点续传
+	 * @param request
+	 * @return
+	 */
+	@PostMapping("/createMultipart")
+	BaseResponse<String> createMultipart(@RequestBody CreateMultipartRequest request);
+
+	/**
+	 *断点续传
+	 * @param request
+	 * @return
+	 */
+	@PostMapping("/uploadPart")
+	BaseResponse<MultipartUploadRequest> uploadPart(HttpServletRequest request);
+
+	/**
+	 * 断点续传完成确认
+	 * @param request
+	 * @return
+	 */
+	@PostMapping("/complete")
+	BaseResponse<UploadFieDTO> completeMultipart(@RequestBody CompleteMultipartRequest request);
+
 }

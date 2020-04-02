@@ -108,7 +108,7 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 
 	@Override
 	public boolean judgeBucket(String bucket1, String bucket2) {
-		return !S3_BUCKET_SERVER_MAP.get(bucket1).equals(S3_BUCKET_SERVER_MAP.get(bucket2));
+		return S3_BUCKET_SERVER_MAP.get(bucket1).equals(S3_BUCKET_SERVER_MAP.get(bucket2));
 	}
 
 

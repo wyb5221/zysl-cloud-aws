@@ -130,6 +130,7 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 
 //		s3.listo
 		//获取入参
+        CreateMultipartUploadRequest request = null;
 		if(!CollectionUtils.isEmpty(t.getTagList())){
 			List<Tag> tagSet = Lists.newArrayList();
 			t.getTagList().forEach(obj -> {
@@ -137,12 +138,18 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 			});
 			//设置标签信息
 			Tagging tagging = CollectionUtils.isEmpty(tagSet) ? null : Tagging.builder().tagSet(tagSet).build();
-		}
 
-		CreateMultipartUploadRequest request = CreateMultipartUploadRequest.builder()
-				.bucket(t.getBucketName())
-				.key(String.join(t.getPath(), t.getFileName()))
-				.build();
+            request = CreateMultipartUploadRequest.builder()
+                    .bucket(t.getBucketName())
+                    .key(String.join(t.getPath(), t.getFileName()))
+//                    .tagging(String.valueOf(tagging))
+                    .build();
+		}else{
+            request = CreateMultipartUploadRequest.builder()
+                    .bucket(t.getBucketName())
+                    .key(String.join(t.getPath(), t.getFileName()))
+                    .build();
+        }
 
 		CreateMultipartUploadResponse response = s3FactoryService.callS3Method(request, s3, S3Method.CREATE_MULTIPART_UPLOAD);
 
@@ -322,7 +329,7 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 
 		/**
 		 * 判断两个bucket是否在同一台服务器，
-		 * 不在一台服务器则下载上传，在，则复制
+		 * 不在一台服务器则下载上传，在则复制
 		 */
 		if(s3FactoryService.judgeBucket(src.getBucketName(), dest.getBucketName())){
 			//复制文件
