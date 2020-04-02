@@ -9,11 +9,11 @@
 
   <modelVersion>4.0.0</modelVersion>
   <artifactId>zysl-cloud-aws</artifactId>
-  <version>1.1.0-SNAPSHOT</version>
+  <version>1.1.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <properties>
-    <aws.version>1.1.0-SNAPSHOT</aws.version>
+    <aws.version>1.1.1-SNAPSHOT</aws.version>
     <zysl-cloud.version>1.0-SNAPSHOT</zysl-cloud.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>1.8</java.version>
@@ -78,10 +78,10 @@
         <scope>import</scope>
       </dependency>
 
-<!--      <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-thymeleaf</artifactId>
-      </dependency>-->
+      <!--      <dependency>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-starter-thymeleaf</artifactId>
+            </dependency>-->
 
       <dependency>
         <groupId>junit</groupId>
