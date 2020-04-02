@@ -7,6 +7,7 @@ import com.zysl.cloud.aws.api.enums.OPAuthTypeEnum;
 import com.zysl.cloud.aws.api.req.*;
 import com.zysl.cloud.aws.api.srv.FileSrv;
 import com.zysl.cloud.aws.biz.constant.BizConstants;
+import com.zysl.cloud.aws.biz.enums.ErrCodeEnum;
 import com.zysl.cloud.aws.biz.enums.S3TagKeyEnum;
 import com.zysl.cloud.aws.biz.service.s3.IS3BucketService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
@@ -30,9 +31,9 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
@@ -165,26 +166,9 @@ public class FileController extends BaseController implements FileSrv {
 
 			//数据权限校验
 			fileService.checkDataOpAuth(t, OPAuthTypeEnum.READ.getCode());
-
+			
 			S3ObjectBO s3ObjectBO = (S3ObjectBO) fileService.getInfoAndBody(t);
-			List<TagBO> tagList = s3ObjectBO.getTagList();
-			boolean tagFlag = false;
-			if(!StringUtils.isEmpty(req.getUserId())){
-				//需要校验权限
-				for (TagBO tag : tagList) {
-					//判断标签可以是否是owner
-					if(S3TagKeyEnum.FILE_NAME.getCode().equals(tag.getKey()) &&
-							req.getUserId().equals(tag.getValue())){
-						//在判断标签value
-						tagFlag = true;
-					}
-				}
-			}
-			if(!StringUtils.isEmpty(req.getUserId()) && !tagFlag){
-				//userid不为空是，需要校验权限
-				return null;
-			}
-
+			checkOwner(req,s3ObjectBO);
 
 			byte[] bytes = s3ObjectBO.getBodys();
 			log.info("--下载接口返回的文件数据大小--", bytes.length);
@@ -196,37 +180,57 @@ public class FileController extends BaseController implements FileSrv {
 				downloadFileDTO.setData(encoder.encode(bytes));
 				return downloadFileDTO;
 			}else {
-				try {
-					//1下载文件流
-					OutputStream outputStream = response.getOutputStream();
-					response.setContentType("application/octet-stream");//告诉浏览器输出内容为流
-					response.setCharacterEncoding("UTF-8");
-
-					String userAgent = request.getHeader("User-Agent").toUpperCase();//获取浏览器名（IE/Chome/firefox）
-
-					//获取标签中的文件名称
-					String tagValue = fileService.getTagValue(tagList, S3TagKeyEnum.FILE_NAME.getCode());
-
-					String fileId = StringUtils.isEmpty(tagValue) ? t.getFileName() : tagValue;
-					if (userAgent.contains("MSIE") ||
-							(userAgent.indexOf("GECKO")>0 && userAgent.indexOf("RV:11")>0)) {
-						fileId = URLEncoder.encode(t.getFileName(), "UTF-8");// IE浏览器
-					}else{
-						fileId = new String(t.getFileName().getBytes("UTF-8"), "ISO8859-1");// 谷歌
-					}
-					response.setHeader("Content-Disposition", "attachment;fileName="+fileId);
-
-					outputStream.write(bytes);
-					outputStream.flush();
-					outputStream.close();
-
-				} catch (IOException e) {
-					log.info("--文件下载异常：--", e);
-					throw new AppLogicException("文件流处理异常");
-				}
+				//获取标签中的文件名称
+				String tagValue = fileService.getTagValue(s3ObjectBO.getTagList(), S3TagKeyEnum.FILE_NAME.getCode());
+				String fileId = StringUtils.isEmpty(tagValue) ? t.getFileName() : tagValue;
+				downloadFileByte(request,response,fileId,s3ObjectBO.getBodys());
 				return null;
 			}
 		});
+	}
+	
+	//临时数据校验，是否对象拥有者
+	private void checkOwner(DownloadFileRequest req,S3ObjectBO s3ObjectBO){
+		if(!StringUtils.isEmpty(req.getUserId())){
+			//需要校验权限
+			for (TagBO tag : s3ObjectBO.getTagList()) {
+				//判断标签可以是否是owner
+				if(S3TagKeyEnum.FILE_NAME.getCode().equals(tag.getKey()) &&
+					req.getUserId().equals(tag.getValue())){
+					return;
+				}
+			}
+			log.warn("check.owner.error,file:{},userId:{}",s3ObjectBO.getBucketName()+s3ObjectBO.getFileName(),req.getUserId());
+			throw new AppLogicException(ErrCodeEnum.OBJECT_OP_AUTH_CHECK_FAILED.getCode());
+		}
+	}
+	
+	private void downloadFileByte(HttpServletRequest request,HttpServletResponse response,String fileName,byte[] bytes){
+		try {
+			//1下载文件流
+			OutputStream outputStream = response.getOutputStream();
+			response.setContentType("application/octet-stream");//告诉浏览器输出内容为流
+			response.setCharacterEncoding("UTF-8");
+			
+			String userAgent = request.getHeader("User-Agent").toUpperCase();//获取浏览器名（IE/Chome/firefox）
+			
+			
+			if (userAgent.contains("MSIE") ||
+				(userAgent.indexOf("GECKO")>0 && userAgent.indexOf("RV:11")>0)) {
+				fileName = URLEncoder.encode(fileName, "UTF-8");// IE浏览器
+			}else{
+				fileName = new String(fileName.getBytes("UTF-8"), "ISO8859-1");// 谷歌
+			}
+			response.setHeader("Content-Disposition", "attachment;fileName="+fileName);
+			
+			outputStream.write(bytes);
+			outputStream.flush();
+			outputStream.close();
+			
+		} catch (IOException e) {
+			log.error("--文件下载异常：--", e);
+			throw new AppLogicException(ErrCodeEnum.DOWNLOAD_FILE_ERROR.getCode());
+		}
 	}
 
 	@Override
@@ -589,6 +593,38 @@ public class FileController extends BaseController implements FileSrv {
 			}
 
 			return Boolean.FALSE;
+		});
+	}
+	
+	@ResponseBody
+	@Override
+	public BaseResponse<String> multiDownloadFile(HttpServletRequest request, HttpServletResponse response, MultiDownloadFileRequest downRequest){
+		return ServiceProvider.call(downRequest, MultiDownloadFileRequestV.class, String.class, req -> {
+			//分片下载最大范围
+			if(downRequest.getPageSize() == null || downRequest.getPageSize() > BizConstants.MULTI_DOWN_FILE_MAX_SIZE){
+				downRequest.setPageSize(BizConstants.MULTI_DOWN_FILE_MAX_SIZE);
+			}
+			if(downRequest.getStart() == null){
+				downRequest.setStart(0L);
+			}
+			S3ObjectBO t = new S3ObjectBO();
+			t.setBucketName(downRequest.getBucketName());
+			setPathAndFileName(t, downRequest.getFileId());
+			t.setVersionId(downRequest.getVersionId());
+			t.setRange("bytes=" + downRequest.getStart().longValue() + "-" + (downRequest.getStart().longValue() + downRequest.getPageSize()-1));
+			
+			//数据权限校验
+			fileService.checkDataOpAuth(t, OPAuthTypeEnum.READ.getCode());
+			
+			S3ObjectBO s3ObjectBO = (S3ObjectBO) fileService.getInfoAndBody(t);
+			
+			//获取标签中的文件名称
+			String tagValue = fileService.getTagValue(s3ObjectBO.getTagList(), S3TagKeyEnum.FILE_NAME.getCode());
+			String fileId = StringUtils.isEmpty(tagValue) ? t.getFileName() : tagValue;
+			//下载数据
+			downloadFileByte(request,response,fileId,s3ObjectBO.getBodys());
+			
+			return RespCodeEnum.SUCCESS.getCode();
 		});
 	}
 }

@@ -163,5 +163,22 @@ public interface FileSrv {
 	 **/
 	@PostMapping("/exist")
 	BaseResponse<Boolean> isExistFile(@RequestBody FileExistRequest request);
-
+	
+	/**
+	 * 分片下载，通过请求头Range区分
+	 * 最大范围后后端配置
+	 * Range格式：
+	 * 没有此字段或没有值：返回最大范围
+	 * a-  ：  从 a开始的最大范围
+	 * a   :
+	 * @description
+	 * @author miaomingming
+	 * @date 9:24 2020/4/2
+	 * @param request
+	 * @param response
+	 * @param downRequest
+	 * @return com.zysl.cloud.utils.common.BaseResponse<com.zysl.cloud.aws.api.dto.DownloadFileDTO>
+	 **/
+	@GetMapping("/multiDownload")
+	BaseResponse<String> multiDownloadFile(HttpServletRequest request, HttpServletResponse response, MultiDownloadFileRequest downRequest);
 }

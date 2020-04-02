@@ -34,19 +34,31 @@ public class BaseFileBO implements Serializable {
 	private byte[] bodys;
 
 	private String versionId;
-
+	
+	private String range;
+	
 	@Override
 	public String toString() {
-		return "BaseFileBO{" +
-				   "path='" + path + '\'' +
-				   ", fileName='" + fileName + '\'' +
-				   ", acl='" + acl + '\'' +
-				   ", contentEncoding='" + contentEncoding + '\'' +
-				   ", contentLanguage='" + contentLanguage + '\'' +
-				   ", contentLength=" + contentLength +
-				   ", contentMD5='" + contentMD5 + '\'' +
-				   ", contentType='" + contentType + '\'' +
-				   ", expires=" + expires +
-				   '}';
+		final StringBuffer sb = new StringBuffer("{\"BaseFileBO\":{");
+		sb.append("path='").append(path).append('\'');
+		sb.append(", fileName='").append(fileName).append('\'');
+		sb.append(", acl='").append(acl).append('\'');
+		sb.append(", contentEncoding='").append(contentEncoding).append('\'');
+		sb.append(", contentLanguage='").append(contentLanguage).append('\'');
+		sb.append(", contentLength=").append(contentLength);
+		sb.append(", contentMD5='").append(contentMD5).append('\'');
+		sb.append(", contentType='").append(contentType).append('\'');
+		sb.append(", expires=").append(expires);
+		if (bodys == null) {
+			sb.append(", bodys=");
+			sb.append("null");
+		} else {
+			sb.append(", bodys.length=");
+			sb.append(bodys.length);
+		}
+		sb.append(", versionId='").append(versionId).append('\'');
+		sb.append(", range='").append(range).append('\'');
+		sb.append("}}");
+		return sb.toString();
 	}
 }

@@ -343,13 +343,15 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		GetObjectRequest request = null;
 		if(StringUtils.isEmpty(t.getVersionId())){
 			request = GetObjectRequest.builder().
-					bucket(t.getBucketName()).key(StringUtils.join(t.getPath() ,t.getFileName())).build();
+					bucket(t.getBucketName()).key(StringUtils.join(t.getPath() ,t.getFileName()))
+					.range(t.getRange()).build();
 		}else {
 			request = GetObjectRequest.builder().
-					bucket(t.getBucketName()).key(StringUtils.join(t.getPath() ,t.getFileName())).
-					versionId(t.getVersionId()).build();
+					bucket(t.getBucketName()).key(StringUtils.join(t.getPath() ,t.getFileName()))
+					.range(t.getRange()).versionId(t.getVersionId()).build();
 		}
 
+		
 		ResponseBytes<GetObjectResponse> objectAsBytes = s3.getObject(request,
 				ResponseTransformer.toBytes());
 		GetObjectResponse objectResponse = objectAsBytes.response();
