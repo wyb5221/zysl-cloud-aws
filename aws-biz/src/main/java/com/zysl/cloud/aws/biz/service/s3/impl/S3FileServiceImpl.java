@@ -3,7 +3,6 @@ package com.zysl.cloud.aws.biz.service.s3.impl;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.zysl.cloud.aws.api.enums.DeleteStoreEnum;
-import com.zysl.cloud.aws.api.enums.OPAuthTypeEnum;
 import com.zysl.cloud.aws.biz.constant.S3Method;
 import com.zysl.cloud.aws.biz.enums.ErrCodeEnum;
 import com.zysl.cloud.aws.biz.enums.S3TagKeyEnum;
@@ -54,9 +53,11 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 
 		//获取目标文件标签内容
 		List<Tag> tagSet = Lists.newArrayList();
-		t.getTagList().forEach(obj -> {
-			tagSet.add(Tag.builder().key(obj.getKey()).value(obj.getValue()).build());
-		});
+		if(!CollectionUtils.isEmpty(t.getTagList())){
+			t.getTagList().forEach(obj -> {
+				tagSet.add(Tag.builder().key(obj.getKey()).value(obj.getValue()).build());
+			});
+		}
 		//设置标签信息
 		Tagging tagging = CollectionUtils.isEmpty(tagSet) ? null : Tagging.builder().tagSet(tagSet).build();
 
@@ -182,11 +183,13 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
 		List<CompletedPart> completedParts = Lists.newArrayList();
-		t.getETagList().forEach(obj -> {
-			completedParts.add(CompletedPart.builder()
-					.partNumber(obj.getPartNumber())
-					.eTag(obj.getETag()).build());
-		});
+		if(!CollectionUtils.isEmpty(t.getETagList())){
+			t.getETagList().forEach(obj -> {
+				completedParts.add(CompletedPart.builder()
+						.partNumber(obj.getPartNumber())
+						.eTag(obj.getETag()).build());
+			});
+		}
 
 		CompleteMultipartUploadRequest request =
 				CompleteMultipartUploadRequest.builder()
@@ -217,14 +220,16 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 				//删除整个文件信息, 先查询文件的版本信息
 				List<S3ObjectBO> objectList = getVersions(t);
 
-				List<ObjectIdentifier> objects = new ArrayList<>();
+				List<ObjectIdentifier> objects = Lists.newArrayList();
 				//查询文件的版本信息
-				objectList.forEach(obj -> {
-					ObjectIdentifier objectIdentifier = ObjectIdentifier.builder()
-							.key(obj.getFileName())
-							.versionId(obj.getVersionId()).build();
-					objects.add(objectIdentifier);
-				});
+				if(!CollectionUtils.isEmpty(objectList)){
+					objectList.forEach(obj -> {
+						ObjectIdentifier objectIdentifier = ObjectIdentifier.builder()
+								.key(obj.getFileName())
+								.versionId(obj.getVersionId()).build();
+						objects.add(objectIdentifier);
+					});
+				}
 				//删除列表
 				Delete delete = Delete.builder().objects(objects).build();
 				//逻辑删除
@@ -310,9 +315,11 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 
 		//获取目标文件标签内容
 		List<Tag> tagSet = Lists.newArrayList();
-		dest.getTagList().forEach(obj -> {
-			tagSet.add(Tag.builder().key(obj.getKey()).value(obj.getValue()).build());
-		});
+		if(!CollectionUtils.isEmpty(dest.getTagList())){
+			dest.getTagList().forEach(obj -> {
+				tagSet.add(Tag.builder().key(obj.getKey()).value(obj.getValue()).build());
+			});
+		}
 		//设置标签信息
 		Tagging tagging = CollectionUtils.isEmpty(tagSet) ? null : Tagging.builder().tagSet(tagSet).build();
 
@@ -482,30 +489,35 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 
 		List<ObjectVersion> list = response.versions();
 		List<S3ObjectBO> versionList = Lists.newArrayList();
-		list.forEach(obj -> {
-			S3ObjectBO s3Object = new S3ObjectBO();
-			//版本信息
-			s3Object.setVersionId(obj.versionId());
-			s3Object.setContentLength(Long.valueOf(obj.size()));
-			s3Object.setLastModified(Date.from(obj.lastModified()));
-			//文件信息
-			s3Object.setBucketName(response.name());
-			s3Object.setFileName(response.prefix());
-			versionList.add(s3Object);
-		});
+		if(!CollectionUtils.isEmpty(list)){
+			list.forEach(obj -> {
+				S3ObjectBO s3Object = new S3ObjectBO();
+				//版本信息
+				s3Object.setVersionId(obj.versionId());
+				s3Object.setContentLength(Long.valueOf(obj.size()));
+				s3Object.setLastModified(Date.from(obj.lastModified()));
+				//文件信息
+				s3Object.setBucketName(response.name());
+				s3Object.setFileName(response.prefix());
+				versionList.add(s3Object);
+			});
+		}
+
 		return versionList;
 	}
 
 	@Override
-	public void rename(S3ObjectBO t) {
+	public S3ObjectBO rename(S3ObjectBO t) {
 		log.info("s3file.rename.param:{}", JSON.toJSONString(t));
+
 		//先查询文件内容
 		S3ObjectBO s3ObjectBO = this.getInfoAndBody(t);
 
 		t.setBodys(s3ObjectBO.getBodys());
 		//在重新上传文件
-		this.create(t);
-
+		S3ObjectBO result = this.create(t);
+		result.setTagFilename(t.getTagFilename());
+		return result;
 	}
 
 	@Override
@@ -581,12 +593,15 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		if(null != response){
 			List<Tag> list = response.tagSet();
 			List<TagBO> tagList = Lists.newArrayList();
-			list.forEach(obj -> {
-				TagBO tag = new TagBO();
-				tag.setKey(obj.key());
-				tag.setValue(obj.value());
-				tagList.add(tag);
-			});
+			if(!CollectionUtils.isEmpty(list)){
+				list.forEach(obj -> {
+					TagBO tag = new TagBO();
+					tag.setKey(obj.key());
+					tag.setValue(obj.value());
+					tagList.add(tag);
+				});
+			}
+
 			return tagList;
 		}else{
 			return Lists.newArrayList();
