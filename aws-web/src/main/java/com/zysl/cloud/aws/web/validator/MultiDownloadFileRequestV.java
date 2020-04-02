@@ -21,17 +21,8 @@ public class MultiDownloadFileRequestV implements IValidator {
     
     @NotBlank
     private String fileId;
-    
-    @Min(0)
-    private Long start;
-    
-    private Long pageSize;
 
     @Override
     public void customizedValidate(List<String> errors, Integer userCase) {
-        //分片下载最大范围
-        if(pageSize != null && pageSize > BizConstants.MULTI_DOWN_FILE_MAX_SIZE){
-            errors.add("分片范围不能超过(byte):" + BizConstants.MULTI_DOWN_FILE_MAX_SIZE);
-        }
     }
 }
