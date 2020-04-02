@@ -8,17 +8,20 @@ import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 /**
- * 文件信息查询入参对象
+ * 创建断点续传入参
  */
 @Setter
 @Getter
-public class GetFileRequestV implements IValidator {
+public class CreateMultipartRequestV implements IValidator {
+    private static final long serialVersionUID = 6528744834290825581L;
 
     //文件夹名称
     @NotBlank
     private String bucketName;
-    //文件名称
+    //文件名
     @NotBlank
+    private String fileId;
+
     private String fileName;
 
     @Override

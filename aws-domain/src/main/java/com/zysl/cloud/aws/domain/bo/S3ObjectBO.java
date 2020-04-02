@@ -21,6 +21,13 @@ public class S3ObjectBO extends BaseFileBO implements Serializable {
 	private Integer deleteStore;
 	//权限校验参数
 	private String userId;
+	//断点续传id
+	private String uploadId;
+	//续传次数
+	private Integer partNumber;
+	//断点续传标记
+	private String eTag;
+	private List<MultipartUploadBO> eTagList;
 
 	//元素 List
 	//标签 List

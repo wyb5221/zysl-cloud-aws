@@ -33,8 +33,9 @@ public enum  ErrCodeEnum  {
 	S3_CREATE_BUCKET_EXIST(5020003, "创建bucket已存在."),
 	S3_COPY_SOURCE_ENCODE_ERROR(5020004, "复制对象时encode源url异常."),
 	S3_NO_SPACE_WARN(5020005, "s3服务器没有存储空间."),
-
+	
 	S3_BUCKET_OBJECT_NOT_EXIST(5020101, "创建对象已存在."),
+	DOWNLOAD_FILE_ERROR(5020102, "下载文件异常."),
 
 
 	WORD_FILE_NOT_EXIST(5110001, "word转pdf：找不到原始文件."),
