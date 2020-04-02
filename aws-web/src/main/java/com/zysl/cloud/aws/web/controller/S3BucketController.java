@@ -48,7 +48,7 @@ public class S3BucketController extends BaseController implements S3BucketSrv {
 	public BaseResponse<String> updateFileVersion(@RequestBody SetFileVersionRequest request){
 		return ServiceProvider.call(request, SetFileVersionRequestV.class, String.class,req->{
 			s3BucketService.setBucketVersion(request);
-			return RespCodeEnum.SUCCESS.getDesc();
+			return RespCodeEnum.SUCCESS.getName();
 		});
 	}
 

@@ -121,6 +121,6 @@ public interface IFileService<T> {
 	 * 文件重命名
 	 * @param t
 	 */
-	void rename(T t);
+	T rename(T t);
 
 }
