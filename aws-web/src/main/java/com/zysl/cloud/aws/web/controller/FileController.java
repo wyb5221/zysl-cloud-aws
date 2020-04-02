@@ -19,12 +19,14 @@ import com.zysl.cloud.aws.domain.bo.TagBO;
 import com.zysl.cloud.aws.utils.DateUtils;
 import com.zysl.cloud.aws.web.validator.*;
 import com.zysl.cloud.utils.BeanCopyUtil;
+import com.zysl.cloud.utils.SpringContextUtil;
 import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.common.AppLogicException;
 import com.zysl.cloud.utils.common.BasePaginationResponse;
 import com.zysl.cloud.utils.common.BaseResponse;
 import com.zysl.cloud.utils.enums.RespCodeEnum;
 import com.zysl.cloud.utils.service.provider.ServiceProvider;
+import com.zysl.cloud.utils.validator.BeanValidator;
 import java.util.ArrayList;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.core.ApplicationContext;
@@ -619,34 +621,107 @@ public class FileController extends BaseController implements FileSrv {
 	@ResponseBody
 	@Override
 	public BaseResponse<String> multiDownloadFile(HttpServletRequest request, HttpServletResponse response, MultiDownloadFileRequest downRequest){
-		return ServiceProvider.call(downRequest, MultiDownloadFileRequestV.class, String.class, req -> {
-			//分片下载最大范围
-			if (downRequest.getPageSize() == null || downRequest.getPageSize() > BizConstants.MULTI_DOWN_FILE_MAX_SIZE) {
-				downRequest.setPageSize(BizConstants.MULTI_DOWN_FILE_MAX_SIZE);
+		BaseResponse<String> baseResponse = new BaseResponse<>();
+		baseResponse.setSuccess(Boolean.FALSE);
+		
+		List<String> validate = new ArrayList<>();
+		try{
+			MultiDownloadFileRequestV validator = BeanCopyUtil.copy(downRequest, MultiDownloadFileRequestV.class);
+			BeanValidator beanValidator = SpringContextUtil.getBean("beanValidator", BeanValidator.class);
+			validate = beanValidator.validate(validator, BeanValidator.CASE_DEFAULT);
+			
+			if(!CollectionUtils.isEmpty(validate)){
+				baseResponse.setCode(RespCodeEnum.ILLEGAL_PARAMETER.getCode());
+				baseResponse.setMsg(RespCodeEnum.ILLEGAL_PARAMETER.getName());
+				baseResponse.setValidations(validate);
+				return baseResponse;
 			}
-			if (downRequest.getStart() == null) {
-				downRequest.setStart(0L);
-			}
+			
+			//从头信息取Range:bytes=0-1000
+			String range = request.getHeader("Range");
+			
+			//对Range数值做校验
+			Long[] byteLength = checkRange(range);
+			
 			S3ObjectBO t = new S3ObjectBO();
 			t.setBucketName(downRequest.getBucketName());
 			setPathAndFileName(t, downRequest.getFileId());
 			t.setVersionId(downRequest.getVersionId());
-			t.setRange("bytes=" + downRequest.getStart().longValue() + "-" + (downRequest.getStart().longValue() + downRequest.getPageSize() - 1));
-
+			t.setRange(StringUtils.join("bytes=",byteLength[0],"-",byteLength[1]));
+			
 			//数据权限校验
 			fileService.checkDataOpAuth(t, OPAuthTypeEnum.READ.getCode());
-
+			
 			S3ObjectBO s3ObjectBO = (S3ObjectBO) fileService.getInfoAndBody(t);
-
+			
+			//设置响应头：Content-Range: bytes 0-2000/4932
+			byteLength[1] = byteLength[1] > s3ObjectBO.getContentLength()-1 ? s3ObjectBO.getContentLength()-1 : byteLength[1];
+			String rspRange = StringUtils.join("bytes ",byteLength[0],"-",byteLength[1],"/",s3ObjectBO.getContentLength());
+			response.setHeader("Content-Range",rspRange);
+			
 			//获取标签中的文件名称
 			String tagValue = fileService.getTagValue(s3ObjectBO.getTagList(), S3TagKeyEnum.FILE_NAME.getCode());
 			String fileId = StringUtils.isEmpty(tagValue) ? t.getFileName() : tagValue;
+			
 			//下载数据
 			downloadFileByte(request, response, fileId, s3ObjectBO.getBodys());
-
-			return RespCodeEnum.SUCCESS.getCode();
-		});
+			return null;
+		}catch (AppLogicException e){
+			log.error("multiDownloadFile.AppLogicException:",e);
+			baseResponse.setMsg(e.getMessage());
+			return baseResponse;
+		}catch (Exception e){
+			log.error("multiDownloadFile.Exception:",e);
+			baseResponse.setMsg(e.getMessage());
+			return baseResponse;
+		}
+			
     }
+    
+    /**
+     * 校验range
+	 * 	支持以下3种格式
+	 * 	bytes=500-999` 表示第500-999字节范围的内容。
+	 * 	bytes=-500` 表示最后500字节的内容。
+	 * 	bytes=500-` 表示从第500字节开始到文件结束部分的内容。
+     * @description
+     * @author miaomingming
+     * @date 18:07 2020/4/2
+     * @param range
+     * @return java.lang.String
+     **/
+    private Long[] checkRange(String range){
+		Long[] byteLength = new Long[2];
+		byteLength[0] = 0L;
+		byteLength[1] = BizConstants.MULTI_DOWN_FILE_MAX_SIZE-1;
+		if(StringUtils.isBlank(range)){
+			return byteLength;
+		}
+		long start = 0,end = 0;
+		try{
+			String[] ranges = range.substring(6).split("-");
+			if(ranges.length != 2){
+				log.error("multi.download.range.format.error:{}",range);
+				throw new AppLogicException(ErrCodeEnum.MULTI_DOWNLOAD_FILE_FORMAT_RANGE_ERROR.getCode());
+			}
+			if(StringUtils.isNotBlank(ranges[0])){
+				start = Long.parseLong(ranges[0]);
+			}
+			if(StringUtils.isNotBlank(ranges[0])){
+				end = Long.parseLong(ranges[1]);
+			}
+			if(end - start >= BizConstants.MULTI_DOWN_FILE_MAX_SIZE - 1){
+				end = start + BizConstants.MULTI_DOWN_FILE_MAX_SIZE - 1;
+			}
+			
+			byteLength[0] = start;
+			byteLength[1] = end;
+			return byteLength;
+		}catch (Exception e){
+			log.error("multi.download.range.format.error:{},",range,e);
+			throw new AppLogicException(ErrCodeEnum.MULTI_DOWNLOAD_FILE_FORMAT_RANGE_ERROR.getCode());
+		}
+	}
 
 	@Override
 	public BaseResponse<String> createMultipart(CreateMultipartRequest request) {
@@ -716,6 +791,22 @@ public class FileController extends BaseController implements FileSrv {
 			uploadFieDTO.setVersionId(s3ObjectBO.getVersionId());
 			return uploadFieDTO;
 
+		});
+	}
+	
+	
+	@Override
+	public BaseResponse<String> abortMultipartUpload(@RequestBody AbortMultipartRequest request){
+		return ServiceProvider.call(request, CompleteMultipartRequestV.class, String.class, req -> {
+			S3ObjectBO t = new S3ObjectBO();
+			t.setBucketName(req.getBucketName());
+			setPathAndFileName(t, req.getFileId());
+			t.setUploadId(req.getUploadId());
+			
+			fileService.abortMultipartUpload(t);
+			
+			return RespCodeEnum.SUCCESS.getName();
+			
 		});
 	}
 }

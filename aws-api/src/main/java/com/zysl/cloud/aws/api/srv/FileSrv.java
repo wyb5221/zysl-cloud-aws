@@ -207,6 +207,16 @@ public interface FileSrv {
 	 */
 	@PostMapping("/complete")
 	BaseResponse<UploadFieDTO> completeMultipart(@RequestBody CompleteMultipartRequest request);
-
+	
+	/**
+	 * 取消分片上传
+	 * @description
+	 * @author miaomingming
+	 * @date 17:47 2020/4/2
+	 * @param request
+	 * @return com.zysl.cloud.utils.common.BaseResponse<java.lang.String>
+	 **/
+	@PostMapping("/abortMulti")
+	BaseResponse<String> abortMultipartUpload(@RequestBody AbortMultipartRequest request);
 
 }

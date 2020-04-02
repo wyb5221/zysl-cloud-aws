@@ -36,6 +36,7 @@ public enum  ErrCodeEnum  {
 	
 	S3_BUCKET_OBJECT_NOT_EXIST(5020101, "创建对象已存在."),
 	DOWNLOAD_FILE_ERROR(5020102, "下载文件异常."),
+	MULTI_DOWNLOAD_FILE_FORMAT_RANGE_ERROR(5020102, "分片下载文件时提交range格式异常."),
 
 
 	WORD_FILE_NOT_EXIST(5110001, "word转pdf：找不到原始文件."),

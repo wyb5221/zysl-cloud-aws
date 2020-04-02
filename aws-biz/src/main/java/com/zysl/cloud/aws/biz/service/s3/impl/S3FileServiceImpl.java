@@ -202,6 +202,23 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		t.setVersionId(response.versionId());
 		return t;
 	}
+	
+	@Override
+	public void abortMultipartUpload(S3ObjectBO t) {
+		log.info("s3file.abortMultipartUpload.param:{}", JSON.toJSONString(t));
+		//获取s3初始化对象
+		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
+		
+		AbortMultipartUploadRequest request = AbortMultipartUploadRequest.builder()
+											.bucket(t.getBucketName())
+											.key(String.join(t.getPath(), t.getFileName()))
+											.uploadId(t.getUploadId())
+											.build();
+			
+		s3FactoryService.callS3Method(request, s3, S3Method.ABORT_MULTIPART_UPLOAD);
+	}
+	
+	
 
 
 	@Override

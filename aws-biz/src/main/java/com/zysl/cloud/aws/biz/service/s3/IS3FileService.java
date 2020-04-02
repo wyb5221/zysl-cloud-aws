@@ -83,5 +83,15 @@ public interface IS3FileService<T> extends IFileService<T> {
 	 * @return
 	 */
 	T completeMultipartUpload(T t);
-
+	
+	/**
+	 * 取消分片上传，将删除该对象
+	 * @description
+	 * @author miaomingming
+	 * @date 16:53 2020/4/2
+	 * @param t
+	 * @return T
+	 **/
+	void abortMultipartUpload(T t);
+	
 }
