@@ -2,6 +2,7 @@ package com.zysl.cloud.aws.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,16 @@ public class DateUtils {
 	private static SimpleDateFormat format_1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private static SimpleDateFormat format_2 = new SimpleDateFormat("yyyy-MM-dd");
 
+	public static Date from(Instant instant) {
+		if(instant == null){
+			return null;
+		}
+		try {
+			return new Date(instant.toEpochMilli());
+		} catch (ArithmeticException ex) {
+			throw new IllegalArgumentException(ex);
+		}
+	}
 	/**
 	 * 给时间加上几个小时
 	 * @param date

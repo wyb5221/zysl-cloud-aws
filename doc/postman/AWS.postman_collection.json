@@ -1,0 +1,1465 @@
+{
+	"id": "9f9ce794-db79-42c4-902e-75dacf77788d",
+	"name": "AWS",
+	"description": null,
+	"auth": null,
+	"events": null,
+	"variables": null,
+	"order": [],
+	"folders_order": [
+		"4aae9b3e-7be9-4266-b824-4c5b28cd856b",
+		"9a68fb06-0d66-47bc-94d8-b0aeafeface0"
+	],
+	"folders": [
+		{
+			"id": "2bc10fa8-63af-410d-840e-005eba781591",
+			"name": "bucket",
+			"description": null,
+			"auth": null,
+			"events": null,
+			"collection": "9f9ce794-db79-42c4-902e-75dacf77788d",
+			"folder": "4aae9b3e-7be9-4266-b824-4c5b28cd856b",
+			"order": [
+				"5e4c3fe5-1b58-4623-9e70-5687a35ee0db",
+				"342f1c66-955f-49b4-9e2d-b106a6a43359",
+				"9c1a1858-0235-4da8-ac49-036ff71ef190",
+				"d0be0638-2f0c-4f6d-a8c2-62da952e0835"
+			],
+			"folders_order": []
+		},
+		{
+			"id": "4b1f087b-3650-4b76-87f5-a27e4ac73b1c",
+			"name": "bucket",
+			"description": null,
+			"auth": null,
+			"events": null,
+			"collection": "9f9ce794-db79-42c4-902e-75dacf77788d",
+			"folder": "9a68fb06-0d66-47bc-94d8-b0aeafeface0",
+			"order": [
+				"a25fd297-d13f-4a4d-8446-3fb47fdf2989",
+				"c20a5473-ff23-492c-b6a3-6d15a8cdac59",
+				"ef7a159b-df80-44b8-aad5-da8a73411c5f",
+				"afb6eaf7-5ff2-4844-88f7-54e5557d4019"
+			],
+			"folders_order": []
+		},
+		{
+			"id": "8e7a8b6d-072f-40b1-a0c5-2290f3d7e9d8",
+			"name": "file",
+			"description": null,
+			"auth": null,
+			"events": null,
+			"collection": "9f9ce794-db79-42c4-902e-75dacf77788d",
+			"folder": "9a68fb06-0d66-47bc-94d8-b0aeafeface0",
+			"order": [
+				"e687c4a2-5aef-4047-a6a0-2deb48142ed4",
+				"798ac95b-d93b-4980-807f-f4c49943a30e",
+				"511ca6b4-0439-476b-952a-4506e6c8e22a",
+				"002cf1e9-effb-475b-a8aa-f0cba066122b",
+				"f5b65932-7fce-4250-a24f-efaeb95fbd33",
+				"1ddbb08c-9dd6-41ac-b0c2-95cc48f60775",
+				"cf09a04d-10bb-45c4-9e34-84f6470522b4",
+				"be08edfd-db0c-4c5b-b743-0ed169e608a2",
+				"6e2ef76a-3458-45c2-8305-5a50c2fa7925",
+				"45e9847a-240b-4c6d-98c0-9a3374aadebc",
+				"0b233d9d-bb94-4709-bdbc-2008ab6d5357",
+				"9ef22a9a-a722-4ae4-b20f-9947247af9ca",
+				"6bc17e3c-e679-4543-8f60-bf5507934da1"
+			],
+			"folders_order": []
+		},
+		{
+			"id": "9f851983-7d81-4152-b3d1-648fdb3782d2",
+			"name": "file",
+			"description": null,
+			"auth": null,
+			"events": null,
+			"collection": "9f9ce794-db79-42c4-902e-75dacf77788d",
+			"folder": "4aae9b3e-7be9-4266-b824-4c5b28cd856b",
+			"order": [
+				"752dcae7-8fc0-4397-8e51-6d50ae621932",
+				"3e37c4cc-acfa-4f44-896d-e3239262778a",
+				"e77e8539-1b42-4a2a-b888-caf07b7e614e",
+				"ac130d51-334c-46ed-a28e-4f1e3e620d22",
+				"82ab5c6f-12c2-47f2-8ece-c5fdca5923a6",
+				"01924992-3f91-462d-aa22-5a34dd605741",
+				"8fc10763-57a0-4585-ae68-786521441197",
+				"52a300e3-5c53-45cd-8b23-13c26f9dbae1",
+				"ec0b2a30-0365-4efa-ba6e-1df70a46cbe4",
+				"4700828b-08b4-4b19-8c3f-302b59cc70d7",
+				"12f38ad9-d817-4a5f-8bae-f8958e14d7e5",
+				"9b3d0b07-b873-4709-85c2-aaf322c5d22f",
+				"5c1790fc-86f9-4f13-8266-8da4e3dfeb32",
+				"48e35c2c-8520-4766-8f9d-41f6d4e17a67"
+			],
+			"folders_order": []
+		},
+		{
+			"id": "5d99c897-b012-4988-84e2-ce2c0463ff71",
+			"name": "folder",
+			"description": null,
+			"auth": null,
+			"events": null,
+			"collection": "9f9ce794-db79-42c4-902e-75dacf77788d",
+			"folder": "9a68fb06-0d66-47bc-94d8-b0aeafeface0",
+			"order": [
+				"78e60b81-69b6-4b1d-aca6-74353c90efad",
+				"4f7288a3-49df-464a-a375-9256695152da",
+				"3343fac5-b71b-40bf-be46-3b0aeadafb43",
+				"d4ec5e49-d612-44c1-916e-52149bd6a339",
+				"a5f26a70-678f-4565-9b84-18a12cad8bc8"
+			],
+			"folders_order": []
+		},
+		{
+			"id": "a2aa37b5-01f9-4b6b-84f7-55edcc7adbea",
+			"name": "folder",
+			"description": null,
+			"auth": null,
+			"events": null,
+			"collection": "9f9ce794-db79-42c4-902e-75dacf77788d",
+			"folder": "4aae9b3e-7be9-4266-b824-4c5b28cd856b",
+			"order": [
+				"00f136ea-8131-4eda-a80e-91cf6eeda164",
+				"f1f0cb70-3d08-43ae-bb8a-af48396119a1",
+				"95698fa1-b982-43d1-85c8-94a6846d4d74",
+				"95c19733-ce3c-4c5d-a3f9-fb776bb235cd",
+				"18f28185-5c18-4f2f-9253-a4d8d0f96075"
+			],
+			"folders_order": []
+		},
+		{
+			"id": "4aae9b3e-7be9-4266-b824-4c5b28cd856b",
+			"name": "localhost",
+			"description": null,
+			"auth": null,
+			"events": null,
+			"collection": "9f9ce794-db79-42c4-902e-75dacf77788d",
+			"folder": null,
+			"order": [],
+			"folders_order": [
+				"2bc10fa8-63af-410d-840e-005eba781591",
+				"a2aa37b5-01f9-4b6b-84f7-55edcc7adbea",
+				"9f851983-7d81-4152-b3d1-648fdb3782d2"
+			]
+		},
+		{
+			"id": "9a68fb06-0d66-47bc-94d8-b0aeafeface0",
+			"name": "测试",
+			"description": null,
+			"auth": null,
+			"events": null,
+			"collection": "9f9ce794-db79-42c4-902e-75dacf77788d",
+			"folder": null,
+			"order": [],
+			"folders_order": [
+				"4b1f087b-3650-4b76-87f5-a27e4ac73b1c",
+				"5d99c897-b012-4988-84e2-ce2c0463ff71",
+				"8e7a8b6d-072f-40b1-a0c5-2290f3d7e9d8"
+			]
+		}
+	],
+	"requests": [
+		{
+			"id": "002cf1e9-effb-475b-a8aa-f0cba066122b",
+			"name": "查询文件信息",
+			"url": "{{test}}/aws/file/getFileSize?bucketName=user01&fileName=1994589f-1169-438b-bcd4-af3d1c9972d0.webm",
+			"description": null,
+			"data": [],
+			"dataMode": null,
+			"headerData": [],
+			"method": "GET",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "user01"
+				},
+				{
+					"key": "fileName",
+					"value": "1994589f-1169-438b-bcd4-af3d1c9972d0.webm"
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "8e7a8b6d-072f-40b1-a0c5-2290f3d7e9d8",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "00f136ea-8131-4eda-a80e-91cf6eeda164",
+			"name": "创建目录",
+			"url": "{{localhost}}/aws/folder/add",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "a2aa37b5-01f9-4b6b-84f7-55edcc7adbea",
+			"rawModeData": "{\n\t\"bucketName\":\"test-yy07\",\n\t\"folderName\":\"ABC/\"\n}",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "01924992-3f91-462d-aa22-5a34dd605741",
+			"name": "下载文件",
+			"url": "{{localhost}}/aws/file/downloadFile?bucketName=test-yy07&fileId=base1.txt",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"value": "application/json",
+					"type": "text"
+				}
+			],
+			"method": "GET",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy07"
+				},
+				{
+					"key": "fileId",
+					"value": "base1.txt"
+				},
+				{
+					"key": "versionId",
+					"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+					"enabled": false
+				},
+				{
+					"key": "userId",
+					"value": "wyb1",
+					"enabled": false
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "9f851983-7d81-4152-b3d1-648fdb3782d2",
+			"rawModeData": "{\n\t\"bucketName\":\"test-yy07\",\n\t\"fileId\":\"ww1009.txt\",\n\t\"versionId\":\"XVJ9BWF.vzw8p68gvdr5tLvbUJYK7YiS\"\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "0b233d9d-bb94-4709-bdbc-2008ab6d5357",
+			"name": "删除对象",
+			"url": "{{test}}/aws/file/delete?",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"type": "text",
+					"value": "application/json"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy06",
+					"enabled": false
+				},
+				{
+					"key": "key",
+					"value": "test/111",
+					"enabled": false
+				},
+				{
+					"key": "versionId",
+					"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+					"enabled": false
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "8e7a8b6d-072f-40b1-a0c5-2290f3d7e9d8",
+			"rawModeData": "{\n\t\"bucketName\":\"wyb001\",\n\t\"key\":\"test01/tt.txt\",\n\t\"versionId\":\"0WnktG0t717f0x7nE9f17opofffAt5WA\",\n\t\"deleteStore\":1\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "12f38ad9-d817-4a5f-8bae-f8958e14d7e5",
+			"name": "删除对象",
+			"url": "{{localhost}}/aws/file/delete?",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"type": "text",
+					"value": "application/json"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy06",
+					"enabled": false
+				},
+				{
+					"key": "key",
+					"value": "test/111",
+					"enabled": false
+				},
+				{
+					"key": "versionId",
+					"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+					"enabled": false
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "9f851983-7d81-4152-b3d1-648fdb3782d2",
+			"rawModeData": "{\n\t\"bucketName\":\"test-yy07\",\n\t\"key\":\"base1.txt\",\n\t\"versionId\":\"\",\n\t\"deleteStore\":1\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "18f28185-5c18-4f2f-9253-a4d8d0f96075",
+			"name": "目录移动",
+			"url": "{{localhost}}/aws/folder/move",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "a2aa37b5-01f9-4b6b-84f7-55edcc7adbea",
+			"rawModeData": "{\n\t\"sourceBucket\":\"test-yy07\",\n\t\"sourceKey\":\"ACAC/\",\n\t\n\t\"destBucket\":\"test-yy07\",\n\t\"destKey\":\"DEDE/\"\n}",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "1ddbb08c-9dd6-41ac-b0c2-95cc48f60775",
+			"name": "下载文件",
+			"url": "{{test}}/aws/file/downloadFile?bucketName=wyb001&fileId=t-01.txt",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"value": "application/json",
+					"type": "text"
+				}
+			],
+			"method": "GET",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "wyb001"
+				},
+				{
+					"key": "fileId",
+					"value": "t-01.txt"
+				},
+				{
+					"key": "versionId",
+					"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+					"enabled": false
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "8e7a8b6d-072f-40b1-a0c5-2290f3d7e9d8",
+			"rawModeData": "{\n\t\"bucketName\":\"test-yy02\",\n\t\"fileId\":\"tt-01.txt\",\n\t\"versionId\":\"XVJ9BWF.vzw8p68gvdr5tLvbUJYK7YiS\"\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "3343fac5-b71b-40bf-be46-3b0aeadafb43",
+			"name": "查询目录对象列表",
+			"url": "{{test}}/aws/folder/objects",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "5d99c897-b012-4988-84e2-ce2c0463ff71",
+			"rawModeData": "{\n\t\"bucketName\":\"wyb001\",\n\t\"key\":\"\",\n\t\"keyType\":0\n}",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "342f1c66-955f-49b4-9e2d-b106a6a43359",
+			"name": "查询所有bucket列表",
+			"url": "{{localhost}}/aws/bucket/getBuckets?serviceNo=001",
+			"description": null,
+			"data": [],
+			"dataMode": null,
+			"headerData": [],
+			"method": "GET",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy05",
+					"enabled": false
+				},
+				{
+					"key": "serviceNo",
+					"value": "001"
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "2bc10fa8-63af-410d-840e-005eba781591",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "3e37c4cc-acfa-4f44-896d-e3239262778a",
+			"name": "文件流上传",
+			"url": "{{localhost}}/aws/file/uploadFileInfo",
+			"description": null,
+			"data": [
+				{
+					"key": "file",
+					"type": "file"
+				},
+				{
+					"key": "bucketName",
+					"value": "test-yy07",
+					"type": "text"
+				},
+				{
+					"key": "fileId",
+					"value": "ww1009.txt",
+					"type": "text"
+				}
+			],
+			"dataMode": "params",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"value": "multipart/form-data",
+					"type": "text"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "9f851983-7d81-4152-b3d1-648fdb3782d2",
+			"headers": "Content-Type: multipart/form-data\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "45e9847a-240b-4c6d-98c0-9a3374aadebc",
+			"name": "文件分享",
+			"url": "{{test}}/aws/file/shareFile",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"value": "application/json",
+					"type": "text"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "8e7a8b6d-072f-40b1-a0c5-2290f3d7e9d8",
+			"rawModeData": "{\n\t\"bucketName\":\"wyb001\",\n\t\"fileName\":\"tt-02.doc\"\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "4700828b-08b4-4b19-8c3f-302b59cc70d7",
+			"name": "文件分享",
+			"url": "{{localhost}}/aws/file/shareFile",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"value": "application/json",
+					"type": "text"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "9f851983-7d81-4152-b3d1-648fdb3782d2",
+			"rawModeData": "{\n\t\"bucketName\":\"test-yy07\",\n\t\"fileName\":\"ww1009.txt\",\n\t\"maxDownloadAmout\":5,\n\t\"maxHours\":10\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "48e35c2c-8520-4766-8f9d-41f6d4e17a67",
+			"name": "设置权限",
+			"url": "{{localhost}}/aws/file/setDataAuth",
+			"description": "",
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"value": "application/json"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": [],
+			"folder": "9f851983-7d81-4152-b3d1-648fdb3782d2",
+			"rawModeData": "{\n\t\"bucketName\":\"test-yy10\",\n\t\"fileName\":\"base.txt\",\n\t\"userAuths\":[\n\t\t{\"key\":\"001\",\"value\":\"r\"}\n\t\t],\n\t\"groupAuths\":[\n\t\t{\"key\":\"g01\",\"value\":\"m\"}\n\t\t],\n\t\"everyOneAuths\":\"rd\"\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "4f7288a3-49df-464a-a375-9256695152da",
+			"name": "删除目录",
+			"url": "{{test}}/aws/folder/delete",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "5d99c897-b012-4988-84e2-ce2c0463ff71",
+			"rawModeData": "{\n\t\"bucketName\":\"wyb001\",\n\t\"key\":\"test01-move\"\n}",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "511ca6b4-0439-476b-952a-4506e6c8e22a",
+			"name": "查询文件大小",
+			"url": "{{test}}/aws/file/getFileSize?bucketName=user01&fileName=1994589f-1169-438b-bcd4-af3d1c9972d0.webm",
+			"description": null,
+			"data": [],
+			"dataMode": null,
+			"headerData": [],
+			"method": "GET",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "user01"
+				},
+				{
+					"key": "fileName",
+					"value": "1994589f-1169-438b-bcd4-af3d1c9972d0.webm"
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "8e7a8b6d-072f-40b1-a0c5-2290f3d7e9d8",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "52a300e3-5c53-45cd-8b23-13c26f9dbae1",
+			"name": "设置文件标签信息",
+			"url": "{{localhost}}/aws/file/setTag",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"value": "application/json",
+					"type": "text"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "9f851983-7d81-4152-b3d1-648fdb3782d2",
+			"rawModeData": "{\n\t\"bucket\":\"test-yy07\",\n\t\"keyList\":[{\n\t\t\"key\":\"ww1001.txt\",\n\t\t\"versionId\":\"\"\n\t},{\n\t\t\"key\":\"ww1009.txt\",\n\t\t\"versionId\":\"\"\n\t}\n\t],\n\t\"tageList\":[{\n\t\t\"key\":\"owner\",\n\t\t\"value\":\"wyb\"\n\t}]\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "5c1790fc-86f9-4f13-8266-8da4e3dfeb32",
+			"name": "文件移动",
+			"url": "{{localhost}}/aws/file/move?",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"type": "text",
+					"value": "application/json"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy06",
+					"enabled": false
+				},
+				{
+					"key": "key",
+					"value": "test/111",
+					"enabled": false
+				},
+				{
+					"key": "versionId",
+					"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+					"enabled": false
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "9f851983-7d81-4152-b3d1-648fdb3782d2",
+			"rawModeData": "{\n\t\"bucketName\":\"test-yy08\",\n\t\"key\":\"txt005.txt\",\n\t\"deleteStore\":1\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "5e4c3fe5-1b58-4623-9e70-5687a35ee0db",
+			"name": "创建存储桶bucket",
+			"url": "{{localhost}}/aws/bucket/createBucket?bucketName=test-yy10&serviceNo=001",
+			"description": null,
+			"data": [],
+			"dataMode": null,
+			"headerData": [],
+			"method": "GET",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy10"
+				},
+				{
+					"key": "serviceNo",
+					"value": "001"
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "2bc10fa8-63af-410d-840e-005eba781591",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "6bc17e3c-e679-4543-8f60-bf5507934da1",
+			"name": "文件移动",
+			"url": "{{test}}/aws/file/move?",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"type": "text",
+					"value": "application/json"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy06",
+					"enabled": false
+				},
+				{
+					"key": "key",
+					"value": "test/111",
+					"enabled": false
+				},
+				{
+					"key": "versionId",
+					"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+					"enabled": false
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "8e7a8b6d-072f-40b1-a0c5-2290f3d7e9d8",
+			"rawModeData": "{\n\t\"sourceBucket\":\"wyb001\",\n\t\"sourceKey\":\"www001-1.txt\",\n\t\n\t\"destBucket\":\"wyb001\",\n\t\"destKey\":\"www001-2.txt\"\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "6e2ef76a-3458-45c2-8305-5a50c2fa7925",
+			"name": "word转pdf",
+			"url": "{{test}}/aws/file/word2pdf",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"value": "application/json",
+					"type": "text"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "8e7a8b6d-072f-40b1-a0c5-2290f3d7e9d8",
+			"rawModeData": "{\n\t\"bucketName\":\"wyb001\",\n\t\"fileName\":\"tt-02.doc\",\n\t\"textMark\":\"汪勇彬\"\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "752dcae7-8fc0-4397-8e51-6d50ae621932",
+			"name": "上传文件 Copy",
+			"url": "{{localhost}}/aws/file/uploadFile",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"value": "application/json",
+					"type": "text"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "9f851983-7d81-4152-b3d1-648fdb3782d2",
+			"rawModeData": "{\n\t\"fileId\":\"base1.txt\",\n\t\"bucketName\":\"test-yy07\",\n\t\"data\":\"5Lit5Zu95YyX5LqsDQpiYXNl\"\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "78e60b81-69b6-4b1d-aca6-74353c90efad",
+			"name": "创建目录",
+			"url": "{{test}}/aws/folder/add",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "5d99c897-b012-4988-84e2-ce2c0463ff71",
+			"rawModeData": "{\n\t\"bucketName\":\"wyb001\",\n\t\"folderName\":\"test01\"\n}",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "798ac95b-d93b-4980-807f-f4c49943a30e",
+			"name": "文件流上传",
+			"url": "{{test}}/aws/file/uploadFileInfo",
+			"description": null,
+			"data": [
+				{
+					"key": "file",
+					"type": "file"
+				},
+				{
+					"key": "bucketName",
+					"value": "wyb001",
+					"type": "text"
+				},
+				{
+					"key": "fileId",
+					"value": "test01/www001.txt",
+					"type": "text"
+				}
+			],
+			"dataMode": "params",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"value": "application/json",
+					"type": "text"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "8e7a8b6d-072f-40b1-a0c5-2290f3d7e9d8",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "82ab5c6f-12c2-47f2-8ece-c5fdca5923a6",
+			"name": "查询文件版本号",
+			"url": "{{localhost}}/aws/file/getFileVersion?bucketName=test-yy07&fileName=share/ww1009.txt",
+			"description": null,
+			"data": [],
+			"dataMode": null,
+			"headerData": [],
+			"method": "GET",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy07"
+				},
+				{
+					"key": "fileName",
+					"value": "share/ww1009.txt"
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "9f851983-7d81-4152-b3d1-648fdb3782d2",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "8fc10763-57a0-4585-ae68-786521441197",
+			"name": "分享文件下载",
+			"url": "{{localhost}}/aws/file/shareDownloadFile?bucketName=test-yy07&fileId=share/ww1009.txt",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"value": "application/json",
+					"type": "text"
+				}
+			],
+			"method": "GET",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy07"
+				},
+				{
+					"key": "fileId",
+					"value": "share/ww1009.txt"
+				},
+				{
+					"key": "versionId",
+					"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+					"enabled": false
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "9f851983-7d81-4152-b3d1-648fdb3782d2",
+			"rawModeData": "{\n\t\"bucketName\":\"test-yy02\",\n\t\"fileId\":\"tt-01.txt\",\n\t\"versionId\":\"XVJ9BWF.vzw8p68gvdr5tLvbUJYK7YiS\"\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "95698fa1-b982-43d1-85c8-94a6846d4d74",
+			"name": "查询目录对象列表",
+			"url": "{{localhost}}/aws/folder/objects",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "a2aa37b5-01f9-4b6b-84f7-55edcc7adbea",
+			"rawModeData": "{\n\t\"bucketName\":\"test-yy07\",\n\t\"key\":\"wyb/\",\n\t\"userId\":\"\",\n\t\"keyType\":2\n}",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "95c19733-ce3c-4c5d-a3f9-fb776bb235cd",
+			"name": "目录复制",
+			"url": "{{localhost}}/aws/folder/copy",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "a2aa37b5-01f9-4b6b-84f7-55edcc7adbea",
+			"rawModeData": "{\n\t\"sourceBucket\":\"test-yy07\",\n\t\"sourceKey\":\"wyb/\",\n\t\n\t\"destBucket\":\"test-yy07\",\n\t\"destKey\":\"wyb01/\"\n}",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "9b3d0b07-b873-4709-85c2-aaf322c5d22f",
+			"name": "文件复制",
+			"url": "{{localhost}}/aws/file/copy?",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"type": "text",
+					"value": "application/json"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy06",
+					"enabled": false
+				},
+				{
+					"key": "key",
+					"value": "test/111",
+					"enabled": false
+				},
+				{
+					"key": "versionId",
+					"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+					"enabled": false
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "9f851983-7d81-4152-b3d1-648fdb3782d2",
+			"rawModeData": "{\n\t\"sourceBucket\":\"test-yy07\",\n\t\"sourceKey\":\"测试.pdf\",\n\t\n\t\"destBucket\":\"test-yy07\",\n\t\"destKey\":\"wyb/测试-张.pdf\"\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "9c1a1858-0235-4da8-ac49-036ff71ef190",
+			"name": "设置版本权限",
+			"url": "{{localhost}}/aws/bucket/setVersion?",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"value": "application/json",
+					"type": "text"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy07",
+					"enabled": false
+				},
+				{
+					"key": "status",
+					"value": "Enabled",
+					"enabled": false
+				},
+				{
+					"key": "",
+					"value": "Suspended",
+					"enabled": false
+				},
+				{
+					"key": "",
+					"value": "Enabled",
+					"enabled": false
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "2bc10fa8-63af-410d-840e-005eba781591",
+			"rawModeData": "{\n\t\"bucketName\":\"test-yy10\",\n\t\"status\":\"Enabled\"\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "9ef22a9a-a722-4ae4-b20f-9947247af9ca",
+			"name": "文件复制",
+			"url": "{{test}}/aws/file/copy?",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"type": "text",
+					"value": "application/json"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy06",
+					"enabled": false
+				},
+				{
+					"key": "key",
+					"value": "test/111",
+					"enabled": false
+				},
+				{
+					"key": "versionId",
+					"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+					"enabled": false
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "8e7a8b6d-072f-40b1-a0c5-2290f3d7e9d8",
+			"rawModeData": "{\n\t\"sourceBucket\":\"wyb001\",\n\t\"sourceKey\":\"www001.txt\",\n\t\n\t\"destBucket\":\"wyb001\",\n\t\"destKey\":\"www001-1.txt\"\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "a25fd297-d13f-4a4d-8446-3fb47fdf2989",
+			"name": "创建存储桶bucket",
+			"url": "{{test}}/aws/bucket/createBucket?bucketName=wyb001&serviceNo=1",
+			"description": null,
+			"data": [],
+			"dataMode": null,
+			"headerData": [],
+			"method": "GET",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "wyb001"
+				},
+				{
+					"key": "serviceNo",
+					"value": "1"
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "4b1f087b-3650-4b76-87f5-a27e4ac73b1c",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "a5f26a70-678f-4565-9b84-18a12cad8bc8",
+			"name": "目录移动",
+			"url": "{{test}}/aws/folder/move",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "5d99c897-b012-4988-84e2-ce2c0463ff71",
+			"rawModeData": "{\n\t\"sourceBucket\":\"test-yy10\",\n\t\"sourceKey\":\"yy\",\n\t\n\t\"destBucket\":\"test-yy10\",\n\t\"destKey\":\"QA\"\n}",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "ac130d51-334c-46ed-a28e-4f1e3e620d22",
+			"name": "查询文件信息",
+			"url": "{{localhost}}/aws/file/getFileInfo?bucketName=test-yy10&fileName=base.txt",
+			"description": null,
+			"data": [],
+			"dataMode": null,
+			"headerData": [
+				{
+					"key": "auth-token",
+					"value": "01:g1_g2",
+					"description": "",
+					"enabled": true
+				}
+			],
+			"method": "GET",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy10",
+					"equals": true,
+					"description": "",
+					"enabled": true
+				},
+				{
+					"key": "fileName",
+					"value": "base.txt",
+					"equals": true,
+					"description": "",
+					"enabled": true
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "9f851983-7d81-4152-b3d1-648fdb3782d2",
+			"headers": "auth-token: 01:g1_g2\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "afb6eaf7-5ff2-4844-88f7-54e5557d4019",
+			"name": "获取文件夹下所有对象",
+			"url": "{{test}}/aws/bucket/getFilesByBucket?bucketName=user01",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "user01"
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "4b1f087b-3650-4b76-87f5-a27e4ac73b1c",
+			"rawModeData": "{\n\t\"bucketName\":\"wyb001\",\n\t\"pageIndex\":4,\n\t\"pageSize\":5\n}",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "be08edfd-db0c-4c5b-b743-0ed169e608a2",
+			"name": "分享文件下载",
+			"url": "{{test}}/aws/file/downloadFile?bucketName=wyb001&fileId=tt-02.txt&versionId=cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"value": "application/json",
+					"type": "text"
+				}
+			],
+			"method": "GET",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "wyb001"
+				},
+				{
+					"key": "fileId",
+					"value": "tt-02.txt"
+				},
+				{
+					"key": "versionId",
+					"value": "cTlvcvNf_DspdG.Pq9w1Poof_J6EaivY"
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "8e7a8b6d-072f-40b1-a0c5-2290f3d7e9d8",
+			"rawModeData": "{\n\t\"bucketName\":\"test-yy02\",\n\t\"fileId\":\"tt-01.txt\",\n\t\"versionId\":\"XVJ9BWF.vzw8p68gvdr5tLvbUJYK7YiS\"\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "c20a5473-ff23-492c-b6a3-6d15a8cdac59",
+			"name": "查询所有bucket列表",
+			"url": "{{test}}/aws/bucket/getBuckets?",
+			"description": null,
+			"data": [],
+			"dataMode": null,
+			"headerData": [],
+			"method": "GET",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy05",
+					"enabled": false
+				},
+				{
+					"key": "serviceNo",
+					"value": "001",
+					"enabled": false
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "4b1f087b-3650-4b76-87f5-a27e4ac73b1c",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "cf09a04d-10bb-45c4-9e34-84f6470522b4",
+			"name": "设置文件标签信息",
+			"url": "{{test}}/aws/file/setTag",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"value": "application/json",
+					"type": "text"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "8e7a8b6d-072f-40b1-a0c5-2290f3d7e9d8",
+			"rawModeData": "{\n\t\"bucket\":\"wyb001\",\n\t\"key\":\"www003.txt\",\n\t\"versionId\":\"HiAcSauUqvdvZduHF7UtMJfpkfwS0l9\",\n\t\"tageList\":[{\n\t\t\"key\":\"create\",\n\t\t\"value\":\"wyb\"\n\t},\n\t{\n\t\t\"key\":\"amount\",\n\t\t\"value\":\"10\"\n\t}]\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "d0be0638-2f0c-4f6d-a8c2-62da952e0835",
+			"name": "获取文件夹下所有对象",
+			"url": "{{localhost}}/aws/bucket/getFilesByBucket?bucketName=test-yy05",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy05"
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "2bc10fa8-63af-410d-840e-005eba781591",
+			"rawModeData": "{\n\t\"bucketName\":\"test-yy01\",\n\t\"pageIndex\":4,\n\t\"pageSize\":5\n}",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "d4ec5e49-d612-44c1-916e-52149bd6a339",
+			"name": "目录复制",
+			"url": "{{test}}/aws/folder/objects",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "5d99c897-b012-4988-84e2-ce2c0463ff71",
+			"rawModeData": "{\n\t\"bucketName\":\"test-yy10\",\n\t\"key\":\"\",\n\t\"keyType\":0\n}",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "e687c4a2-5aef-4047-a6a0-2deb48142ed4",
+			"name": "上传文件 Copy",
+			"url": "{{test}}/aws/file/uploadFile",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"value": "application/json",
+					"type": "text"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "8e7a8b6d-072f-40b1-a0c5-2290f3d7e9d8",
+			"rawModeData": "{\n\t\"fileId\":\"t-01.txt\",\n\t\"bucketName\":\"wyb001\",\n\t\"data\":\"cXdlDQphc2QNCnp4Yw==\"\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "e77e8539-1b42-4a2a-b888-caf07b7e614e",
+			"name": "查询文件大小",
+			"url": "{{localhost}}/aws/file/getFileSize?bucketName=test-yy07&fileName=ww1001.txt",
+			"description": null,
+			"data": [],
+			"dataMode": null,
+			"headerData": [],
+			"method": "GET",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy07"
+				},
+				{
+					"key": "fileName",
+					"value": "ww1001.txt"
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "9f851983-7d81-4152-b3d1-648fdb3782d2",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "ec0b2a30-0365-4efa-ba6e-1df70a46cbe4",
+			"name": "word转pdf",
+			"url": "{{localhost}}/aws/file/word2pdf",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"value": "application/json",
+					"type": "text"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "9f851983-7d81-4152-b3d1-648fdb3782d2",
+			"rawModeData": "{\n\t\"bucketName\":\"test-yy10\",\n\t\"fileName\":\"tt11.doc\",\n\t\"textMark\":\"中国\"\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "ef7a159b-df80-44b8-aad5-da8a73411c5f",
+			"name": "设置版本权限",
+			"url": "{{test}}/aws/bucket/setVersion?",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"name": "Content-Type",
+					"value": "application/json",
+					"type": "text"
+				}
+			],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "test-yy07",
+					"enabled": false
+				},
+				{
+					"key": "status",
+					"value": "Enabled",
+					"enabled": false
+				},
+				{
+					"key": "",
+					"value": "Suspended",
+					"enabled": false
+				},
+				{
+					"key": "",
+					"value": "Enabled",
+					"enabled": false
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "4b1f087b-3650-4b76-87f5-a27e4ac73b1c",
+			"rawModeData": "{\n\t\"bucketName\":\"user01\",\n\t\"status\":\"Enabled\"\n}",
+			"headers": "Content-Type: application/json\n",
+			"pathVariables": {}
+		},
+		{
+			"id": "f1f0cb70-3d08-43ae-bb8a-af48396119a1",
+			"name": "删除目录",
+			"url": "{{localhost}}/aws/folder/delete",
+			"description": null,
+			"data": [],
+			"dataMode": "raw",
+			"headerData": [],
+			"method": "POST",
+			"pathVariableData": [],
+			"queryParams": [],
+			"auth": null,
+			"events": null,
+			"folder": "a2aa37b5-01f9-4b6b-84f7-55edcc7adbea",
+			"rawModeData": "{\n\t\"bucketName\":\"test-yy07\",\n\t\"key\":\"ABC/\",\n\t\"deleteStore\":1\n}",
+			"headers": "",
+			"pathVariables": {}
+		},
+		{
+			"id": "f5b65932-7fce-4250-a24f-efaeb95fbd33",
+			"name": "查询文件版本号",
+			"url": "{{test}}/aws/file/getFileVersion?bucketName=wyb001&fileName=t-01.txt",
+			"description": null,
+			"data": [],
+			"dataMode": null,
+			"headerData": [],
+			"method": "GET",
+			"pathVariableData": [],
+			"queryParams": [
+				{
+					"key": "bucketName",
+					"value": "wyb001"
+				},
+				{
+					"key": "fileName",
+					"value": "t-01.txt"
+				}
+			],
+			"auth": null,
+			"events": null,
+			"folder": "8e7a8b6d-072f-40b1-a0c5-2290f3d7e9d8",
+			"headers": "",
+			"pathVariables": {}
+		}
+	]
+}

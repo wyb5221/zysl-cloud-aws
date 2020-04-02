@@ -1,18 +1,126 @@
 package com.zysl.cloud.aws.biz.service;
 
+import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
+
 import java.util.List;
 
-public interface IFileService {
+/**
+ * 所有文件存储的接口
+ * @description
+ * @author miaomingming
+ * @date 11:26 2020/3/26
+ * @return
+ **/
+public interface IFileService<T> {
+
 
 	/**
-	 * 查询bucket列表，如果没有传入serviceNo则查所有服务器
+	 * 新增文件
 	 * @description
 	 * @author miaomingming
-	 * @date 22:29 2020/3/22
-	 * @param [serviceNo]
-	 * @return java.util.List<java.lang.String>
+	 * @date 11:52 2020/3/26
+	 * @param t
+	 * @return T
 	 **/
-	List<String> getBuckets(String serviceNo);
+	T create(T t);
 
-	String test(String name);
+	/**
+	 * 删除文件
+	 * @description
+	 * @author miaomingming
+	 * @date 11:52 2020/3/26
+	 * @param t
+	 * @return T
+	 **/
+	void delete(T t);
+
+	/**
+	 * 重命名文件
+	 * @description
+	 * @author miaomingming
+	 * @date 13:10 2020/3/26
+	 * @param src
+	 * @param dest
+	 * @return void
+	 **/
+	void rename(T src,T dest);
+
+	/**
+	 * 复制文件
+	 * @description
+	 * @author miaomingming
+	 * @date 13:10 2020/3/26
+	 * @param src
+	 * @param dest
+	 * @return void
+	 **/
+	T copy(T src, T dest);
+
+	/**
+	 * 移动文件
+	 * @description
+	 * @author miaomingming
+	 * @date 13:10 2020/3/26
+	 * @param src
+	 * @param dest
+	 * @return void
+	 **/
+	void move(T src,T dest);
+
+	/**
+	 * 修改文件
+	 * @description
+	 * @author miaomingming
+	 * @date 11:52 2020/3/26
+	 * @param t
+	 * @return T
+	 **/
+	 void modify(T t);
+
+	/**
+	 * 查询文件基础信息
+	 * @description
+	 * @author miaomingming
+	 * @date 11:52 2020/3/26
+	 * @param t
+	 * @return T
+	 **/
+	 T getBaseInfo(T t);
+
+	/**
+	 * 查询文件所有信息，包括权限信息
+	 * @description
+	 * @author miaomingming
+	 * @date 11:52 2020/3/26
+	 * @param t
+	 * @return T
+	 **/
+	 T getDetailInfo(T t);
+
+	/**
+	 * 查询文件信息及内容
+	 * @description
+	 * @author miaomingming
+	 * @date 11:52 2020/3/26
+	 * @param t
+	 * @return T
+	 **/
+	 T getInfoAndBody(T t);
+
+	/**
+	 * 查询版本列表信息
+	 * @description
+	 * @author miaomingming
+	 * @date 13:35 2020/3/26
+	 * @param t
+	 * @return java.util.List<T>
+	 **/
+	List<T> getVersions(T t);
+
+	/**
+	 * 文件重命名
+	 * @param t
+	 */
+	void rename(T t);
+
 }

@@ -4,5 +4,6 @@ aws:
       - {serverNo: s001,
          endpoint: http://s3.amazonaws.com,
          accessKey: AKIASLXIN4C6CZQ2UGOE,
-         secretKey: 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
+         secretKey: WQqKO9mX0xkWqHgAFXy3hcgg6AfhsUVJSmB/auj1,
+         noSpace: false
       }

@@ -3,6 +3,7 @@ package com.zysl.cloud.aws.web.validator;
 import com.zysl.cloud.utils.common.BaseReqeust;
 import com.zysl.cloud.utils.validator.IValidator;
 import com.zysl.cloud.utils.validator.impl.EnumValue;
+import com.zysl.cloud.utils.validator.impl.LengthChar;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.validation.constraints.Max;
@@ -19,8 +20,7 @@ import lombok.Setter;
 public class SetFileVersionRequestV implements IValidator {
 
 
-    @Min(3)
-    @Max(63)
+    @LengthChar(min = 3, max = 63)
     @NotBlank
     private String bucketName;
 
@@ -31,9 +31,9 @@ public class SetFileVersionRequestV implements IValidator {
 
     @Override
     public void customizedValidate(List<String> errors, Integer userCase){
-        String pattern = "^[a-zA-Z0-9.\\-_]{3,60}$";
+        String pattern = "^[a-zA-Z0-9.\\-_]{3,63}$";
         //判断存储桶是否满足命名规则
-        if(Pattern.compile(pattern).matcher(bucketName).matches()){
+        if(!Pattern.compile(pattern).matcher(bucketName).matches()){
             errors.add("存储桶不满足命名规则.");
         }
     }

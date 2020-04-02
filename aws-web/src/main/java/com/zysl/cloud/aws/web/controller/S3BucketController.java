@@ -5,11 +5,10 @@ import com.zysl.cloud.aws.api.req.CreateBucketRequest;
 import com.zysl.cloud.aws.api.req.GetBucketsRequest;
 import com.zysl.cloud.aws.api.req.SetFileVersionRequest;
 import com.zysl.cloud.aws.api.srv.S3BucketSrv;
-import com.zysl.cloud.aws.biz.service.IS3BucketService;
+import com.zysl.cloud.aws.biz.service.s3.IS3BucketService;
 import com.zysl.cloud.aws.web.validator.CreateBucketRequestV;
 import com.zysl.cloud.aws.web.validator.GetBucketsRequestV;
 import com.zysl.cloud.aws.web.validator.SetFileVersionRequestV;
-import com.zysl.cloud.utils.common.BaseController;
 import com.zysl.cloud.utils.common.BasePaginationResponse;
 import com.zysl.cloud.utils.common.BaseResponse;
 import com.zysl.cloud.utils.enums.RespCodeEnum;
@@ -55,7 +54,7 @@ public class S3BucketController extends BaseController implements S3BucketSrv {
 
 	@Override
 	public BasePaginationResponse<String> getBuckets(GetBucketsRequest request){
-		return ServiceProvider.callList(request, GetBucketsRequestV.class, String.class,(req,myPage)->{
+		return ServiceProvider.callList(request, null, String.class,(req,myPage)->{
 			return s3BucketService.getS3Buckets(request.getServerNo());
 		});
 	}

@@ -1,21 +1,19 @@
 package com.zysl.cloud.aws.web.validator;
 
 import com.zysl.cloud.utils.validator.IValidator;
-import java.util.List;
-import java.util.regex.Pattern;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
+import com.zysl.cloud.utils.validator.impl.LengthChar;
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.validation.constraints.NotBlank;
+import java.util.List;
 
 
 @Setter
 @Getter
 public class GetBucketsRequestV implements IValidator {
 
-    @Min(1)
-    @Max(32)
+    @LengthChar(min = 1, max = 32)
     @NotBlank
     private String serverNo;
 

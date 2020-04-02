@@ -3,6 +3,7 @@ package com.zysl.cloud.aws.web.validator;
 import com.zysl.cloud.utils.common.BaseReqeust;
 import com.zysl.cloud.utils.constants.SwaggerConstants;
 import com.zysl.cloud.utils.validator.IValidator;
+import com.zysl.cloud.utils.validator.impl.LengthChar;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
@@ -19,22 +20,20 @@ import lombok.Setter;
 public class CreateBucketRequestV implements IValidator {
 
 
-	@Min(1)
-	@Max(32)
+	@LengthChar(min = 1, max = 32)
 	@NotBlank
 	private String serverNo;
 
 
-	@Min(3)
-	@Max(63)
+	@LengthChar(min = 3, max = 63)
 	@NotBlank
 	private String bucketName;
 
 	@Override
 	public void customizedValidate(List<String> errors, Integer userCase){
-		String pattern = "^[a-zA-Z0-9.\\-_]{3,60}$";
+		String pattern = "^[a-zA-Z0-9.\\-_]{3,63}$";
 		//判断存储桶是否满足命名规则
-		if(Pattern.compile(pattern).matcher(bucketName).matches()){
+		if(!Pattern.compile(pattern).matcher(bucketName).matches()){
 			errors.add("存储桶不满足命名规则.");
 		}
 	}
