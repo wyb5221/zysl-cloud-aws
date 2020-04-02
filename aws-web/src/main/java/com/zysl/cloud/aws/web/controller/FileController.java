@@ -13,6 +13,7 @@ import com.zysl.cloud.aws.biz.service.s3.IS3BucketService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.biz.utils.DataAuthUtils;
 import com.zysl.cloud.aws.config.BizConfig;
+import com.zysl.cloud.aws.domain.bo.MultipartUploadBO;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.aws.domain.bo.TagBO;
 import com.zysl.cloud.aws.utils.DateUtils;
@@ -26,6 +27,7 @@ import com.zysl.cloud.utils.enums.RespCodeEnum;
 import com.zysl.cloud.utils.service.provider.ServiceProvider;
 import java.util.ArrayList;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.core.ApplicationContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -34,6 +36,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.model.Tag;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
@@ -93,14 +97,14 @@ public class FileController extends BaseController implements FileSrv {
 			}
 			t.setBodys(bytes);
 			//设置标签信息
+			List<TagBO> tagList = Lists.newArrayList();
 			if(!StringUtils.isEmpty(req.getFileName())){
-				List<TagBO> tagList = Lists.newArrayList();
 				TagBO tag = new TagBO();
 				tag.setKey(S3TagKeyEnum.FILE_NAME.getCode());
 				tag.setValue(req.getFileName());
 				tagList.add(tag);
-				t.setTagList(tagList);
 			}
+			t.setTagList(fileService.addTags(t, tagList));
 
 			S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.create(t);
 
@@ -135,14 +139,15 @@ public class FileController extends BaseController implements FileSrv {
 			}
 			s3Object.setBodys(bytes);
 			//设置标签信息
+			List<TagBO> tagList = Lists.newArrayList();
 			if(!StringUtils.isEmpty(request.getParameter("fileName"))){
-				List<TagBO> tagList = Lists.newArrayList();
 				TagBO tag = new TagBO();
 				tag.setKey(S3TagKeyEnum.FILE_NAME.getCode());
 				tag.setValue(request.getParameter("fileName"));
 				tagList.add(tag);
-				s3Object.setTagList(tagList);
 			}
+
+			s3Object.setTagList(fileService.addTags(s3Object, tagList));
 
 			S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.create(s3Object);
 
@@ -450,6 +455,13 @@ public class FileController extends BaseController implements FileSrv {
 			dest.setBucketName(req.getDestBucket());
 			setPathAndFileName(dest,req.getDestKey());
 
+			//设置目标文件标签
+			List<TagBO> list = Lists.newArrayList();
+			TagBO tagBO = new TagBO();
+			tagBO.setKey(S3TagKeyEnum.FILE_NAME.getCode());
+			tagBO.setValue(dest.getFileName());
+			list.add(tagBO);
+			dest.setTagList(fileService.addTags(src,list));
 
 			//数据权限校验
 			fileService.checkDataOpAuth(src, OPAuthTypeEnum.READ.getCode());
@@ -473,6 +485,8 @@ public class FileController extends BaseController implements FileSrv {
 			dest.setBucketName(req.getDestBucket());
 			setPathAndFileName(dest,req.getDestKey());
 
+			//设置目标文件标签
+			dest.setTagList(fileService.addTags(src, Lists.newArrayList()));
 
 			//数据权限校验
 			fileService.checkDataOpAuth(src, OPAuthTypeEnum.READ.getCode());
@@ -489,13 +503,18 @@ public class FileController extends BaseController implements FileSrv {
 		return ServiceProvider.call(request, ShareFileRequestV.class, UploadFieDTO.class, req -> {
 
 			//复制源文件信息
-			S3ObjectBO src = new S3ObjectBO();
-			src.setBucketName(req.getBucketName());
-			setPathAndFileName(src,req.getFileName());
-			//复制后的目标文件信息
-			S3ObjectBO dest = new S3ObjectBO();
-			dest.setBucketName(req.getBucketName());
-			setPathAndFileName(dest,BizConstants.SHARE_DEFAULT_FOLDER  + "/" + req.getFileName());
+			S3ObjectBO t = new S3ObjectBO();
+			t.setBucketName(req.getBucketName());
+			setPathAndFileName(t,req.getFileName());
+
+			//获取文件内容
+			S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.getInfoAndBody(t);
+
+			S3ObjectBO shareObject = new S3ObjectBO();
+			shareObject.setBucketName(bizConfig.shareFileBucket);
+			setPathAndFileName(shareObject, req.getFileName());
+			shareObject.setBodys(s3ObjectBO.getBodys());
+
 			//获取标签信息
 			List<TagBO> tagList = Lists.newArrayList();
 			if(!StringUtils.isEmpty(req.getMaxDownloadAmout()+"")){
@@ -507,16 +526,17 @@ public class FileController extends BaseController implements FileSrv {
 			if(!StringUtils.isEmpty(req.getMaxHours()+"")){
 				TagBO tag = new TagBO();
 				tag.setKey(S3TagKeyEnum.TAG_VALIDITY.getCode());
-				tag.setValue(String.valueOf(req.getMaxHours()));
+				String date = DateUtils.getDateToString(DateUtils.addDateHour(new Date(), req.getMaxHours()));
+				tag.setValue(date);
 				tagList.add(tag);
 			}
-			dest.setTagList(tagList);
-
-			S3ObjectBO s3ObjectBO = (S3ObjectBO) fileService.copy(src, dest);
+			shareObject.setTagList(tagList);
+			//重新上传文件
+			S3ObjectBO shareBO = (S3ObjectBO) fileService.create(shareObject);
 			UploadFieDTO uploadFieDTO = new UploadFieDTO();
-			uploadFieDTO.setFolderName(s3ObjectBO.getBucketName());
-			uploadFieDTO.setFileName(s3ObjectBO.getPath() + s3ObjectBO.getFileName());
-			uploadFieDTO.setVersionId(s3ObjectBO.getVersionId());
+			uploadFieDTO.setFolderName(shareBO.getBucketName());
+			uploadFieDTO.setFileName(shareBO.getPath() + shareBO.getFileName());
+			uploadFieDTO.setVersionId(shareBO.getVersionId());
 
 			return uploadFieDTO;
 		});
@@ -625,6 +645,76 @@ public class FileController extends BaseController implements FileSrv {
 			downloadFileByte(request,response,fileId,s3ObjectBO.getBodys());
 			
 			return RespCodeEnum.SUCCESS.getCode();
+    }
+
+	@Override
+	public BaseResponse<String> createMultipart(CreateMultipartRequest request) {
+		return ServiceProvider.call(request, CreateMultipartRequestV.class, String.class , req -> {
+			S3ObjectBO t = new S3ObjectBO();
+			t.setBucketName(req.getBucketName());
+			setPathAndFileName(t, req.getFileId());
+			//设置标签信息
+			List<TagBO> tagList = Lists.newArrayList();
+			if(!StringUtils.isEmpty(req.getFileName())){
+				TagBO tag = new TagBO();
+				tag.setKey(S3TagKeyEnum.FILE_NAME.getCode());
+				tag.setValue(req.getFileName());
+				tagList.add(tag);
+			}
+			t.setTagList(fileService.addTags(t, tagList));
+
+			return fileService.createMultipartUpload(t);
+		});
+	}
+
+	@Override
+	public BaseResponse<MultipartUploadRequest> uploadPart(HttpServletRequest request) {
+		return ServiceProvider.call(request, null, MultipartUploadRequest.class, req -> {
+
+			S3ObjectBO t = new S3ObjectBO();
+			t.setBucketName(request.getParameter("bucketName"));
+			setPathAndFileName(t, request.getParameter("fileId"));
+			t.setUploadId(request.getParameter("uploadId"));
+			t.setPartNumber(
+					StringUtils.isEmpty(request.getParameter("partNumber")) ? 1 : Integer.parseInt(request.getParameter("partNumber")));
+			MultipartHttpServletRequest multipartHttpServletRequest = (MultipartHttpServletRequest)request;
+
+			byte[] bytes = null;
+			try {
+				bytes = multipartHttpServletRequest.getFile("file").getBytes();
+			} catch (IOException e) {
+				log.error("--uploadFile获取文件流异常--：{}", e);
+				throw new AppLogicException("获取文件流异常");
+			}
+			t.setBodys(bytes);
+
+			S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.uploadPart(t);
+			MultipartUploadRequest response = new MultipartUploadRequest();
+			response.setPartNumber(s3ObjectBO.getPartNumber());
+			response.setETag(s3ObjectBO.getETag());
+
+			return response;
+		});
+	}
+
+	@Override
+	public BaseResponse<UploadFieDTO> completeMultipart(CompleteMultipartRequest request) {
+		return ServiceProvider.call(request, CompleteMultipartRequestV.class, UploadFieDTO.class, req -> {
+			S3ObjectBO t = new S3ObjectBO();
+			t.setBucketName(req.getBucketName());
+			setPathAndFileName(t, req.getFileId());
+			t.setUploadId(req.getUploadId());
+			t.setETagList(BeanCopyUtil.copyList(req.getETagList(), MultipartUploadBO.class));
+
+			S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.completeMultipartUpload(t);
+
+			//设置返回参数
+			UploadFieDTO uploadFieDTO = new UploadFieDTO();
+			uploadFieDTO.setFolderName(s3ObjectBO.getBucketName());
+			uploadFieDTO.setFileName(StringUtils.join(s3ObjectBO.getPath(), s3ObjectBO.getFileName()));
+			uploadFieDTO.setVersionId(s3ObjectBO.getVersionId());
+			return uploadFieDTO;
+
 		});
 	}
 }
