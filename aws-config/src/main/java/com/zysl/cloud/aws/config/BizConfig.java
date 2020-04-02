@@ -1,8 +1,10 @@
 package com.zysl.cloud.aws.config;
 
 import java.util.List;
+import javax.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -38,4 +40,13 @@ public class BizConfig {
      **/
     @Value("${application.version}")
     public String curVer;
+
+    /**
+     * 分片下载单次最大字长度，支持MB、KB、B
+     **/
+    @Value("${multipart.download.max-file-size}")
+    private String multipartDownloadMaxFileSize;
+
+
+
 }
