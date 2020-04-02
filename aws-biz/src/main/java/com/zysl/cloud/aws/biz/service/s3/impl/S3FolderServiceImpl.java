@@ -167,8 +167,6 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 	@Override
 	public boolean copy(S3ObjectBO src,S3ObjectBO dest){
 		log.info("s3folder.move.param.src:{}，dest:{}", JSON.toJSONString(src), JSON.toJSONString(dest));
-		//获取s3初始化对象
-		S3Client s3 = s3FactoryService.getS3ClientByBucket(src.getBucketName(),Boolean.TRUE);
 
 		/**
 		 * 同时复制目录下的所有对象
@@ -178,6 +176,11 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 		 * 不在一台服务器则下载上传，在，则复制
 		 */
 		if(s3FactoryService.judgeBucket(src.getBucketName(), dest.getBucketName())){
+			log.info("s3folder.copy.judgeBucket.返回true,两个bucket在同一台服务器");
+
+			//获取s3初始化对象
+			S3Client s3 = s3FactoryService.getS3ClientByBucket(src.getBucketName(),Boolean.TRUE);
+
 			//先复制根目录
 			fileService.copy(src, dest);
 
@@ -190,6 +193,8 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 
 			return copyObject(detailInfo, src, dest);
 		}else{
+			log.info("s3folder.copy.judgeBucket.返回true,两个bucket在同一台服务器");
+
 			//上传根目录
 			String destKey = replaceString(src.getPath(), dest.getPath());
 			S3ObjectBO dest1 = new S3ObjectBO();

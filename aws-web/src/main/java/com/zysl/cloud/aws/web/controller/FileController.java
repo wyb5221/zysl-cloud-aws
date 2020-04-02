@@ -621,30 +621,31 @@ public class FileController extends BaseController implements FileSrv {
 	public BaseResponse<String> multiDownloadFile(HttpServletRequest request, HttpServletResponse response, MultiDownloadFileRequest downRequest){
 		return ServiceProvider.call(downRequest, MultiDownloadFileRequestV.class, String.class, req -> {
 			//分片下载最大范围
-			if(downRequest.getPageSize() == null || downRequest.getPageSize() > BizConstants.MULTI_DOWN_FILE_MAX_SIZE){
+			if (downRequest.getPageSize() == null || downRequest.getPageSize() > BizConstants.MULTI_DOWN_FILE_MAX_SIZE) {
 				downRequest.setPageSize(BizConstants.MULTI_DOWN_FILE_MAX_SIZE);
 			}
-			if(downRequest.getStart() == null){
+			if (downRequest.getStart() == null) {
 				downRequest.setStart(0L);
 			}
 			S3ObjectBO t = new S3ObjectBO();
 			t.setBucketName(downRequest.getBucketName());
 			setPathAndFileName(t, downRequest.getFileId());
 			t.setVersionId(downRequest.getVersionId());
-			t.setRange("bytes=" + downRequest.getStart().longValue() + "-" + (downRequest.getStart().longValue() + downRequest.getPageSize()-1));
-			
+			t.setRange("bytes=" + downRequest.getStart().longValue() + "-" + (downRequest.getStart().longValue() + downRequest.getPageSize() - 1));
+
 			//数据权限校验
 			fileService.checkDataOpAuth(t, OPAuthTypeEnum.READ.getCode());
-			
+
 			S3ObjectBO s3ObjectBO = (S3ObjectBO) fileService.getInfoAndBody(t);
-			
+
 			//获取标签中的文件名称
 			String tagValue = fileService.getTagValue(s3ObjectBO.getTagList(), S3TagKeyEnum.FILE_NAME.getCode());
 			String fileId = StringUtils.isEmpty(tagValue) ? t.getFileName() : tagValue;
 			//下载数据
-			downloadFileByte(request,response,fileId,s3ObjectBO.getBodys());
-			
+			downloadFileByte(request, response, fileId, s3ObjectBO.getBodys());
+
 			return RespCodeEnum.SUCCESS.getCode();
+		});
     }
 
 	@Override

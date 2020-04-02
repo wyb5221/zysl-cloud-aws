@@ -306,10 +306,7 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 
 	@Override
 	public S3ObjectBO copy(S3ObjectBO src,S3ObjectBO dest){
-		log.info("s3file.create.param.src:{}, dest:{}", JSON.toJSONString(src), JSON.toJSONString(dest));
-
-		//获取s3初始化对象
-		S3Client s3 = s3FactoryService.getS3ClientByBucket(src.getBucketName(),Boolean.TRUE);
+		log.info("s3file.copy.param.src:{}, dest:{}", JSON.toJSONString(src), JSON.toJSONString(dest));
 
 		//获取目标文件标签内容
 		List<Tag> tagSet = Lists.newArrayList();
@@ -332,6 +329,10 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		 * 不在一台服务器则下载上传，在则复制
 		 */
 		if(s3FactoryService.judgeBucket(src.getBucketName(), dest.getBucketName())){
+			log.info("s3file.copy.judgeBucket.返回true,两个bucket在同一台服务器");
+			//获取s3初始化对象
+			S3Client s3 = s3FactoryService.getS3ClientByBucket(src.getBucketName(),Boolean.TRUE);
+
 			//复制文件
 			//查询复制接口入参
 			CopyObjectRequest request = null;
@@ -354,6 +355,8 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 			log.info("s3file.copy.response:{}", response);
 			dest.setVersionId(response.versionId());
 		}else{
+			log.info("s3file.copy.judgeBucket.返回false,两个bucket不在同一台服务器");
+
 			//查询源文件内容
 			S3ObjectBO s3ObjectBO = this.getInfoAndBody(src);
 			dest.setBodys(s3ObjectBO.getBodys());
@@ -514,6 +517,13 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 //		s3ObjectBO.setVersionId(fileVersionId);
 
 		log.info("checkDataOpAuth:param:{},opAuthTypes:{}", JSON.toJSONString(s3ObjectBO),opAuthTypes);
+		String tokenAuth = dataAuthUtils.getUserAuth();
+
+		//没传则不校验
+		if(StringUtils.isBlank(tokenAuth)){
+			return ;
+		}
+
 		String objAuths = null;
 		// 是对象
 		if (StringUtils.isNotBlank(s3ObjectBO.getFileName())) {
