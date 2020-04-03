@@ -72,6 +72,6 @@ public interface IS3BucketService {
 	 * @param t
 	 * @return
 	 */
-	S3ObjectBO getBucketTag(S3ObjectBO t);
+	S3ObjectBO getBucketTag(String bucketName);
 
 }

@@ -64,7 +64,7 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 				(request, requestBody, s3, S3Method.PUT_OBJECT);
 		log.info("s3folder.create.response:{}", response);
 
-		t.setVersionId(response.versionId());
+		t.setVersionId(this.getLastVersion(t));
 
 		return t;
 	}
@@ -478,4 +478,16 @@ public class S3FolderServiceImpl implements IS3FolderService<S3ObjectBO> {
 		}
 	}
 
+	@Override
+	public String getLastVersion(S3ObjectBO t) {
+		log.info("s3folder.getLastVersion.param:{}", JSON.toJSONString(t));
+
+		//获取s3初始化对象
+		List<S3ObjectBO> versionList = this.getVersions(t);
+		if(!CollectionUtils.isEmpty(versionList)){
+			S3ObjectBO version = versionList.get(0);
+			return version.getVersionId();
+		}
+		return null;
+	}
 }

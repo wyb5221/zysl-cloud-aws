@@ -47,8 +47,8 @@ public class S3FolderServiceTest {
     @Test
     public void a(){
         S3ObjectBO t = new S3ObjectBO();
-        t.setBucketName("test-yy05");
-        t.setPath("copy/yb/");
+        t.setBucketName("test-yy06");
+        t.setPath("wyb/");
         System.out.println("----:"+filerService.getTags(t));
     }
 

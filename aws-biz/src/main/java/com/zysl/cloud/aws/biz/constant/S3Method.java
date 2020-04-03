@@ -18,7 +18,9 @@ public interface S3Method {
 	public static final String COMPLETE_MULTIPART_UPLOAD = "completeMultipartUpload";
 	public static final String ABORT_MULTIPART_UPLOAD = "abortMultipartUpload";
 	public static final String LIST_MULTIPART_UPLOADS = "listMultipartUploads";
-	
+	public static final String GET_BUCKET_TAGGING = "getBucketTagging";
+	public static final String PUT_BUCKET_TAGGING = "putBucketTagging";
+
 	
 
 }

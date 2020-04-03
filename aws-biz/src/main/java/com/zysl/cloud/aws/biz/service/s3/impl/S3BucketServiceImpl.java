@@ -2,6 +2,7 @@ package com.zysl.cloud.aws.biz.service.s3.impl;
 
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import com.zysl.cloud.aws.api.enums.BucketVerStatusEnum;
 import com.zysl.cloud.aws.api.req.BucketFileRequest;
 import com.zysl.cloud.aws.api.req.SetFileVersionRequest;
@@ -9,7 +10,9 @@ import com.zysl.cloud.aws.biz.constant.S3Method;
 import com.zysl.cloud.aws.biz.enums.ErrCodeEnum;
 import com.zysl.cloud.aws.biz.service.s3.IS3BucketService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FactoryService;
+import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
+import com.zysl.cloud.aws.domain.bo.TagBO;
 import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.common.AppLogicException;
 import com.zysl.cloud.utils.common.MyPage;
@@ -19,14 +22,9 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.Bucket;
-import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
-import software.amazon.awssdk.services.s3.model.CreateBucketResponse;
-import software.amazon.awssdk.services.s3.model.ListBucketsRequest;
-import software.amazon.awssdk.services.s3.model.ListBucketsResponse;
-import software.amazon.awssdk.services.s3.model.PutBucketVersioningRequest;
-import software.amazon.awssdk.services.s3.model.VersioningConfiguration;
+import software.amazon.awssdk.services.s3.model.*;
 
 @Service
 @Slf4j
@@ -34,6 +32,8 @@ public class S3BucketServiceImpl implements IS3BucketService {
 
 	@Autowired
 	private IS3FactoryService s3FactoryService;
+	@Autowired
+	private IS3FileService fileService;
 
 	@Override
 	public List<Bucket> getBucketList(S3Client s3){
@@ -126,15 +126,66 @@ public class S3BucketServiceImpl implements IS3BucketService {
 
 	@Override
 	public Boolean putBucketTag(S3ObjectBO t) {
-		log.info("s3file.completeMultipartUpload.param:{}", JSON.toJSONString(t));
+ 		log.info("s3bucket.putBucketTag.param:{}", JSON.toJSONString(t));
 		//获取s3初始化对象
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
-		return null;
+
+		//先查询远bucket的标签信息
+		List<TagBO> oldTagList = Lists.newArrayList();
+		//TODO
+		try {
+			S3ObjectBO s3ObjectBO = this.getBucketTag(t.getBucketName());
+			oldTagList = s3ObjectBO.getTagList();
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+
+
+        //新设置标签入参
+        List<TagBO> newTageList = t.getTagList();
+
+        List<TagBO> tagBOList = fileService.mergeTags(oldTagList, newTageList);
+
+        List<Tag> tagSet = new ArrayList<>();
+        if(!CollectionUtils.isEmpty(tagBOList)) {
+            tagBOList.forEach(obj -> {
+                tagSet.add(Tag.builder().key(obj.getKey()).value(obj.getValue()).build());
+            });
+            Tagging tagging = Tagging.builder().tagSet(tagSet).build();
+
+            PutBucketTaggingRequest request = PutBucketTaggingRequest.builder()
+                    .bucket(t.getBucketName())
+                    .tagging(tagging)
+                    .build();
+            //设置bucket标签
+            PutBucketTaggingResponse response = s3FactoryService.callS3Method(request, s3, S3Method.PUT_BUCKET_TAGGING);
+        }
+
+        return Boolean.TRUE;
 	}
 
 	@Override
-	public S3ObjectBO getBucketTag(S3ObjectBO s3ObjectBO) {
-		return null;
+	public S3ObjectBO getBucketTag(String bucketName) {
+        log.info("s3bucket.getBucketTag.param:{}", bucketName);
+        //获取s3初始化对象
+        S3Client s3 = s3FactoryService.getS3ClientByBucket(bucketName);
+
+        GetBucketTaggingRequest request = GetBucketTaggingRequest.builder().bucket(bucketName).build();
+        GetBucketTaggingResponse response = s3FactoryService.callS3Method(request, s3, S3Method.GET_BUCKET_TAGGING);
+
+        List<TagBO> tagList = Lists.newArrayList();
+        List<Tag> tagSet = response.tagSet();
+        if(!CollectionUtils.isEmpty(tagSet)){
+            tagSet.forEach(tag -> {
+                TagBO tagBO = new TagBO();
+                tagBO.setKey(tag.key());
+                tagBO.setValue(tag.value());
+                tagList.add(tagBO);
+            });
+        }
+        S3ObjectBO s3ObjectBO = new S3ObjectBO();
+        s3ObjectBO.setTagList(tagList);
+		return s3ObjectBO;
 	}
 
 }
