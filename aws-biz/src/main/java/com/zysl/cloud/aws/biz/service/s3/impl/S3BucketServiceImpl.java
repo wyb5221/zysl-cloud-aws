@@ -130,16 +130,8 @@ public class S3BucketServiceImpl implements IS3BucketService {
 		//获取s3初始化对象
 		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
 
-		//先查询远bucket的标签信息
-		List<TagBO> oldTagList = Lists.newArrayList();
-		//TODO
-		try {
-			S3ObjectBO s3ObjectBO = this.getBucketTag(t.getBucketName());
-			oldTagList = s3ObjectBO.getTagList();
-		}catch (Exception e){
-			e.printStackTrace();
-		}
-
+		//先查询原来bucket的标签信息
+		List<TagBO> oldTagList = this.getBucketTag(t.getBucketName());
 
         //新设置标签入参
         List<TagBO> newTageList = t.getTagList();
@@ -165,27 +157,25 @@ public class S3BucketServiceImpl implements IS3BucketService {
 	}
 
 	@Override
-	public S3ObjectBO getBucketTag(String bucketName) {
+	public List<TagBO> getBucketTag(String bucketName) {
         log.info("s3bucket.getBucketTag.param:{}", bucketName);
         //获取s3初始化对象
         S3Client s3 = s3FactoryService.getS3ClientByBucket(bucketName);
 
         GetBucketTaggingRequest request = GetBucketTaggingRequest.builder().bucket(bucketName).build();
-        GetBucketTaggingResponse response = s3FactoryService.callS3Method(request, s3, S3Method.GET_BUCKET_TAGGING);
+        GetBucketTaggingResponse response = s3FactoryService.callS3Method(request, s3, S3Method.GET_BUCKET_TAGGING,Boolean.FALSE);
 
-        List<TagBO> tagList = Lists.newArrayList();
-        List<Tag> tagSet = response.tagSet();
-        if(!CollectionUtils.isEmpty(tagSet)){
-            tagSet.forEach(tag -> {
-                TagBO tagBO = new TagBO();
-                tagBO.setKey(tag.key());
-                tagBO.setValue(tag.value());
-                tagList.add(tagBO);
-            });
-        }
-        S3ObjectBO s3ObjectBO = new S3ObjectBO();
-        s3ObjectBO.setTagList(tagList);
-		return s3ObjectBO;
+        if(response != null && !CollectionUtils.isEmpty(response.tagSet())){
+			List<TagBO> tagList = Lists.newArrayList();
+			response.tagSet().forEach(tag -> {
+				TagBO tagBO = new TagBO();
+				tagBO.setKey(tag.key());
+				tagBO.setValue(tag.value());
+				tagList.add(tagBO);
+			});
+			return tagList;
+		}
+     return null;
 	}
 
 }

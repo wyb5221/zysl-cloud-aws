@@ -4,16 +4,24 @@ import com.zysl.cloud.aws.api.dto.OPAuthDTO;
 import com.zysl.cloud.aws.api.dto.TagDTO;
 import com.zysl.cloud.utils.StringUtils;
 import com.zysl.cloud.utils.constants.SwaggerConstants;
+import com.zysl.cloud.utils.validator.IValidator;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
+import javax.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.CollectionUtils;
 
 @Setter
 @Getter
-public class DataAuthRequestV extends GetFileRequestV {
-
+public class DataAuthRequestV implements IValidator {
+	
+	//文件夹名称
+	@NotBlank
+	private String bucketName;
+	//文件名称
+	private String fileName;
+	
 	private List<OPAuthDTO> userAuths;
 
 	private List<OPAuthDTO> groupAuths;

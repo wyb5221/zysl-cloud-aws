@@ -134,7 +134,7 @@ public class S3FactoryServiceImpl implements IS3FactoryService {
 			if(response == null || response.sdkHttpResponse() == null ){
 				log.error("callS3Method.invoke({})->no.response",methodName);
 				throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_NO_RESPONSE.getCode());
-			}else if(response.sdkHttpResponse().statusCode() != RespCodeEnum.SUCCESS.getCode().intValue()){
+			}else if(!response.sdkHttpResponse().isSuccessful()){
 				log.error("callS3Method.invoke({})->response.status.error:{}",methodName,response.sdkHttpResponse().statusCode());
 				throw new AppLogicException(ErrCodeEnum.S3_SERVER_CALL_METHOD_RESPONSE_STATUS_ERROR.getCode());
 			}else{
