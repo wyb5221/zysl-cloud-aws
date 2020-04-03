@@ -6,6 +6,7 @@ import com.zysl.cloud.aws.api.enums.DeleteStoreEnum;
 import com.zysl.cloud.aws.biz.constant.S3Method;
 import com.zysl.cloud.aws.biz.enums.ErrCodeEnum;
 import com.zysl.cloud.aws.biz.enums.S3TagKeyEnum;
+import com.zysl.cloud.aws.biz.service.s3.IS3BucketService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FactoryService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.biz.utils.DataAuthUtils;
@@ -43,6 +44,8 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 	private BizConfig bizConfig;
 	@Autowired
 	private DataAuthUtils dataAuthUtils;
+	@Autowired
+	private IS3BucketService s3BucketService;
 
 
 	@Override
@@ -206,6 +209,8 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		return t;
 	}
 	
+	
+
 	@Override
 	public void abortMultipartUpload(S3ObjectBO t) {
 		log.info("s3file.abortMultipartUpload.param:{}", JSON.toJSONString(t));
@@ -538,12 +543,6 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 
 	@Override
 	public void checkDataOpAuth(S3ObjectBO s3ObjectBO,String opAuthTypes){
-//		S3ObjectBO s3ObjectBO = new S3ObjectBO();
-//		s3ObjectBO.setBucketName(bucket);
-//		s3ObjectBO.setPath(path);
-//		s3ObjectBO.setFileName(fileName);
-//		s3ObjectBO.setVersionId(fileVersionId);
-
 		log.info("checkDataOpAuth:param:{},opAuthTypes:{}", JSON.toJSONString(s3ObjectBO),opAuthTypes);
 		String tokenAuth = dataAuthUtils.getUserAuth();
 
@@ -578,6 +577,15 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 			curPath = curPath.substring(0,curPath.length() - 1);
 			if(curPath.lastIndexOf("/") > -1){
 				curPath = curPath.substring(0,curPath.lastIndexOf("/") + 1);
+			}
+		}
+		
+		//检查bucket
+		bo = s3BucketService.getBucketTag(bo);
+		if(bo != null && !CollectionUtils.isEmpty(bo.getTagList())){
+			objAuths = getTagValue(bo.getTagList(),S3TagKeyEnum.USER_AUTH.getCode());
+			if(dataAuthUtils.checkAuth(opAuthTypes,objAuths)){
+				return;
 			}
 		}
 

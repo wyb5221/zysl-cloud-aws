@@ -567,7 +567,11 @@ public class FileController extends BaseController implements FileSrv {
 
 			src.setTagList(fileService.addTags(src,list));
 
-			fileService.modify(src);
+			if(StringUtils.isNotBlank(req.getFileName())){
+				fileService.modify(src);
+			}else{
+				bucketService.putBucketTag(src);
+			}
 			return RespCodeEnum.SUCCESS.getName();
 		});
 	}
