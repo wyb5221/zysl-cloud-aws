@@ -26,22 +26,19 @@ public class MultiDownloadFileRequest extends BaseReqeust {
     @ApiModelProperty(value = "文件版本id", name = "versionId",dataType = SwaggerConstants.DATA_TYPE_STRING)
     private String versionId;
     
-    //文件夹名称
-    @ApiModelProperty(value = "开始位置，字节数", name = "start",required = true,dataType = SwaggerConstants.DATA_TYPE_NUMBER)
-    private Long start;
-    //文件名称
-    @ApiModelProperty(value = "分片大小，默认按服务器配置最大分片，字节数", name = "pageSize",dataType = SwaggerConstants.DATA_TYPE_NUMBER)
-    private Long pageSize;
-    
     
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("{\"MultiDownloadFileRequest\":{");
-        sb.append("bucketName='").append(bucketName).append('\'');
-        sb.append(", fileId='").append(fileId).append('\'');
-        sb.append(", versionId='").append(versionId).append('\'');
-        sb.append(", start=").append(start);
-        sb.append(", pageSize=").append(pageSize);
+        if (bucketName != null) {
+            sb.append("bucketName='").append(bucketName).append('\'');
+        }
+        if (fileId != null) {
+            sb.append(", fileId='").append(fileId).append('\'');
+        }
+        if (versionId != null) {
+            sb.append(", versionId='").append(versionId).append('\'');
+        }
         sb.append("},\"super-MultiDownloadFileRequest\":")
             .append(super.toString()).append("}");
         return sb.toString();

@@ -16,5 +16,9 @@ public interface S3Method {
 	public static final String CREATE_MULTIPART_UPLOAD = "createMultipartUpload";
 	public static final String UPLOAD_PART = "uploadPart";
 	public static final String COMPLETE_MULTIPART_UPLOAD = "completeMultipartUpload";
+	public static final String ABORT_MULTIPART_UPLOAD = "abortMultipartUpload";
+	public static final String LIST_MULTIPART_UPLOADS = "listMultipartUploads";
+	
+	
 
 }
