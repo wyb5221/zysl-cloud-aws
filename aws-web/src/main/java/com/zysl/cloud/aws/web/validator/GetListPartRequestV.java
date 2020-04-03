@@ -18,7 +18,7 @@ public class GetListPartRequestV implements IValidator {
     //文件名
     @NotBlank
     private String fileId;
-    @NotBlank
+//    @NotBlank
     private String uploadId;
 
     @Override

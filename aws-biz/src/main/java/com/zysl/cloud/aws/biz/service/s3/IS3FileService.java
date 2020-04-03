@@ -104,9 +104,15 @@ public interface IS3FileService<T> extends IFileService<T> {
 	String getLastVersion(T t);
 
 	/**
-	 *
+	 * 查询分区上传列表信息
 	 * @param t
 	 * @return
 	 */
 	List<FilePartInfoBO> listParts(T t);
+
+	/**
+	 *
+	 * @param t
+	 */
+	String listMultipartUploads(T t);
 }

@@ -826,8 +826,11 @@ public class FileController extends BaseController implements FileSrv {
 		return ServiceProvider.callList(request, GetListPartRequestV.class, FilePartInfoDTO.class, (req, page) ->{
 			S3ObjectBO t = new S3ObjectBO();
 			t.setBucketName(req.getBucketName());
-			t.setUploadId(req.getUploadId());
 			setPathAndFileName(t, req.getFileId());
+
+			String uploadId = fileService.listMultipartUploads(t);
+			t.setUploadId(uploadId);
+
 			List<FilePartInfoBO> partBOList = fileService.listParts(t);
 			return BeanCopyUtil.copyList(partBOList, FilePartInfoDTO.class);
 		});

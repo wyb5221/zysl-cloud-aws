@@ -24,15 +24,14 @@ public class GetListPartRequest extends BasePaginationRequest {
     @ApiModelProperty(value = "文件名", name = "fileId", required = true, dataType = SwaggerConstants.DATA_TYPE_STRING)
     private String fileId;
 
-    @ApiModelProperty(value = "断点续传id", name = "uploadId", required = true, dataType = SwaggerConstants.DATA_TYPE_STRING)
-    private String uploadId;
+//    @ApiModelProperty(value = "断点续传id", name = "uploadId", dataType = SwaggerConstants.DATA_TYPE_STRING)
+//    private String uploadId;
 
     @Override
     public String toString() {
         return "GetListPartRequest{" +
                 "bucketName='" + bucketName + '\'' +
                 ", fileId='" + fileId + '\'' +
-                ", uploadId='" + uploadId + '\'' +
                 '}';
     }
 }

@@ -73,4 +73,14 @@ public class S3FileServiceTest {
         t.setTagList(tagList);
         fileService.modify(t);
     }
+
+    @Test
+    public void listMultipartUploads(){
+        S3ObjectBO t = new S3ObjectBO();
+        t.setBucketName("test-yy05");
+        t.setFileName("断点续传88.txt");
+        t.setPath("");
+        String a = fileService.listMultipartUploads(t);
+        System.out.println("----a:"+a);
+    }
 }

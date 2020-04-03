@@ -270,6 +270,29 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		return filePartInfoBOS;
 	}
 
+	@Override
+	public String listMultipartUploads(S3ObjectBO t) {
+		log.info("s3file.listMultipartUploads.param:{}", JSON.toJSONString(t));
+
+		//获取s3初始化对象
+		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
+
+
+		ListMultipartUploadsRequest request = ListMultipartUploadsRequest.builder()
+				.bucket(t.getBucketName())
+				.prefix(String.join(t.getPath(), t.getFileName()))
+				.maxUploads(1)
+				.build();
+		ListMultipartUploadsResponse response = s3FactoryService.callS3Method(request, s3, S3Method.LIST_MULTIPART_UPLOADS);
+
+		List<MultipartUpload> uploads = response.uploads();
+		if(!CollectionUtils.isEmpty(uploads)){
+			MultipartUpload multipartUpload = uploads.get(0);
+			return multipartUpload.uploadId();
+		}
+		return null;
+	}
+
 
 	@Override
 	public void delete(S3ObjectBO t){

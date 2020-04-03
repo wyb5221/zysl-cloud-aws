@@ -21,7 +21,8 @@ public class S3BucketServiceTest {
 
     @Test
     public void getBucketTag(){
-        System.out.println("--:"+bucketService.getBucketTag("test-yy06"));
+        S3ObjectBO t = (S3ObjectBO)bucketService.getBucketTag("test-yy06");
+        System.out.println("--:"+t.getTagList());
     }
 
     @Test
@@ -39,4 +40,5 @@ public class S3BucketServiceTest {
 
         System.out.println("--:"+bucketService.putBucketTag(t));
     }
+
 }
