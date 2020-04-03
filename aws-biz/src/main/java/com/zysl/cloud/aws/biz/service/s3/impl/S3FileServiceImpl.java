@@ -86,7 +86,7 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		PutObjectResponse response = s3FactoryService.callS3MethodWithBody(request,RequestBody.fromBytes(t.getBodys()),s3Client, S3Method.PUT_OBJECT);
 		log.info("s3file.create.response:{}", response);
 
-		t.setVersionId(response.versionId());
+		t.setVersionId(this.getLastVersion(t));
 		return t;
 	}
 
@@ -225,8 +225,20 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 			
 		s3FactoryService.callS3Method(request, s3, S3Method.ABORT_MULTIPART_UPLOAD);
 	}
-	
-	
+
+	@Override
+	public String getLastVersion(S3ObjectBO t) {
+		log.info("s3file.getLastVersion.param:{}", JSON.toJSONString(t));
+
+		//获取s3初始化对象
+		List<S3ObjectBO> versionList = this.getVersions(t);
+		if(!CollectionUtils.isEmpty(versionList)){
+			S3ObjectBO version = versionList.get(0);
+			return version.getVersionId();
+		}
+		return null;
+	}
+
 
 	@Override
 	public void delete(S3ObjectBO t){
@@ -581,7 +593,7 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		}
 		
 		//检查bucket
-		bo = s3BucketService.getBucketTag(bo);
+		bo = s3BucketService.getBucketTag(bo.getBucketName());
 		if(bo != null && !CollectionUtils.isEmpty(bo.getTagList())){
 			objAuths = getTagValue(bo.getTagList(),S3TagKeyEnum.USER_AUTH.getCode());
 			if(dataAuthUtils.checkAuth(opAuthTypes,objAuths)){

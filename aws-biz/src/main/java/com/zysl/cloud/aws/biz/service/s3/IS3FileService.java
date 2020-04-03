@@ -94,4 +94,12 @@ public interface IS3FileService<T> extends IFileService<T> {
 	 **/
 	void abortMultipartUpload(T t);
 
+
+	/**
+	 * 查询最新对象的版本号
+	 * @param t
+	 * @return
+	 */
+	String getLastVersion(T t);
+
 }
