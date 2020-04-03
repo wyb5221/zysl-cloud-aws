@@ -565,11 +565,12 @@ public class FileController extends BaseController implements FileSrv {
 			tagBO.setValue(dataAuthUtils.contactAuths(req.getUserAuths(),req.getGroupAuths(),req.getEveryOneAuths()));
 			list.add(tagBO);
 
-			src.setTagList(fileService.addTags(src,list));
 
 			if(StringUtils.isNotBlank(req.getFileName())){
+				src.setTagList(fileService.addTags(src,list));
 				fileService.modify(src);
 			}else{
+				src.setTagList(list);
 				bucketService.putBucketTag(src);
 			}
 			return RespCodeEnum.SUCCESS.getName();

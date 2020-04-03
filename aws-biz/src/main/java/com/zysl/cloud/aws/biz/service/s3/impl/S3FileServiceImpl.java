@@ -593,9 +593,9 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 		}
 		
 		//检查bucket
-		bo = s3BucketService.getBucketTag(bo.getBucketName());
-		if(bo != null && !CollectionUtils.isEmpty(bo.getTagList())){
-			objAuths = getTagValue(bo.getTagList(),S3TagKeyEnum.USER_AUTH.getCode());
+		List<TagBO> bucketTags = s3BucketService.getBucketTag(bo.getBucketName());
+		if(!CollectionUtils.isEmpty(bucketTags)){
+			objAuths = getTagValue(bucketTags,S3TagKeyEnum.USER_AUTH.getCode());
 			if(dataAuthUtils.checkAuth(opAuthTypes,objAuths)){
 				return;
 			}

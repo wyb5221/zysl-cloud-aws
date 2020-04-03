@@ -3,6 +3,7 @@ package com.zysl.cloud.aws.biz.service.s3;
 import com.zysl.cloud.aws.api.req.BucketFileRequest;
 import com.zysl.cloud.aws.api.req.SetFileVersionRequest;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
+import com.zysl.cloud.aws.domain.bo.TagBO;
 import com.zysl.cloud.utils.common.MyPage;
 import java.util.List;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -72,6 +73,6 @@ public interface IS3BucketService {
 	 * @param t
 	 * @return
 	 */
-	S3ObjectBO getBucketTag(String bucketName);
+	List<TagBO> getBucketTag(String bucketName);
 
 }
