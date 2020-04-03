@@ -83,5 +83,3 @@ public interface IS3FileService<T> extends IFileService<T> {
 	 * @return
 	 */
 	T completeMultipartUpload(T t);
-	
-}
