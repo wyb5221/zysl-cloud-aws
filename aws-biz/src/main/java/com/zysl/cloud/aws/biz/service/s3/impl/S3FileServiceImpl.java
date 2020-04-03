@@ -207,17 +207,6 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 	}
 
 	@Override
-	public S3ObjectBO putBucketTag(S3ObjectBO s3ObjectBO) {
-		return null;
-	}
-
-	@Override
-	public S3ObjectBO getBucketTag(S3ObjectBO s3ObjectBO) {
-		return null;
-	}
-
-
-	@Override
 	public void delete(S3ObjectBO t){
 		log.info("s3file.delete.param:{}", JSON.toJSONString(t));
 

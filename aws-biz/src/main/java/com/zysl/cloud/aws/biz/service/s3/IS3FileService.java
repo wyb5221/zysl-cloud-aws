@@ -84,17 +84,5 @@ public interface IS3FileService<T> extends IFileService<T> {
 	 */
 	T completeMultipartUpload(T t);
 
-	/**
-	 * 设置bucket的标签
-	 * @param t
-	 * @return
-	 */
-	T putBucketTag(T t);
 
-	/**
-	 * 获取bucket的标签
-	 * @param t
-	 * @return
-	 */
-	T getBucketTag(T t);
 }
