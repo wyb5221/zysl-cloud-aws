@@ -60,4 +60,18 @@ public interface IS3BucketService {
 	 **/
 	Boolean setBucketVersion(SetFileVersionRequest request);
 
+	/**
+	 * 设置bucket的标签
+	 * @param t
+	 * @return
+	 */
+	Boolean putBucketTag(S3ObjectBO t);
+
+	/**
+	 * 获取bucket的标签
+	 * @param t
+	 * @return
+	 */
+	S3ObjectBO getBucketTag(S3ObjectBO t);
+
 }

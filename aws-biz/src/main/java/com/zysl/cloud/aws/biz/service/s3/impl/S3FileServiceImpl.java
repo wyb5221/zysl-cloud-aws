@@ -223,7 +223,6 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 	
 	
 
-
 	@Override
 	public void delete(S3ObjectBO t){
 		log.info("s3file.delete.param:{}", JSON.toJSONString(t));

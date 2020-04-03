@@ -124,6 +124,17 @@ public class S3BucketServiceImpl implements IS3BucketService {
 
 	}
 
+	@Override
+	public Boolean putBucketTag(S3ObjectBO t) {
+		log.info("s3file.completeMultipartUpload.param:{}", JSON.toJSONString(t));
+		//获取s3初始化对象
+		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
+		return null;
+	}
 
+	@Override
+	public S3ObjectBO getBucketTag(S3ObjectBO s3ObjectBO) {
+		return null;
+	}
 
 }
