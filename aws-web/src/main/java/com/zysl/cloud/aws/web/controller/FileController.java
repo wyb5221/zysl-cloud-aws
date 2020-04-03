@@ -311,7 +311,7 @@ public class FileController extends BaseController implements FileSrv {
 			fileService.checkDataOpAuth(t, OPAuthTypeEnum.DELETE.getCode());
 
             fileService.delete(t);
-            return RespCodeEnum.SUCCESS.getDesc();
+            return RespCodeEnum.SUCCESS.getName();
         });
 	}
 
@@ -388,14 +388,17 @@ public class FileController extends BaseController implements FileSrv {
 
             List<S3ObjectBO> objectList = fileService.getVersions(t);
             List<ObjectVersionDTO> versionList = Lists.newArrayList();
-            objectList.forEach(obj ->{
-                ObjectVersionDTO version = new ObjectVersionDTO();
-                version.setKey(obj.getFileName());
-                version.setVersionId(obj.getVersionId());
+            if(!CollectionUtils.isEmpty(objectList)){
+				objectList.forEach(obj ->{
+					ObjectVersionDTO version = new ObjectVersionDTO();
+					version.setKey(obj.getFileName());
+					version.setVersionId(obj.getVersionId());
 //				version.setLastModified(obj.getLastModified());
-                version.setSize(obj.getContentLength());
-                versionList.add(version);
-            });
+					version.setSize(obj.getContentLength());
+					versionList.add(version);
+				});
+			}
+
             return versionList;
         });
 	}
@@ -440,7 +443,7 @@ public class FileController extends BaseController implements FileSrv {
 
                 fileService.modify(t);
             }
-            return RespCodeEnum.SUCCESS.getDesc();
+            return RespCodeEnum.SUCCESS.getName();
         });
     }
 
@@ -471,7 +474,7 @@ public class FileController extends BaseController implements FileSrv {
 			fileService.checkDataOpAuth(dest, OPAuthTypeEnum.WRITE.getCode());
 
 			fileService.copy(src, dest);
-			return RespCodeEnum.SUCCESS.getDesc();
+			return RespCodeEnum.SUCCESS.getName();
 		});
 	}
 
@@ -496,7 +499,7 @@ public class FileController extends BaseController implements FileSrv {
 			fileService.checkDataOpAuth(dest, OPAuthTypeEnum.WRITE.getCode());
 
 			fileService.move(src, dest);
-			return RespCodeEnum.SUCCESS.getDesc();
+			return RespCodeEnum.SUCCESS.getName();
 		});
 	}
 
@@ -565,17 +568,19 @@ public class FileController extends BaseController implements FileSrv {
 			src.setTagList(fileService.addTags(src,list));
 
 			fileService.modify(src);
-			return RespCodeEnum.SUCCESS.getDesc();
+			return RespCodeEnum.SUCCESS.getName();
 		});
 	}
 
 	@Override
-	public BaseResponse<String> fileRename(ObjectRenameRequest request) {
-		return ServiceProvider.call(request, ObjectRenameRequestV.class, String.class, req -> {
+	public BaseResponse<UploadFieDTO> fileRename(ObjectRenameRequest request) {
+		return ServiceProvider.call(request, ObjectRenameRequestV.class, UploadFieDTO.class, req -> {
 
 			S3ObjectBO t = new S3ObjectBO();
 			t.setBucketName(req.getBucketName());
 			setPathAndFileName(t, req.getSourcekey());
+			t.setTagFilename(req.getDestKey());
+
 			//设置标签
 			List<TagBO> tagList = Lists.newArrayList();
 			TagBO tag = new TagBO();
@@ -584,8 +589,15 @@ public class FileController extends BaseController implements FileSrv {
 			tagList.add(tag);
 			t.setTagList(tagList);
 			//调用重命名接口
-			fileService.rename(t);
-			return RespCodeEnum.SUCCESS.getDesc();
+			S3ObjectBO s3ObjectBO = (S3ObjectBO)fileService.rename(t);
+
+			//设置返回参数
+			UploadFieDTO uploadFieDTO = new UploadFieDTO();
+			uploadFieDTO.setFolderName(s3ObjectBO.getBucketName());
+			uploadFieDTO.setFileName(StringUtils.join(s3ObjectBO.getPath(), s3ObjectBO.getFileName()));
+			uploadFieDTO.setVersionId(s3ObjectBO.getVersionId());
+			uploadFieDTO.setTagFileName(s3ObjectBO.getTagFilename());
+			return uploadFieDTO;
 		});
 	}
 
@@ -665,6 +677,7 @@ public class FileController extends BaseController implements FileSrv {
 			
 			//下载数据
 			downloadFileByte(request, response, fileId, s3ObjectBO.getBodys());
+
 			return null;
 		}catch (AppLogicException e){
 			log.error("multiDownloadFile.AppLogicException:",e);
@@ -675,7 +688,6 @@ public class FileController extends BaseController implements FileSrv {
 			baseResponse.setMsg(e.getMessage());
 			return baseResponse;
 		}
-			
     }
     
     /**

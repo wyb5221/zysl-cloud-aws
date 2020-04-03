@@ -7,3 +7,15 @@ aws:
          secretKey: WQqKO9mX0xkWqHgAFXy3hcgg6AfhsUVJSmB/auj1,
          noSpace: false
       }
+#      - {serverNo: s001,
+#         endpoint: https://172.21.235.124:443,
+#         accessKey: idDyk1eqeu4jbbL1AW5V,
+#         secretKey: ISRq73JiZPVA5DFGFnFBsfBSS1in2du4vwuVgLxv,
+#         noSpace: true
+#      }
+#      - {serverNo: s002,
+#         endpoint: https://172.21.235.124:443,
+#         accessKey: SwkkNP9BKeJkkfJ4e2fK,
+#         secretKey: 3xcACDu0basofZTmjMI3xwV4zSQs0Qq6t1A0EXuY,
+#         noSpace: false
+#      }

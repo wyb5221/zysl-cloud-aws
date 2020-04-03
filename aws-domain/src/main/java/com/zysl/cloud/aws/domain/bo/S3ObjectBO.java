@@ -28,6 +28,8 @@ public class S3ObjectBO extends BaseFileBO implements Serializable {
 	//断点续传标记
 	private String eTag;
 	private List<MultipartUploadBO> eTagList;
+	//标签中的文件名
+	private String tagFilename;
 
 	//元素 List
 	//标签 List

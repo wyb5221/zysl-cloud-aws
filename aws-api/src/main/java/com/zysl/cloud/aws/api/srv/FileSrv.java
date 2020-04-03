@@ -151,7 +151,7 @@ public interface FileSrv {
 	 * @return
 	 */
 	@PostMapping("/rename")
-	BaseResponse<String> fileRename(@RequestBody ObjectRenameRequest request);
+	BaseResponse<UploadFieDTO> fileRename(@RequestBody ObjectRenameRequest request);
 
 	/**
 	 * 文件是否存在

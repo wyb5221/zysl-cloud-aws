@@ -1,5 +1,6 @@
 package com.zysl.cloud.aws.api.srv;
 
+import com.zysl.cloud.aws.api.dto.FolderDTO;
 import com.zysl.cloud.aws.api.dto.ObjectInfoDTO;
 import com.zysl.cloud.aws.api.req.*;
 import com.zysl.cloud.utils.common.BasePaginationResponse;
@@ -60,6 +61,6 @@ public interface FolderSrv {
      * @return
      */
     @PostMapping("/rename")
-    BaseResponse<String> folderRename(@RequestBody ObjectRenameRequest request);
+    BaseResponse<FolderDTO> folderRename(@RequestBody ObjectRenameRequest request);
 
 }

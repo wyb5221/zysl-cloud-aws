@@ -1,6 +1,7 @@
 package com.zysl.cloud.aws.web.controller;
 
 import com.google.common.collect.Lists;
+import com.zysl.cloud.aws.api.dto.FolderDTO;
 import com.zysl.cloud.aws.api.dto.ObjectInfoDTO;
 import com.zysl.cloud.aws.api.enums.DeleteStoreEnum;
 import com.zysl.cloud.aws.api.enums.KeyTypeEnum;
@@ -65,7 +66,7 @@ public class FolderController extends BaseController implements FolderSrv {
 
 
             folderService.create(t);
-            return RespCodeEnum.SUCCESS.getDesc();
+            return RespCodeEnum.SUCCESS.getName();
         });
     }
 
@@ -83,7 +84,7 @@ public class FolderController extends BaseController implements FolderSrv {
 
             folderService.delete(t);
 
-            return RespCodeEnum.SUCCESS.getDesc();
+            return RespCodeEnum.SUCCESS.getName();
         });
     }
 
@@ -165,7 +166,7 @@ public class FolderController extends BaseController implements FolderSrv {
             fileService.checkDataOpAuth(dest, OPAuthTypeEnum.WRITE.getCode());
 
             folderService.copy(src, dest);
-            return RespCodeEnum.SUCCESS.getDesc();
+            return RespCodeEnum.SUCCESS.getName();
         });
     }
 
@@ -197,16 +198,18 @@ public class FolderController extends BaseController implements FolderSrv {
                 folderService.delete(t);
             }
 
-            return RespCodeEnum.SUCCESS.getDesc();
+            return RespCodeEnum.SUCCESS.getName();
         });
     }
 
     @Override
-    public BaseResponse<String> folderRename(ObjectRenameRequest request) {
-        return ServiceProvider.call(request, ObjectRenameRequestV.class, String.class, req -> {
+    public BaseResponse<FolderDTO> folderRename(ObjectRenameRequest request) {
+        return ServiceProvider.call(request, ObjectRenameRequestV.class, FolderDTO.class, req -> {
             S3ObjectBO t = new S3ObjectBO();
             t.setBucketName(req.getBucketName());
             setPathAndFileName(t, req.getSourcekey() + "/");
+            t.setTagFilename(BizUtil.subLastString(req.getDestKey()));
+
             //设置标签
             List<TagBO> tagList = Lists.newArrayList();
             TagBO tag = new TagBO();
@@ -215,8 +218,13 @@ public class FolderController extends BaseController implements FolderSrv {
             tagList.add(tag);
             t.setTagList(tagList);
 
-            folderService.rename(t);
-            return RespCodeEnum.SUCCESS.getDesc();
+            S3ObjectBO s3ObjectBO = (S3ObjectBO)folderService.rename(t);
+            FolderDTO folderDTO = new FolderDTO();
+            folderDTO.setFolderName(s3ObjectBO.getPath());
+            folderDTO.setVersionId(s3ObjectBO.getVersionId());
+            folderDTO.setTagFileName(s3ObjectBO.getTagFilename());
+
+            return folderDTO;
         });
     }
 
