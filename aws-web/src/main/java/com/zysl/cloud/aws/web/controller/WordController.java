@@ -62,10 +62,11 @@ public class WordController extends BaseController implements WordSrv {
 			//step 3.实现加密
 			if(!StringUtils.isBlank(request.getUserPwd()) && !StringUtils.isBlank(request.getOwnerPwd())){
 				byte[] addPwdOutBuff = pdfService.addPwd(outBuff,request.getUserPwd(),request.getOwnerPwd());
-				log.info("===addPwd===file add pwd err.fileName:{},addPwdOutBuff.length:{}",request.getFileName(),addPwdOutBuff == null ? 0 : addPwdOutBuff.length);
+				log.info("===addPwd===file add pwd success.fileName:{},addPwdOutBuff.length:{}",request.getFileName(),addPwdOutBuff == null ? 0 : addPwdOutBuff.length);
 				if(addPwdOutBuff == null || addPwdOutBuff.length == 0){
 					throw new AppLogicException(ErrCodeEnum.WORD_FILE_TO_PDF_ENCRYPTION_SIZE_ZERO.getCode());
 				}
+				outBuff = addPwdOutBuff;
 			}
 
 			//step 4.上传到temp-001
