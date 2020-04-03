@@ -20,6 +20,7 @@ public interface S3Method {
 	public static final String LIST_MULTIPART_UPLOADS = "listMultipartUploads";
 	public static final String GET_BUCKET_TAGGING = "getBucketTagging";
 	public static final String PUT_BUCKET_TAGGING = "putBucketTagging";
+	public static final String LIST_PARTS = "listParts";
 
 	
 

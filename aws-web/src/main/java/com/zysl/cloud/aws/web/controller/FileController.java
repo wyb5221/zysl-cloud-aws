@@ -13,6 +13,7 @@ import com.zysl.cloud.aws.biz.service.s3.IS3BucketService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.biz.utils.DataAuthUtils;
 import com.zysl.cloud.aws.config.BizConfig;
+import com.zysl.cloud.aws.domain.bo.FilePartInfoBO;
 import com.zysl.cloud.aws.domain.bo.MultipartUploadBO;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.aws.domain.bo.TagBO;
@@ -27,19 +28,11 @@ import com.zysl.cloud.utils.common.BaseResponse;
 import com.zysl.cloud.utils.enums.RespCodeEnum;
 import com.zysl.cloud.utils.service.provider.ServiceProvider;
 import com.zysl.cloud.utils.validator.BeanValidator;
-import java.util.ArrayList;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.core.ApplicationContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
-import software.amazon.awssdk.services.s3.model.Tag;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
@@ -49,6 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -826,4 +820,17 @@ public class FileController extends BaseController implements FileSrv {
 			
 		});
 	}
+
+	@Override
+	public BasePaginationResponse<FilePartInfoDTO> listParts(GetListPartRequest request) {
+		return ServiceProvider.callList(request, GetListPartRequestV.class, FilePartInfoDTO.class, (req, page) ->{
+			S3ObjectBO t = new S3ObjectBO();
+			t.setBucketName(req.getBucketName());
+			t.setUploadId(req.getUploadId());
+			setPathAndFileName(t, req.getFileId());
+			List<FilePartInfoBO> partBOList = fileService.listParts(t);
+			return BeanCopyUtil.copyList(partBOList, FilePartInfoDTO.class);
+		});
+	}
+
 }

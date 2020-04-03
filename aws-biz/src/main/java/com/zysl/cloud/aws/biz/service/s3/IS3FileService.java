@@ -1,6 +1,7 @@
 package com.zysl.cloud.aws.biz.service.s3;
 
 import com.zysl.cloud.aws.biz.service.IFileService;
+import com.zysl.cloud.aws.domain.bo.FilePartInfoBO;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.aws.domain.bo.TagBO;
 
@@ -102,4 +103,10 @@ public interface IS3FileService<T> extends IFileService<T> {
 	 */
 	String getLastVersion(T t);
 
+	/**
+	 *
+	 * @param t
+	 * @return
+	 */
+	List<FilePartInfoBO> listParts(T t);
 }

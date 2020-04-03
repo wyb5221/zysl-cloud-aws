@@ -11,6 +11,7 @@ import com.zysl.cloud.aws.biz.service.s3.IS3FactoryService;
 import com.zysl.cloud.aws.biz.service.s3.IS3FileService;
 import com.zysl.cloud.aws.biz.utils.DataAuthUtils;
 import com.zysl.cloud.aws.config.BizConfig;
+import com.zysl.cloud.aws.domain.bo.FilePartInfoBO;
 import com.zysl.cloud.aws.domain.bo.S3ObjectBO;
 import com.zysl.cloud.aws.domain.bo.TagBO;
 import com.zysl.cloud.aws.utils.DateUtils;
@@ -237,6 +238,36 @@ public class S3FileServiceImpl implements IS3FileService<S3ObjectBO> {
 			return version.getVersionId();
 		}
 		return null;
+	}
+
+	@Override
+	public List<FilePartInfoBO> listParts(S3ObjectBO t) {
+		log.info("s3file.listParts.param:{}", JSON.toJSONString(t));
+
+		//获取s3初始化对象
+		S3Client s3 = s3FactoryService.getS3ClientByBucket(t.getBucketName());
+
+		ListPartsRequest request = ListPartsRequest.builder()
+				.bucket(t.getBucketName())
+				.key(String.join(t.getPath(), t.getFileName()))
+				.uploadId(t.getUploadId())
+				.build();
+
+		ListPartsResponse response = s3FactoryService.callS3Method(request, s3, S3Method.LIST_PARTS);
+		List<Part> partList = response.parts();
+
+		List<FilePartInfoBO> filePartInfoBOS = Lists.newArrayList();
+		if(!CollectionUtils.isEmpty(partList)){
+			partList.forEach(obj -> {
+				FilePartInfoBO filePartInfoBO = new FilePartInfoBO();
+				filePartInfoBO.setETag(obj.eTag());
+				filePartInfoBO.setPartNumber(obj.partNumber());
+				filePartInfoBO.setSize(obj.size());
+				filePartInfoBO.setLastModified(Date.from(obj.lastModified()));
+				filePartInfoBOS.add(filePartInfoBO);
+			});
+		}
+		return filePartInfoBOS;
 	}
 
 

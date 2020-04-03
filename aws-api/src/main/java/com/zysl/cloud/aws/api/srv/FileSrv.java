@@ -1,9 +1,6 @@
 package com.zysl.cloud.aws.api.srv;
 
-import com.zysl.cloud.aws.api.dto.DownloadFileDTO;
-import com.zysl.cloud.aws.api.dto.FileInfoDTO;
-import com.zysl.cloud.aws.api.dto.ObjectVersionDTO;
-import com.zysl.cloud.aws.api.dto.UploadFieDTO;
+import com.zysl.cloud.aws.api.dto.*;
 import com.zysl.cloud.aws.api.req.*;
 import com.zysl.cloud.utils.common.BasePaginationResponse;
 import com.zysl.cloud.utils.common.BaseResponse;
@@ -219,4 +216,10 @@ public interface FileSrv {
 	@PostMapping("/abortMulti")
 	BaseResponse<String> abortMultipartUpload(@RequestBody AbortMultipartRequest request);
 
+	/**
+	 * 查询分区上传记录
+	 * @return
+	 */
+	@PostMapping("/listParts")
+	BasePaginationResponse<FilePartInfoDTO> listParts(@RequestBody GetListPartRequest request);
 }
