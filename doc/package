@@ -1,4 +1,2 @@
-https://openapi.genesysinfo.net/gate/11/aws/file/downloadFile?bucketName=awspackage&
-fileId=zysl-cloud-aws-test.jar
-
-
+https://openapi.genesysinfo.net/gate/11/aws/file/downloadFile?bucketName=package&fileId=zysl-cloud-aws-test.jar
+https://openapi.genesysinfo.net/gate/11/aws/file/downloadFile?bucketName=package&fileId=zysl-cloud-aws.jar
